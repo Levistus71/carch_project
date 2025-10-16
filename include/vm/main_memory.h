@@ -23,7 +23,7 @@ struct MemoryBlock {
   unsigned int block_size = vm_config::config.getMemoryBlockSize(); ///< The size of the memory block in bytes.
 
   /**
-   * @brief Constructs a MemoryBlock with a size of 1 KB initialized to 0.
+   * @brief Constructs a MemoryBlock with a size of block_size (from config) initialized to 0.
    */
   MemoryBlock() {
     data.resize(block_size, 0);

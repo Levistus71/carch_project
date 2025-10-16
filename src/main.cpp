@@ -8,9 +8,9 @@ int main(){
     std::cin >> file_name;
     std::cout << std::endl;
 
-    AssembledProgram program;
+    RVSSVM vm;
     try{
-        program = assemble(file_name);
+        vm.program_ = assemble(file_name);
         std::cout << "Assembly successful!" << std::endl << std::endl;;
     }
     catch(const std::runtime_error& e){
@@ -19,9 +19,7 @@ int main(){
         return 1;
     }
 
-    RVSSVM vm;
-
-    vm.LoadProgram(program);
+    vm.LoadProgram();
     vm.Run();
 
     return 0;

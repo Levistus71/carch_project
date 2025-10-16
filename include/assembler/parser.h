@@ -57,6 +57,13 @@ struct SymbolData {
   uint64_t address; ///< The address or instruction location of the symbol.
   uint64_t line_number; ///< The line number where the symbol is defined.
   bool isData; ///< Indicates if the symbol represents data or code.
+
+  SymbolData() = default;
+  SymbolData(uint64_t address, uint64_t line_number, bool isData) : address{address}, line_number{line_number}, isData{isData} {}
+  SymbolData(const SymbolData& other) = default;
+  SymbolData(SymbolData&& other) = default;
+  SymbolData& operator=(const SymbolData& other) = default;
+  SymbolData& operator=(SymbolData&& other) = default;
 };
 
 /**

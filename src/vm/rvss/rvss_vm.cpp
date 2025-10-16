@@ -39,6 +39,11 @@ void RVSSVM::Fetch() {
   UpdateProgramCounter(4);
 }
 
+/*
+  FIXME: rewrite the decode function
+  what its doing currently: setting the alu signals, mem read, mem write, reg read, reg write, branch
+  what it needs to do: all of the above + get register values (store it along with those flags ig, need it for pipelining) + immediate generation
+*/
 void RVSSVM::Decode() {
   control_unit_.SetControlSignals(current_instruction_);
 }
@@ -64,6 +69,7 @@ void RVSSVM::Execute() {
     return;
   }
 
+  // FIXME: move this to the decoding stage (rs1 generation and reading, immediate generation)
   uint8_t rs1 = (current_instruction_ >> 15) & 0b11111;
   uint8_t rs2 = (current_instruction_ >> 20) & 0b11111;
 
@@ -78,6 +84,8 @@ void RVSSVM::Execute() {
     reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
   }
 
+  // FIXME: Why are the "normal" operations done here and the float / double operations done somewhere else?
+  // Get the alu result and then use it in the branch to compare (best if branch is a separate function, helps in the branch_alu gui)
   alu::AluOp aluOperation = control_unit_.GetAluSignal(current_instruction_, control_unit_.GetAluOp());
   std::tie(execution_result_, overflow) = alu_.execute(aluOperation, reg1_value, reg2_value);
 
@@ -179,7 +187,7 @@ void RVSSVM::ExecuteFloat() {
 
   // std::cout << "+++++ Float execution result: " << execution_result_ << std::endl;
 
-
+  // FIXME: the register write shouldnt happen in the exec stage.
   registers_.WriteCsr(0x003, fcsr_status);
 }
 
@@ -208,6 +216,8 @@ void RVSSVM::ExecuteDouble() {
     reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
   }
 
+  // WHAT?: where is the register write back happening?
+  // FIXME: register write back should happen in the write back stage
   alu::AluOp aluOperation = control_unit_.GetAluSignal(current_instruction_, control_unit_.GetAluOp());
   std::tie(execution_result_, fcsr_status) = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 }
@@ -414,6 +424,7 @@ void RVSSVM::WriteMemory() {
     return;
   }
 
+  // FIXME: Why is memory reading happening in "WriteMemory" function?
   if (control_unit_.GetMemRead()) {
     switch (funct3) {
       case 0b000: {// LB
@@ -510,17 +521,18 @@ void RVSSVM::WriteMemory() {
 
 void RVSSVM::WriteMemoryFloat() {
   uint8_t rs2 = (current_instruction_ >> 20) & 0b11111;
-
+  
+  // FIXME: Why is memory reading happening here?
   if (control_unit_.GetMemRead()) { // FLW
     memory_result_ = memory_controller_.ReadWord(execution_result_);
   }
-
+  
   // std::cout << "+++++ Memory result: " << memory_result_ << std::endl;
-
+  
   uint64_t addr = 0;
   std::vector<uint8_t> old_bytes_vec;
   std::vector<uint8_t> new_bytes_vec;
-
+  
   if (control_unit_.GetMemWrite()) { // FSW
     addr = execution_result_;
     for (size_t i = 0; i < 4; ++i) {
@@ -533,7 +545,7 @@ void RVSSVM::WriteMemoryFloat() {
       new_bytes_vec.push_back(memory_controller_.ReadByte(addr + i));
     }
   }
-
+  
   if (old_bytes_vec!=new_bytes_vec) {
     current_delta_.memory_changes.push_back({addr, old_bytes_vec, new_bytes_vec});
   }
@@ -541,7 +553,8 @@ void RVSSVM::WriteMemoryFloat() {
 
 void RVSSVM::WriteMemoryDouble() {
   uint8_t rs2 = (current_instruction_ >> 20) & 0b11111;
-
+  
+  // FIXME: Why is memory reading happening here?
   if (control_unit_.GetMemRead()) {// FLD
     memory_result_ = memory_controller_.ReadDoubleWord(execution_result_);
   }
@@ -567,6 +580,7 @@ void RVSSVM::WriteMemoryDouble() {
 }
 
 void RVSSVM::WriteBack() {
+  // FIXME : immediate gen / rd / opcode ... : generate once in the decode stage, use it from there.
   uint8_t opcode = current_instruction_ & 0b1111111;
   uint8_t funct3 = (current_instruction_ >> 12) & 0b111;
   uint8_t rd = (current_instruction_ >> 7) & 0b11111;
@@ -588,6 +602,7 @@ void RVSSVM::WriteBack() {
     return;
   }
 
+  // FIXME: again, why is the "normal" writeback happening here and the float write back happening else where? make a new function for normal writebacks too.
   uint64_t old_reg = registers_.ReadGpr(rd);
   unsigned int reg_index = rd;
   unsigned int reg_type = 0; // 0 for GPR, 1 for CSR, 2 for FPR
@@ -616,14 +631,6 @@ void RVSSVM::WriteBack() {
       }
       default: break;
     }
-  }
-
-  if (opcode==get_instr_encoding(Instruction::kjal).opcode) /* JAL */ {
-    // Updated in Execute()
-  }
-  if (opcode==get_instr_encoding(Instruction::kjalr).opcode) /* JALR */ {
-    // registers_.WriteGpr(rd, return_address_); // Write back to rs1
-    // Updated in Execute()
   }
 
   uint64_t new_reg = registers_.ReadGpr(rd);
@@ -796,17 +803,22 @@ void RVSSVM::WriteBackCsr() {
 
 }
 
+// TODO: implement pipelining (multiple instructions in this function, data forwarding, hazard detection unit, branch prediction)
 void RVSSVM::Run() {
   ClearStop();
   uint64_t instruction_executed = 0;
 
   while (!stop_requested_ && program_counter_ < program_size_) {
+    // this line mannn. why???
     if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
       break;
+
+    // WHAT? : the StepDelta is used by RunDebug right? why does normal run using that?
 
     Fetch();
     Decode();
     Execute();
+    // FIXME: why "WriteMemory"? rewrite the below function. should be similar to memory stage in hardware.
     WriteMemory();
     WriteBack();
     instructions_retired_++;

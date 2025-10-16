@@ -19,23 +19,24 @@
 #include <thread>
 
 
-void VmBase::LoadProgram(const AssembledProgram &program) {
-  program_ = program;
+void VmBase::LoadProgram() {
+  // Loading the instructions (machine code) into memory
   unsigned int counter = 0;
-  for (const auto &instruction: program.text_buffer) {
+  for (const auto &instruction: program_.text_buffer) {
     memory_controller_.WriteWord(counter, instruction);
       counter += 4;
   }
   program_size_ = counter;
   AddBreakpoint(program_size_, false);  // address
 
+  // Loading data section into memory
   unsigned int data_counter = 0;
   uint64_t base_data_address = vm_config::config.getDataSectionStart();
   auto align = [&](unsigned int alignment) {
     if (data_counter % alignment != 0)
       data_counter += alignment - (data_counter % alignment);
   };
-  for (const auto& data : program.data_buffer) {
+  for (const auto& data : program_.data_buffer) {
     std::visit([&](auto&& value) {
       using T = std::decay_t<decltype(value)>; 
       
@@ -77,7 +78,7 @@ void VmBase::LoadProgram(const AssembledProgram &program) {
       }
     }, data);
   }
-  std::cout << "VM_PROGRAM_LOADED" << std::endl;
+  std::cout << "VM Program Loaded!" << std::endl;
   output_status_ = "VM_PROGRAM_LOADED";
 
   DumpState(globals::vm_state_dump_file_path);
