@@ -46,7 +46,6 @@ public:
 
     std::vector<uint64_t> breakpoints_;
 
-    uint32_t current_instruction_{};
     uint64_t program_counter_{};
     
     unsigned int cycle_s_{};

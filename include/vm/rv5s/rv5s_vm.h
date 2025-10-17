@@ -9,7 +9,8 @@
 
 #include "vm/vm_base.h"
 
-#include "rvss_control_unit.h"
+#include "vm/decoder/rv5s_decode_unit.h"
+#include "vm/instruction_context/instr_context.h"
 
 #include <stack>
 #include <vector>
@@ -38,9 +39,21 @@ struct StepDelta {
   std::vector<MemoryChange> memory_changes;
 };
 
-class RVSSVM : public VmBase {
- public:
-  RVSSControlUnit control_unit_;
+class RV5SVM : public VmBase {
+public:
+  // consts 
+  bool pipelining_enabled = false;
+  bool data_forwarding_enabled = false;
+  bool hazard_detection_enabled = false;
+
+  InstrContext* if_instruction{nullptr};
+  InstrContext* id_instruction{nullptr};
+  InstrContext* ex_instruction{nullptr};
+  InstrContext* mem_instruction{nullptr};
+  InstrContext* wb_instruction{nullptr};
+
+  RV5SDecodeUnit decode_unit;
+
   std::atomic<bool> stop_requested_ = false;
 
 
@@ -70,22 +83,20 @@ class RVSSVM : public VmBase {
   void Decode();
 
   void Execute();
+  void ResolveBranch();
+  void ExecuteBasic();
   void ExecuteFloat();
   void ExecuteDouble();
   void ExecuteCsr();
   void HandleSyscall();
 
-  void WriteMemory();
-  void WriteMemoryFloat();
-  void WriteMemoryDouble();
+  void MemoryAccess();
 
   void WriteBack();
-  void WriteBackFloat();
-  void WriteBackDouble();
   void WriteBackCsr();
 
-  RVSSVM();
-  ~RVSSVM();
+  RV5SVM();
+  ~RV5SVM();
 
   void Run() override;
   void DebugRun() override;

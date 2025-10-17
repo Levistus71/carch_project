@@ -21,7 +21,7 @@
 namespace vm_config {
 enum class VmTypes {
   SINGLE_STAGE,
-  MULTI_STAGE
+  FIVE_STAGE
 };
 
 struct VmConfig {
@@ -38,6 +38,10 @@ struct VmConfig {
   bool m_extension_enabled = true;
   bool f_extension_enabled = true;
   bool d_extension_enabled = true;
+
+  bool pipelining_enabled = false;
+  bool data_forwarding_enabled = false;
+  bool hazard_detection_enabled = false;
 
   void setVmType(const VmTypes &type) {
     vm_type = type;
@@ -120,22 +124,53 @@ struct VmConfig {
     return d_extension_enabled;
   }
 
+  bool getPipeliningStatus(){
+    return pipelining_enabled;
+  }
+
+  bool getDataFowardingStatus(){
+    return data_forwarding_enabled;
+  }
+
+  bool getHazardDetectionStatus(){
+    return hazard_detection_enabled;
+  }
+
   void modifyConfig(const std::string &section, const std::string &key, const std::string &value) {
     if (section == "Execution") {
       if (key == "processor_type") {
         if (value == "single_stage") {
           setVmType(VmTypes::SINGLE_STAGE);
-        } else if (value == "multi_stage") {
-          setVmType(VmTypes::MULTI_STAGE);
+        } else if (value == "five_stage") {
+          setVmType(VmTypes::FIVE_STAGE);
         } else {
           throw std::invalid_argument("Unknown VM type: " + value);
         }
-      } else if (key == "run_step_delay") {
+      }
+      else if (key == "run_step_delay") {
         setRunStepDelay(std::stoull(value));
-      } else if (key == "instruction_execution_limit") {
+      }
+      else if (key == "instruction_execution_limit") {
         setInstructionExecutionLimit(std::stoull(value));
       }
-      
+      else if (key == "enable_pipelining"){
+        if(value == "enable_data_forwarding"){
+          pipelining_enabled = true;
+          data_forwarding_enabled = true;
+        }
+        else if(value == "enable_hazard_detection"){
+          pipelining_enabled = true;
+          hazard_detection_enabled = true;
+        }
+        else if(value == "enable_data_forwarding_&_enable_hazard_detection"){
+          pipelining_enabled = true;
+          hazard_detection_enabled = true;
+          data_forwarding_enabled = true;
+        }
+        else{
+          throw std::invalid_argument("Unknown value: " + value);
+        }
+      }
       else {
         throw std::invalid_argument("Unknown key: " + key);
       }

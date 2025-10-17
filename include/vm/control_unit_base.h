@@ -40,11 +40,11 @@ class ControlUnit {
  protected:
   bool reg_write_ = false;
   bool branch_ = false;
-  bool alu_src_ = false;
+  bool alu_src_ = false;  // WHAT?: what is this and where is this used? only set to true, not used anywhere
   bool mem_read_ = false;
   bool mem_write_ = false;
   bool mem_to_reg_ = false;
-  bool pc_src_ = false;
+  bool pc_src_ = false; // WHAT? : this is literally not used anywhere except here.
 
   uint8_t alu_op_{};
 };

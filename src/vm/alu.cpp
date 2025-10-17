@@ -233,6 +233,14 @@ static std::string decode_fclass(uint16_t res) {
     case AluOp::kSltu: {
       return {static_cast<uint64_t>(a < b), false};
     }
+    case AluOp::kLui: {
+      return {static_cast<uint64_t>(b << 12), false};
+    }
+    case AluOp::kAuipc: {
+      uint64_t result;
+      bool overflow = __builtin_add_overflow(a, b << 12, &result);
+      return {result, overflow};
+    }
     default: return {0, false};
   }
 }

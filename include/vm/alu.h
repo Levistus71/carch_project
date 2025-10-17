@@ -56,6 +56,8 @@ enum class AluOp {
     kSraw, ///< Shift right arithmetic word operation.
     kSlt, ///< Set less than operation.
     kSltu, ///< Unsigned set less than operation.
+    kLui, ///< Load upper immediate.
+    kAuipc, ///< Add upper immediate to pc.
 
     // Floating point operations
     kFmadd_s, ///< Floating point multiply-add single operation.
