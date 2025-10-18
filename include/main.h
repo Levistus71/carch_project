@@ -2,4 +2,4 @@
 #include <string>
 
 #include "assembler/assembler.h"
-#include "vm/rvss/rvss_vm.h"
+#include "vm/rv5s/rv5s_vm.h"

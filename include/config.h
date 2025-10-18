@@ -39,6 +39,8 @@ struct VmConfig {
   bool f_extension_enabled = true;
   bool d_extension_enabled = true;
 
+  size_t max_undo_stack_size = 256; // Default number of undo's allowed
+
   bool pipelining_enabled = false;
   bool data_forwarding_enabled = false;
   bool hazard_detection_enabled = false;
@@ -136,6 +138,14 @@ struct VmConfig {
     return hazard_detection_enabled;
   }
 
+  void setMaxUndoStackSize(size_t size){
+    max_undo_stack_size = size;
+  }
+
+  size_t getMaxUndoStackSize(){
+    return max_undo_stack_size;
+  }
+
   void modifyConfig(const std::string &section, const std::string &key, const std::string &value) {
     if (section == "Execution") {
       if (key == "processor_type") {
@@ -169,6 +179,20 @@ struct VmConfig {
         }
         else{
           throw std::invalid_argument("Unknown value: " + value);
+        }
+      }
+      else if(key == "undo_stack_size"){
+        size_t size;
+        try{
+          size = std::stoul(value);
+          setMaxUndoStackSize(size);
+        }
+        catch(const std::invalid_argument& e){
+          throw e;
+        }
+        catch(const std::out_of_range& e){
+          std::cout << "The value you are trying to set is too large." << std::endl;
+          throw std::out_of_range("");
         }
       }
       else {

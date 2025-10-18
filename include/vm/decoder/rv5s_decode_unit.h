@@ -9,8 +9,7 @@
 #include <cstdint>
 
 #include "common/instructions.h"
-#include "registers.h"
-#include "alu.h"
+#include "vm/alu.h"
 #include "vm/instruction_context/instr_context.h"
 #include "vm/registers.h"
 
@@ -35,8 +34,10 @@ private:
 
     /**
      * @brief SetRegImmValues sets the register values and generates the immediate. Simulates fetching from the register file
+     * @param instr_context The instruction being decoded.
+     * @param rf The register file of the vm
      */
-    void RV5SDecodeUnit::SetRegImmValues(InstrContext& instr_context, RegisterFile& rf);
+    void SetRegImmValues(InstrContext& instr_context, RegisterFile& rf);
 
     /**
      * @brief SetControlSignals sets the alu flags, mux select line flags.

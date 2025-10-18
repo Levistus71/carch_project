@@ -16,8 +16,17 @@
 #include <vector>
 #include <iostream>
 #include <cstdint>
+#include <cctype>
+#include <tuple> 
+#include <queue>
+#include <thread>
+#include <chrono>
 
-// TODO: use a circular buffer instead of a stack for undo/redo
+#include "utils.h"
+#include "globals.h"
+#include "common/instructions.h"
+#include "config.h"
+
 
 struct RegisterChange {
   unsigned int reg_index;
@@ -41,6 +50,7 @@ struct StepDelta {
 
 class RV5SVM : public VmBase {
 public:
+
   // consts 
   bool pipelining_enabled = false;
   bool data_forwarding_enabled = false;
@@ -54,35 +64,31 @@ public:
 
   RV5SDecodeUnit decode_unit;
 
-  std::atomic<bool> stop_requested_ = false;
+  bool stop_requested = false;
 
 
-  std::stack<StepDelta> undo_stack_;
-  std::stack<StepDelta> redo_stack_;
+  std::deque<StepDelta> undo_stack;
+  size_t max_undo_stack_size;
 
-  StepDelta current_delta_;
+  StepDelta current_delta;
 
-  // intermediate variables
-  int64_t execution_result_{};
-  int64_t memory_result_{};
-  // int64_t memory_address_{};
-  // int64_t memory_data_{};
-  uint64_t return_address_{};
-
-  bool branch_flag_ = false;
-  int64_t next_pc_{}; // for jal, jalr,
-
+  // WHAT?: what are these
   // CSR intermediate variables
   uint16_t csr_target_address_{};
   uint64_t csr_old_value_{};
   uint64_t csr_write_val_{};
   uint8_t csr_uimm_{};
 
+  void LoadVM() override;
+
   void Fetch();
+  void DebugFetch();
 
   void Decode();
+  void DebugDecode();
 
   void Execute();
+  void DebugExecute();
   void ResolveBranch();
   void ExecuteBasic();
   void ExecuteFloat();
@@ -91,30 +97,40 @@ public:
   void HandleSyscall();
 
   void MemoryAccess();
+  void DebugMemoryAccess();
 
   void WriteBack();
+  void DebugWriteBack();
   void WriteBackCsr();
+  void DebugWriteBackCsr();
 
   RV5SVM();
-  ~RV5SVM();
+  ~RV5SVM() = default;
 
   void Run() override;
+  void RunSingleCycle();
+
   void DebugRun() override;
+  void DebugRunSingleCycle();
+
   void Step() override;
+  void SingleCycleStep(bool dump);
+
   void Undo() override;
-  void Redo() override;
+  void SingleCycleUndo();
+
   void Reset() override;
 
   void RequestStop() {
-    stop_requested_ = true;
+    this->stop_requested = true;
   }
 
   bool IsStopRequested() const {
-    return stop_requested_;
+    return this->stop_requested;
   }
   
   void ClearStop() {
-    stop_requested_ = false;
+    this->stop_requested = false;
   }
 
   void PrintType() {

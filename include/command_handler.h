@@ -6,7 +6,7 @@
 #ifndef COMMAND_HANDLER_H
 #define COMMAND_HANDLER_H
 
-#include "./vm/rvss/rvss_vm.h"
+#include "./vm/rv5s/rv5s_vm.h"
 
 #include <vector>
 
@@ -54,7 +54,7 @@ struct Command {
 
 Command ParseCommand(const std::string &input);
 
-void ExecuteCommand(const Command& command, RVSSVM& vm);
+void ExecuteCommand(const Command& command, RV5SVM& vm);
 
 } // namespace CommandParser
 

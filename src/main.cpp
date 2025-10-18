@@ -1,5 +1,6 @@
 #include "main.h"
 
+// Don't put a breakpoint in this function (on vscode atleast)
 int main(){
     std::cout << "Virtual Machine started." << std::endl;
 
@@ -8,7 +9,7 @@ int main(){
     std::cin >> file_name;
     std::cout << std::endl;
 
-    RVSSVM vm;
+    RV5SVM vm;
     try{
         vm.program_ = assemble(file_name);
         std::cout << "Assembly successful!" << std::endl << std::endl;;
@@ -19,8 +20,7 @@ int main(){
         return 1;
     }
 
-    vm.LoadProgram();
+    vm.LoadVM();
     vm.Run();
-
     return 0;
 }

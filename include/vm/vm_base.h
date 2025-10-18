@@ -39,27 +39,13 @@ public:
     ~VmBase() = default;
 
     AssembledProgram program_;
-    std::atomic<bool> stop_requested_ = false;
-    std::mutex input_mutex_;
-    std::condition_variable input_cv_;
-    std::queue<std::string> input_queue_;
 
     std::vector<uint64_t> breakpoints_;
 
     uint64_t program_counter_{};
     
-    unsigned int cycle_s_{};
-    unsigned int instructions_retired_{};
-    float cpi_{};
-    float ipc_{};
-    unsigned int stall_cycles_{};
-    unsigned int branch_mispredictions_{};
 
     std::string output_status_;
-
-    
-
-
 
     MemoryController memory_controller_;
     RegisterFile registers_;
@@ -67,44 +53,32 @@ public:
     alu::Alu alu_;
 
     void SetProgram(const AssembledProgram& program){
-        program_ = program;
+        this->program_ = program;
     }
 
-    void LoadProgram();
+    virtual void LoadVM() = 0;
     uint64_t program_size_ = 0;
 
     uint64_t GetProgramCounter() const;
     void UpdateProgramCounter(int64_t value);
     
-    int32_t ImmGenerator(uint32_t instruction);
 
     void AddBreakpoint(uint64_t val, bool is_line = true);
     void RemoveBreakpoint(uint64_t val, bool is_line = true);
     bool CheckBreakpoint(uint64_t address);
 
-    // void fetchInstruction();
-    // void decodeInstruction();
-    // void executeInstruction();
-    // void memoryAccess();
-    // void writeback();
-
-    // void HandleSyscall();
     void PrintString(uint64_t address);
 
     virtual void Run() = 0;
     virtual void DebugRun() = 0;
     virtual void Step() = 0;
     virtual void Undo() = 0;
-    virtual void Redo() = 0;
+    // REDO IS DEPRECATED. why was it there in the first place? just step over bruh
+    // virtual void Redo() = 0;
     virtual void Reset() = 0;
     void DumpState(const std::filesystem::path &filename);
 
     void ModifyRegister(const std::string &reg_name, uint64_t value);
-    void PushInput(const std::string& input) {
-        std::lock_guard<std::mutex> lock(input_mutex_);
-        input_queue_.push(input);
-        input_cv_.notify_one();
-    }
 
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "alu.h"    // FIXME: uint8_t not working on mac without this (or any other header)
+#include "vm/alu.h"    // FIXME: uint8_t not working on mac without this (or any other header)
 
 struct InstrContext{
     InstrContext(uint64_t pc) : pc{pc} {}
