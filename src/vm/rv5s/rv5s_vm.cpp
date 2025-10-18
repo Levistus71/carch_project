@@ -150,12 +150,6 @@ void RV5SVM::Reset() {
 	this->program_counter_ = 0;
 	this->registers_.Reset();
 	this->memory_controller_.Reset();
-
-	csr_target_address_ = 0;
-	csr_old_value_ = 0;
-	csr_write_val_ = 0;
-	csr_uimm_ = 0;
-
 	this->current_delta.register_changes.clear();
 	this->current_delta.memory_changes.clear();
 	this->current_delta.old_pc = 0;

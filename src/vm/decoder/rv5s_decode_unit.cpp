@@ -48,6 +48,10 @@ void RV5SDecodeUnit::SetRegImmValues(InstrContext& instr_context, RegisterFile& 
     instr_context.frs3_value = rf.ReadFpr(instr_context.frs3);
 
     instr_context.immediate = ImmGenerator(instr_context);
+
+    // csr related
+    instr_context.csr_rd = (instr_context.instruction >> 20) & 0xFFF;
+    instr_context.csr_value = rf.ReadCsr(instr_context.csr_rd);
 }
 
 

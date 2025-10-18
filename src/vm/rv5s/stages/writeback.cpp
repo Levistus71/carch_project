@@ -5,7 +5,7 @@ using instruction_set::get_instr_encoding;
 
 void RV5SVM::WriteBack() {
 	if (this->wb_instruction->opcode==0b1110011) { // CSR opcode
-		WriteBackCsr();
+		WriteBackCsr(false);
 		return;
 	}
 
@@ -63,54 +63,87 @@ void RV5SVM::DebugWriteBack(){
 }
 
 
-// WHAT?: what is this
-void RV5SVM::WriteBackCsr() {
+void RV5SVM::WriteBackCsr(bool debug_mode) {
 	uint8_t& rd = this->wb_instruction->rd;
 	uint8_t& funct3 = this->wb_instruction->funct3;
 
+	uint16_t& csr_target_address_ = this->wb_instruction->csr_rd;
+	uint64_t& csr_old_value_ = this->wb_instruction->csr_value;
+	uint64_t& csr_write_val_ = this->wb_instruction->csr_write_val;
+	uint8_t& csr_uimm_ = this->wb_instruction->csr_uimm;
+
+	uint64_t csr_old_value_debug = csr_old_value_;
+	uint64_t gpr_old_value_debug;
+	if(debug_mode){
+		gpr_old_value_debug = this->registers_.ReadGpr(rd);
+	}
+
 	switch (funct3) {
 		case get_instr_encoding(Instruction::kcsrrw).funct3: { // CSRRW
-		registers_.WriteGpr(rd, csr_old_value_);
-		registers_.WriteCsr(csr_target_address_, csr_write_val_);
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			registers_.WriteCsr(csr_target_address_, csr_write_val_);
+			break;
 		}
 		case get_instr_encoding(Instruction::kcsrrs).funct3: { // CSRRS
-		registers_.WriteGpr(rd, csr_old_value_);
-		if (csr_write_val_!=0) {
-			registers_.WriteCsr(csr_target_address_, csr_old_value_ | csr_write_val_);
-		}
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			if (csr_write_val_!=0) {
+				registers_.WriteCsr(csr_target_address_, csr_old_value_ | csr_write_val_);
+			}
+			break;
 		}
 		case get_instr_encoding(Instruction::kcsrrc).funct3: { // CSRRC
-		registers_.WriteGpr(rd, csr_old_value_);
-		if (csr_write_val_!=0) {
-			registers_.WriteCsr(csr_target_address_, csr_old_value_ & ~csr_write_val_);
-		}
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			if (csr_write_val_!=0) {
+				registers_.WriteCsr(csr_target_address_, csr_old_value_ & ~csr_write_val_);
+			}
+			break;
 		}
 		case get_instr_encoding(Instruction::kcsrrwi).funct3: { // CSRRWI
-		registers_.WriteGpr(rd, csr_old_value_);
-		registers_.WriteCsr(csr_target_address_, csr_uimm_);
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			registers_.WriteCsr(csr_target_address_, csr_uimm_);
+			break;
 		}
 		case get_instr_encoding(Instruction::kcsrrsi).funct3: { // CSRRSI
-		registers_.WriteGpr(rd, csr_old_value_);
-		if (csr_uimm_!=0) {
-			registers_.WriteCsr(csr_target_address_, csr_old_value_ | csr_uimm_);
-		}
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			if (csr_uimm_!=0) {
+				registers_.WriteCsr(csr_target_address_, csr_old_value_ | csr_uimm_);
+			}
+			break;
 		}
 		case get_instr_encoding(Instruction::kcsrrci).funct3: { // CSRRCI
-		registers_.WriteGpr(rd, csr_old_value_);
-		if (csr_uimm_!=0) {
-			registers_.WriteCsr(csr_target_address_, csr_old_value_ & ~csr_uimm_);
-		}
-		break;
+			registers_.WriteGpr(rd, csr_old_value_);
+			if (csr_uimm_!=0) {
+				registers_.WriteCsr(csr_target_address_, csr_old_value_ & ~csr_uimm_);
+			}
+			break;
 		}
 	}
+
+	if(debug_mode){
+		uint64_t csr_new_value = this->registers_.ReadCsr(csr_target_address_);
+		uint64_t gpr_new_value = this->registers_.ReadGpr(rd);
+
+		if(csr_old_value_debug != csr_new_value){
+			current_delta.register_changes.push_back({
+				csr_target_address_,
+				1, // 1 for csr
+				csr_old_value_debug,
+				csr_new_value
+			});
+		}
+
+		if(gpr_old_value_debug != gpr_new_value){
+			current_delta.register_changes.push_back({
+				rd,
+				0, // 0 for gpr
+				gpr_old_value_debug,
+				gpr_new_value
+			});
+		}
+	}
+
 }
 
-// WHAT?: what is this?
 void RV5SVM::DebugWriteBackCsr(){
-	WriteBackCsr();
+	WriteBackCsr(true);
 }

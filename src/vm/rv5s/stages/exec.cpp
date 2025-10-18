@@ -183,21 +183,3 @@ void RV5SVM::ExecuteDouble() {
 	auto [alu_out_temp, fcsr_status_temp] = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 	this->ex_instruction->alu_out = alu_out_temp;
 }
-
-// WHAT? what is this
-void RV5SVM::ExecuteCsr() {
-  uint8_t& rs1 = this->ex_instruction->rs1;
-  uint16_t csr = (this->ex_instruction->instruction >> 20) & 0xFFF;
-  uint64_t csr_val = registers_.ReadCsr(csr);
-
-  csr_target_address_ = csr;
-  csr_old_value_ = csr_val;
-  csr_write_val_ = registers_.ReadGpr(rs1);
-  csr_uimm_ = rs1;
-}
-
-
-// TODO: implement this
-void RV5SVM::HandleSyscall() {
-	std::cout << "Syscalls are not enabled" << std::endl;
-}

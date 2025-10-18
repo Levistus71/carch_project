@@ -64,4 +64,10 @@ struct InstrContext{
 
     // memory_output
     uint64_t mem_out;
+
+    // csr related
+    uint16_t csr_rd;
+    uint64_t csr_value;
+    uint8_t& csr_uimm = rs1;
+    uint64_t& csr_write_val = rs1_value;
 };

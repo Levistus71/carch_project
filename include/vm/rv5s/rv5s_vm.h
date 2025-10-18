@@ -72,12 +72,10 @@ public:
 
   StepDelta current_delta;
 
-  // WHAT?: what are these
-  // CSR intermediate variables
-  uint16_t csr_target_address_{};
-  uint64_t csr_old_value_{};
-  uint64_t csr_write_val_{};
-  uint8_t csr_uimm_{};
+  // for input handling in syscalls:
+  std::mutex input_mutex;
+  std::condition_variable input_cv;
+  std::queue<std::string> input_queue;
 
   void LoadVM() override;
 
@@ -86,6 +84,7 @@ public:
 
   void Decode();
   void DebugDecode();
+  void HandleSyscall(bool debug_mode);
 
   void Execute();
   void DebugExecute();
@@ -93,15 +92,13 @@ public:
   void ExecuteBasic();
   void ExecuteFloat();
   void ExecuteDouble();
-  void ExecuteCsr();
-  void HandleSyscall();
 
   void MemoryAccess();
   void DebugMemoryAccess();
 
   void WriteBack();
   void DebugWriteBack();
-  void WriteBackCsr();
+  void WriteBackCsr(bool debug_mode);
   void DebugWriteBackCsr();
 
   RV5SVM();
