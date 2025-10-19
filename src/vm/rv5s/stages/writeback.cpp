@@ -4,57 +4,59 @@ using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 
 void RV5SVM::WriteBack() {
-	if (this->wb_instruction->opcode==0b1110011) { // CSR opcode
+	InstrContext& wb_instruction = GetWbInstruction();
+	if (wb_instruction.opcode==0b1110011) { // CSR opcode
 		WriteBackCsr(false);
 		return;
 	}
 
-	if(!this->wb_instruction->reg_write) return;
+	if(!wb_instruction.reg_write) return;
 
-	uint64_t& write_data = this->wb_instruction->mem_to_reg ?
-		this->wb_instruction->mem_out : 
-		this->wb_instruction->alu_out;
+	uint64_t& write_data = wb_instruction.mem_to_reg ?
+		wb_instruction.mem_out : 
+		wb_instruction.alu_out;
 		
-	if(this->wb_instruction->reg_write_to_fpr){
-		this->registers_.WriteFpr(this->wb_instruction->rd, write_data);
+	if(wb_instruction.reg_write_to_fpr){
+		this->registers_.WriteFpr(wb_instruction.rd, write_data);
 	}
 	else{
-		this->registers_.WriteGpr(this->wb_instruction->rd, write_data);
+		this->registers_.WriteGpr(wb_instruction.rd, write_data);
 	}
 }
 
 
 void RV5SVM::DebugWriteBack(){
-	if (this->wb_instruction->opcode==0b1110011) { // CSR opcode
+	InstrContext& wb_instruction = GetWbInstruction();
+	if (wb_instruction.csr_op) { // CSR opcode
 		DebugWriteBackCsr();
 		return;
 	}
 
-	if(!this->wb_instruction->reg_write) return;
+	if(!wb_instruction.reg_write) return;
 
-	uint64_t& write_data = this->wb_instruction->mem_to_reg ?
-		this->wb_instruction->mem_out : 
-		this->wb_instruction->alu_out;
+	uint64_t& write_data = wb_instruction.mem_to_reg ?
+		wb_instruction.mem_out : 
+		wb_instruction.alu_out;
 		
 	uint64_t old_reg_value;
 
-	unsigned int reg_index = this->wb_instruction->rd;
+	unsigned int reg_index = wb_instruction.rd;
 	unsigned int reg_type;	// 0 for gpr, 1 for csr, 2 for fpr
 
-	if(this->wb_instruction->reg_write_to_fpr){
-		old_reg_value = this->registers_.ReadFpr(this->wb_instruction->rd);
+	if(wb_instruction.reg_write_to_fpr){
+		old_reg_value = this->registers_.ReadFpr(wb_instruction.rd);
 		reg_type = 2;
-		this->registers_.WriteFpr(this->wb_instruction->rd, write_data);
+		this->registers_.WriteFpr(wb_instruction.rd, write_data);
 	}
 	else{
-		old_reg_value = this->registers_.ReadGpr(this->wb_instruction->rd);
+		old_reg_value = this->registers_.ReadGpr(wb_instruction.rd);
 		reg_type = 1;
-		this->registers_.WriteGpr(this->wb_instruction->rd, write_data);
+		this->registers_.WriteGpr(wb_instruction.rd, write_data);
 	}
 
 	if(old_reg_value!=write_data){
 		this->current_delta.register_changes.push_back({
-			this->wb_instruction->rd, 
+			wb_instruction.rd, 
 			reg_type, 
 			old_reg_value, 
 			write_data
@@ -64,13 +66,14 @@ void RV5SVM::DebugWriteBack(){
 
 
 void RV5SVM::WriteBackCsr(bool debug_mode) {
-	uint8_t& rd = this->wb_instruction->rd;
-	uint8_t& funct3 = this->wb_instruction->funct3;
+	InstrContext& wb_instruction = GetWbInstruction();
+	uint8_t& rd = wb_instruction.rd;
+	uint8_t& funct3 = wb_instruction.funct3;
 
-	uint16_t& csr_target_address_ = this->wb_instruction->csr_rd;
-	uint64_t& csr_old_value_ = this->wb_instruction->csr_value;
-	uint64_t& csr_write_val_ = this->wb_instruction->csr_write_val;
-	uint8_t& csr_uimm_ = this->wb_instruction->csr_uimm;
+	uint16_t& csr_target_address_ = wb_instruction.csr_rd;
+	uint64_t& csr_old_value_ = wb_instruction.csr_value;
+	uint64_t& csr_write_val_ = wb_instruction.csr_write_val;
+	uint8_t& csr_uimm_ = wb_instruction.csr_uimm;
 
 	uint64_t csr_old_value_debug = csr_old_value_;
 	uint64_t gpr_old_value_debug;

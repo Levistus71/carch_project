@@ -4,10 +4,11 @@ using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 
 void RV5SVM::Decode() {
-	decode_unit.DecodeInstruction(*(this->id_instruction), registers_);
+	InstrContext& id_instruction = GetIdInstruction();
+	decode_unit.DecodeInstruction(id_instruction, registers_);
 
-	if (this->id_instruction->opcode == get_instr_encoding(Instruction::kecall).opcode && 
-		this->id_instruction->funct3 == get_instr_encoding(Instruction::kecall).funct3) {
+	if (id_instruction.opcode == get_instr_encoding(Instruction::kecall).opcode && 
+		id_instruction.funct3 == get_instr_encoding(Instruction::kecall).funct3) {
 		HandleSyscall(false);
 		return;
 	}
@@ -15,10 +16,11 @@ void RV5SVM::Decode() {
 
 
 void RV5SVM::DebugDecode(){
-	decode_unit.DecodeInstruction(*(this->id_instruction), registers_);
+	InstrContext& id_instruction = GetIdInstruction();
+	decode_unit.DecodeInstruction(id_instruction, registers_);
 
-	if (this->id_instruction->opcode == get_instr_encoding(Instruction::kecall).opcode && 
-		this->id_instruction->funct3 == get_instr_encoding(Instruction::kecall).funct3) {
+	if (id_instruction.opcode == get_instr_encoding(Instruction::kecall).opcode && 
+		id_instruction.funct3 == get_instr_encoding(Instruction::kecall).funct3) {
 		HandleSyscall(true);
 		return;
 	}

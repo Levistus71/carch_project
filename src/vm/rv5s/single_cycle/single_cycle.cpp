@@ -9,30 +9,30 @@ void RV5SVM::RunSingleCycle(){
 		if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
 		    break;
 		
-		InstrContext current_instruction{this->program_counter_};
-
-		// Fetch
-		this->if_instruction = &current_instruction;
+        // Fetch
+        instruction_deque.pop_back();
+        InstrContext current_instruction{this->program_counter_};
+        instruction_deque.push_front(current_instruction);
 		Fetch();
 
 		// Decode
-		this->if_instruction = nullptr;
-		this->id_instruction = &current_instruction;
+        instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		Decode();
 
 		// Execute
-		this->id_instruction = nullptr;
-		this->ex_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		Execute();
 
 		// MemoryAccess
-		this->ex_instruction = nullptr;
-		this->mem_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		MemoryAccess();
 
 		// WriteBack
-		this->mem_instruction = nullptr;
-		this->wb_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		WriteBack();
 
 		instruction_executed++;
@@ -82,30 +82,34 @@ void RV5SVM::SingleCycleStep(bool dump){
 
     if (this->program_counter_ < this->program_size_) {
 
+        this->current_delta.old_pc = this->program_counter_;
+
         InstrContext current_instruction{this->program_counter_};
 
         // Fetch
-		this->if_instruction = &current_instruction;
+        instruction_deque.pop_back();
+        InstrContext current_instruction{this->program_counter_};
+        instruction_deque.push_front(current_instruction);
 		DebugFetch();
 
 		// Decode
-		this->if_instruction = nullptr;
-		this->id_instruction = &current_instruction;
+        instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		DebugDecode();
 
 		// Execute
-		this->id_instruction = nullptr;
-		this->ex_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		DebugExecute();
 
 		// MemoryAccess
-		this->ex_instruction = nullptr;
-		this->mem_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		DebugMemoryAccess();
 
 		// WriteBack
-		this->mem_instruction = nullptr;
-		this->wb_instruction = &current_instruction;
+		instruction_deque.pop_back();
+        instruction_deque.push_front(InstrContext{});
 		DebugWriteBack();
 
         

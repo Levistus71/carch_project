@@ -4,19 +4,16 @@ using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 
 void RV5SVM::Execute() {
-	uint8_t& opcode = this->ex_instruction->opcode;
-	uint8_t& funct3 = this->ex_instruction->funct3;
+	InstrContext& ex_instruction = GetExInstruction();
+	uint8_t& opcode = ex_instruction.opcode;
+	uint8_t& funct3 = ex_instruction.funct3;
 
-	if (instruction_set::isFInstruction(this->ex_instruction->instruction)) { // RV64 F
+	if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
 		ExecuteFloat();
 		return;
 	}
-	else if (instruction_set::isDInstruction(this->ex_instruction->instruction)) {
+	else if (instruction_set::isDInstruction(ex_instruction.instruction)) {
 		ExecuteDouble();
-		return;
-	}
-	else if (opcode==0b1110011) {
-		ExecuteCsr();
 		return;
 	}
 	else {
@@ -24,7 +21,7 @@ void RV5SVM::Execute() {
 	}
 
 	// branch cheking
-	if (this->ex_instruction->branch)
+	if (ex_instruction.branch)
 		ResolveBranch();
 }
 
@@ -34,23 +31,24 @@ void RV5SVM::DebugExecute(){
 }
 
 void RV5SVM::ResolveBranch(){
-	uint8_t& opcode = this->ex_instruction->opcode;
-	uint8_t& funct3 = this->ex_instruction->funct3;
+	InstrContext& ex_instruction = GetExInstruction();
+	uint8_t& opcode = ex_instruction.opcode;
+	uint8_t& funct3 = ex_instruction.funct3;
 
 	if (opcode==get_instr_encoding(Instruction::kjalr).opcode || 
 			opcode==get_instr_encoding(Instruction::kjal).opcode) {
 		
 		// storing the current value of pc for returning (storing it in rd)
-		this->ex_instruction->alu_out = this->program_counter_;
+		ex_instruction.alu_out = this->program_counter_;
 
 		// subtracting 4 from pc (updated in Fetch())
 		UpdateProgramCounter(-4);
 		
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
-			UpdateProgramCounter(this->ex_instruction->alu_out - this->program_counter_);
+			UpdateProgramCounter(ex_instruction.alu_out - this->program_counter_);
 		}
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
-			UpdateProgramCounter(this->ex_instruction->immediate);
+			UpdateProgramCounter(ex_instruction.immediate);
 		}
 		return;
 	}
@@ -64,27 +62,27 @@ void RV5SVM::ResolveBranch(){
 		bool branch_flag = false;
 		switch (funct3) {
 			case 0b000: {// BEQ
-				branch_flag = (this->ex_instruction->alu_out==0);
+				branch_flag = (ex_instruction.alu_out==0);
 				break;
 			}
 			case 0b001: {// BNE
-				branch_flag = (this->ex_instruction->alu_out!=0);
+				branch_flag = (ex_instruction.alu_out!=0);
 				break;
 			}
 			case 0b100: {// BLT
-				branch_flag = (this->ex_instruction->alu_out==1);
+				branch_flag = (ex_instruction.alu_out==1);
 				break;
 			}
 			case 0b101: {// BGE
-				branch_flag = (this->ex_instruction->alu_out==0);
+				branch_flag = (ex_instruction.alu_out==0);
 				break;
 			}
 			case 0b110: {// BLTU
-				branch_flag = (this->ex_instruction->alu_out==1);
+				branch_flag = (ex_instruction.alu_out==1);
 				break;
 			}
 			case 0b111: {// BGEU
-				branch_flag = (this->ex_instruction->alu_out==0);
+				branch_flag = (ex_instruction.alu_out==0);
 				break;
 			}
 		}
@@ -92,7 +90,7 @@ void RV5SVM::ResolveBranch(){
 		if (branch_flag) {
 			// Subtracting 4 from pc (updated in Fetch())
 			UpdateProgramCounter(-4);
-			UpdateProgramCounter(this->ex_instruction->immediate);
+			UpdateProgramCounter(ex_instruction.immediate);
 		}
 	}
 }
@@ -100,55 +98,57 @@ void RV5SVM::ResolveBranch(){
 
 
 void RV5SVM::ExecuteBasic(){
-	uint64_t& reg1_value = this->ex_instruction->rs1_value;
-	uint64_t& reg2_value = this->ex_instruction->rs2_value;
+	InstrContext& ex_instruction = GetExInstruction();
+	uint64_t& reg1_value = ex_instruction.rs1_value;
+	uint64_t& reg2_value = ex_instruction.rs2_value;
 	
-	if (this->ex_instruction->imm_to_alu) {
-		int32_t& imm = this->ex_instruction->immediate;
+	if (ex_instruction.imm_to_alu) {
+		int32_t& imm = ex_instruction.immediate;
     	reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
   	}
 
-	if(this->ex_instruction->auipc){
-		reg1_value = this->ex_instruction->pc;
+	if(ex_instruction.auipc){
+		reg1_value = ex_instruction.pc;
 	}
 
-  	// std::tie(this->ex_instruction->alu_out, this->ex_instruction->alu_overflow) = alu_.execute(this->ex_instruction->alu_op, reg1_value, reg2_value);
-	auto [alu_out_temp, alu_overflow_temp] = alu_.execute(this->ex_instruction->alu_op, reg1_value, reg2_value);
-	this->ex_instruction->alu_out = alu_out_temp;
-	this->ex_instruction->alu_overflow = alu_overflow_temp;
+  	// std::tie(ex_instruction.alu_out, ex_instruction.alu_overflow) = alu_.execute(ex_instruction.alu_op, reg1_value, reg2_value);
+	auto [alu_out_temp, alu_overflow_temp] = alu_.execute(ex_instruction.alu_op, reg1_value, reg2_value);
+	ex_instruction.alu_out = alu_out_temp;
+	ex_instruction.alu_overflow = alu_overflow_temp;
 }
 
 void RV5SVM::ExecuteFloat() {
-	uint8_t& opcode = this->ex_instruction->opcode;
-	uint8_t& funct3 = this->ex_instruction->funct3;
-	uint8_t& funct7 = this->ex_instruction->funct7;
+	InstrContext& ex_instruction = GetExInstruction();
+	uint8_t& opcode = ex_instruction.opcode;
+	uint8_t& funct3 = ex_instruction.funct3;
+	uint8_t& funct7 = ex_instruction.funct7;
 	uint8_t rm = funct3;
 
 	uint8_t fcsr_status = 0;
 
-	int32_t& imm = this->ex_instruction->immediate;
+	int32_t& imm = ex_instruction.immediate;
 
 	// WHAT?: what is this
 	if (rm==0b111) {
 		rm = registers_.ReadCsr(0x002);
 	}
 
-	uint64_t& reg1_value = this->ex_instruction->frs1_value;
-	uint64_t& reg2_value = this->ex_instruction->frs2_value;
-	uint64_t& reg3_value = this->ex_instruction->frs3_value;
+	uint64_t& reg1_value = ex_instruction.frs1_value;
+	uint64_t& reg2_value = ex_instruction.frs2_value;
+	uint64_t& reg3_value = ex_instruction.frs3_value;
 
 	if (funct7==0b1101000 || funct7==0b1111000 || opcode==0b0000111 || opcode==0b0100111) {
-		reg1_value = this->ex_instruction->rs1_value;
+		reg1_value = ex_instruction.rs1_value;
 	}
 
-	if (this->ex_instruction->imm_to_alu) {
+	if (ex_instruction.imm_to_alu) {
 		reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
 	}
 
-	alu::AluOp aluOperation = this->ex_instruction->alu_op;
+	alu::AluOp aluOperation = ex_instruction.alu_op;
 	// std::tie(execution_result_, fcsr_status) = alu::Alu::fpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 	auto [alu_out_temp, fcsr_status_temp] = alu::Alu::fpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
-	this->ex_instruction->alu_out = alu_out_temp;
+	ex_instruction.alu_out = alu_out_temp;
 	fcsr_status = fcsr_status_temp;
 
 	// WHAT?: what is this
@@ -156,30 +156,31 @@ void RV5SVM::ExecuteFloat() {
 }
 
 void RV5SVM::ExecuteDouble() {
-	uint8_t& opcode = this->ex_instruction->opcode;
-	uint8_t& funct3 = this->ex_instruction->funct3;
-	uint8_t& funct7 = this->ex_instruction->funct7;
+	InstrContext& ex_instruction = GetExInstruction();
+	uint8_t& opcode = ex_instruction.opcode;
+	uint8_t& funct3 = ex_instruction.funct3;
+	uint8_t& funct7 = ex_instruction.funct7;
 	uint8_t rm = funct3;
 
 	// WHAT? : this fcsr_status is not used?
 	uint8_t fcsr_status = 0;
 
-	int32_t imm = this->ex_instruction->immediate;
+	int32_t imm = ex_instruction.immediate;
 
-	uint64_t reg1_value = this->ex_instruction->frs1_value;
-	uint64_t reg2_value = this->ex_instruction->frs1_value;
-	uint64_t reg3_value = this->ex_instruction->frs1_value;
+	uint64_t reg1_value = ex_instruction.frs1_value;
+	uint64_t reg2_value = ex_instruction.frs1_value;
+	uint64_t reg3_value = ex_instruction.frs1_value;
 
 	if (funct7==0b1101001 || funct7==0b1111001 || opcode==0b0000111 || opcode==0b0100111) {
-		reg1_value = this->ex_instruction->rs1_value;
+		reg1_value = ex_instruction.rs1_value;
 	}
 
-	if (this->ex_instruction->imm_to_alu) {
+	if (ex_instruction.imm_to_alu) {
 		reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
 	}
 
-	alu::AluOp aluOperation = this->ex_instruction->alu_op;
+	alu::AluOp aluOperation = ex_instruction.alu_op;
 	// std::tie(execution_result_, fcsr_status) = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 	auto [alu_out_temp, fcsr_status_temp] = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
-	this->ex_instruction->alu_out = alu_out_temp;
+	ex_instruction.alu_out = alu_out_temp;
 }

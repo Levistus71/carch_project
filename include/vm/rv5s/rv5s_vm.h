@@ -56,11 +56,22 @@ public:
   bool data_forwarding_enabled = false;
   bool hazard_detection_enabled = false;
 
-  InstrContext* if_instruction{nullptr};
-  InstrContext* id_instruction{nullptr};
-  InstrContext* ex_instruction{nullptr};
-  InstrContext* mem_instruction{nullptr};
-  InstrContext* wb_instruction{nullptr};
+  std::deque<InstrContext> instruction_deque;
+  InstrContext& GetIfInstruction(){
+    return instruction_deque[0];
+  }
+  InstrContext& GetIdInstruction(){
+    return instruction_deque[1];
+  }
+  InstrContext& GetExInstruction(){
+    return instruction_deque[2];
+  }
+  InstrContext& GetMemInstruction(){
+    return instruction_deque[3];
+  }
+  InstrContext& GetWbInstruction(){
+    return instruction_deque[4];
+  }
 
   RV5SDecodeUnit decode_unit;
 
@@ -101,11 +112,24 @@ public:
   void WriteBackCsr(bool debug_mode);
   void DebugWriteBackCsr();
 
-  RV5SVM();
+  RV5SVM() : instruction_deque(5) {
+    GetIfInstruction().nopify();
+    GetIdInstruction().nopify();
+    GetExInstruction().nopify();
+    GetMemInstruction().nopify();
+    GetWbInstruction().nopify();
+  }
   ~RV5SVM() = default;
 
   void Run() override;
   void RunSingleCycle();
+
+  bool DetectDataHazardWithoutForwarding();
+  bool DetectDataHazardWithForwarding();
+  void RunPipelined();
+  void RunPipelinedWithoutHazardDetection();
+  void RunPipelinedWithHazardWithoutForwarding();
+  void RunPipelinedWithHazardWithForwarding();
 
   void DebugRun() override;
   void DebugRunSingleCycle();
