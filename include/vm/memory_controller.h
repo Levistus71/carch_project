@@ -63,24 +63,6 @@ public:
         return memory_.ReadDoubleWord(address);
     }
 
-    // Functions to read memory directly with cache bypass
-
-    [[nodiscard]] uint8_t ReadByte_d(uint64_t address) {
-        return memory_.ReadByte(address);
-    }
-
-    [[nodiscard]] uint16_t ReadHalfWord_d(uint64_t address) {
-        return memory_.ReadHalfWord(address);
-    }
-
-    [[nodiscard]] uint32_t ReadWord_d(uint64_t address) {
-        return memory_.ReadWord(address);
-    }
-
-    [[nodiscard]] uint64_t ReadDoubleWord_d(uint64_t address) {
-        return memory_.ReadDoubleWord(address);
-    }
-
     void PrintMemory(const uint64_t address, unsigned int rows) {
       memory_.PrintMemory(address, rows);
     }

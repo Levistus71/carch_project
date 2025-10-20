@@ -116,7 +116,7 @@ void RV5SVM::Run() {
 		RunSingleCycle();
 	}
 	else {
-		std::cout << "Still working on pipelining." << std::endl;
+		RunPipelined();
 	}
 
 }
@@ -128,7 +128,7 @@ void RV5SVM::DebugRun() {
 		DebugRunSingleCycle();
 	}
 	else{
-		std::cout << "Still working on pipelining." << std::endl; 
+		DebugRunPipelined();
 	}
 }
 
@@ -137,7 +137,7 @@ void RV5SVM::Step() {
 		SingleCycleStep(true);
 	}
 	else{
-		std::cout << "Still working on pipelining." << std::endl; 
+		StepPipelined(true);
 	}
 }
 
@@ -155,9 +155,4 @@ void RV5SVM::Reset() {
 	this->program_counter_ = 0;
 	this->registers_.Reset();
 	this->memory_controller_.Reset();
-	this->current_delta.register_changes.clear();
-	this->current_delta.memory_changes.clear();
-	this->current_delta.old_pc = 0;
-	this->current_delta.new_pc = 0;
-	this->undo_stack.clear();
 }

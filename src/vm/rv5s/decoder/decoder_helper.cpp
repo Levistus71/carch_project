@@ -240,19 +240,37 @@ void SetContextValues(InstrContext& instr_context){
         instr_context.uses_rs1 = true;
         
         switch(instr_context.funct3){
-            case(0x0):{     // LB
+            case(0b000):{     // LB
                 instr_context.sign_extend = true;
+                instr_context.mem_access_bytes = 1;
                 break;
             }
-            case (0x1): {   // LH
+            case (0b001): {   // LH
                 instr_context.sign_extend = true;
+                instr_context.mem_access_bytes = 2;
                 break;
             }
-            case (0x2): {   // LW
+            case (0b010): {   // LW
                 instr_context.sign_extend = true;
-            }
-            default:    // LD, LBU, LHU, LWU
+                instr_context.mem_access_bytes = 4;
                 break;
+            }
+            case (0b011) : {    // LD
+                instr_context.mem_access_bytes = 8;
+                break;
+            }
+            case (0b100) : {    // LBU
+                instr_context.mem_access_bytes = 1;
+                break;
+            }
+            case (0b101) : {    // LHU
+                instr_context.mem_access_bytes = 2;
+                break;
+            }
+            case(0b110) : {     // LWU
+                instr_context.mem_access_bytes = 4;
+                break;
+            }
         }
 
         instr_context.alu_op = alu::AluOp::kAdd;
@@ -264,6 +282,21 @@ void SetContextValues(InstrContext& instr_context){
         instr_context.mem_write_data_from_gpr = true;
         instr_context.uses_rs1 = true;
         instr_context.uses_rs2 = true;
+
+        switch(funct3){
+            case 0b000 : {  // SB
+                instr_context.mem_access_bytes = 1;
+            }
+            case 0b001 : { // SH
+                instr_context.mem_access_bytes = 2;
+            }
+            case 0b010 : {  // SW
+                instr_context.mem_access_bytes = 4;
+            }
+            case 0b011: {   // SD
+                instr_context.mem_access_bytes = 8;
+            }
+        }
 
         instr_context.alu_op = alu::AluOp::kAdd;
         return;
@@ -874,10 +907,12 @@ void SetContextValues(InstrContext& instr_context){
         switch (funct3) {
             case 0b010: {// FLW
                 instr_context.alu_op = alu::AluOp::kAdd;
+                instr_context.mem_access_bytes = 4;
                 return;
             }
             case 0b011: {// FLD
                 instr_context.alu_op = alu::AluOp::kAdd;
+                instr_context.mem_access_bytes = 8;
                 return;
             }
         }
@@ -893,10 +928,12 @@ void SetContextValues(InstrContext& instr_context){
 
         switch (funct3) {
         case 0b010: {// FSW
+            instr_context.mem_access_bytes = 4;
             instr_context.alu_op = alu::AluOp::kAdd;
             return;
         }
         case 0b011: {// FSD
+            instr_context.mem_access_bytes = 8;
             instr_context.alu_op = alu::AluOp::kAdd;
             return;
         }

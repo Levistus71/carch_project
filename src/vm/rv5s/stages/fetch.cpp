@@ -2,6 +2,7 @@
 
 void RV5SVM::Fetch() {
 	InstrContext& if_instruction = GetIfInstruction();
+	if_instruction.pc = this->program_counter_;
   	if_instruction.instruction = this->memory_controller_.ReadWord(program_counter_);
 	if_instruction.branch_predicted_taken = false;
 
@@ -26,8 +27,4 @@ void RV5SVM::Fetch() {
 	else{
 		AddToProgramCounter(4);
 	}
-}
-
-void RV5SVM::DebugFetch() {
-	Fetch();
 }

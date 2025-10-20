@@ -25,11 +25,6 @@ void RV5SVM::Execute() {
 		ResolveBranch();
 }
 
-
-void RV5SVM::DebugExecute(){
-	Execute();
-}
-
 void RV5SVM::ResolveBranch(){
 	InstrContext& ex_instruction = GetExInstruction();
 	uint8_t& opcode = ex_instruction.opcode;
@@ -134,7 +129,7 @@ void RV5SVM::ExecuteFloat() {
 
 	int32_t& imm = ex_instruction.immediate;
 
-	// WHAT?: what is this
+	// FIXME?: what is this
 	if (rm==0b111) {
 		rm = registers_.ReadCsr(0x002);
 	}
@@ -158,7 +153,8 @@ void RV5SVM::ExecuteFloat() {
 	fcsr_status = fcsr_status_temp;
 
 	// WHAT?: what is this
-	registers_.WriteCsr(0x003, fcsr_status);
+	ex_instruction.fcsr_update = true;
+	ex_instruction.fcsr_status = fcsr_status;
 }
 
 void RV5SVM::ExecuteDouble() {
@@ -168,7 +164,7 @@ void RV5SVM::ExecuteDouble() {
 	uint8_t& funct7 = ex_instruction.funct7;
 	uint8_t rm = funct3;
 
-	// WHAT? : this fcsr_status is not used?
+	// WHAT? : this fcsr_status is not used? Same as ExecuteFloat() i suppose
 	uint8_t fcsr_status = 0;
 
 	int32_t imm = ex_instruction.immediate;
@@ -189,4 +185,9 @@ void RV5SVM::ExecuteDouble() {
 	// std::tie(execution_result_, fcsr_status) = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 	auto [alu_out_temp, fcsr_status_temp] = alu::Alu::dfpexecute(aluOperation, reg1_value, reg2_value, reg3_value, rm);
 	ex_instruction.alu_out = alu_out_temp;
+	fcsr_status = fcsr_status_temp;
+
+	// WHAT?: what is this
+	ex_instruction.fcsr_update = true;
+	ex_instruction.fcsr_status = fcsr_status;
 }

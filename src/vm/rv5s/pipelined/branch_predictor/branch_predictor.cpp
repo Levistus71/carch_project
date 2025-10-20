@@ -1,4 +1,4 @@
-#include "vm/rv5s/branch_predictor/branch_predictor.h"
+#include "vm/rv5s/pipelined/branch_predictor/branch_predictor.h"
 
 RV5SBranchPredictor::RV5SBranchPredictor() : branch_target_buffer(256) {}
 

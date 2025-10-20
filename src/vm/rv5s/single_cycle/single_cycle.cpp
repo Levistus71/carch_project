@@ -5,7 +5,6 @@ void RV5SVM::RunSingleCycle(){
 	uint64_t instruction_executed = 0;
 
 	while (!stop_requested && program_counter_ < program_size_) {
-		// this line mannn. why???
 		if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
 		    break;
 		
@@ -18,7 +17,7 @@ void RV5SVM::RunSingleCycle(){
 		// Decode
         instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		Decode();
+		Decode(false);
 
 		// Execute
 		instruction_deque.pop_back();
@@ -28,12 +27,12 @@ void RV5SVM::RunSingleCycle(){
 		// MemoryAccess
 		instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		MemoryAccess();
+		MemoryAccess(false);
 
 		// WriteBack
 		instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		WriteBack();
+		WriteBack(false);
 
 		instruction_executed++;
 		std::cout << "Program Counter: " << program_counter_ << std::endl;
@@ -78,11 +77,8 @@ void RV5SVM::DebugRunSingleCycle(){
 
 
 void RV5SVM::SingleCycleStep(bool dump){
-    this->current_delta.old_pc = this->program_counter_;
 
     if (this->program_counter_ < this->program_size_) {
-
-        this->current_delta.old_pc = this->program_counter_;
 
         InstrContext current_instruction{this->program_counter_};
 
@@ -90,37 +86,36 @@ void RV5SVM::SingleCycleStep(bool dump){
         instruction_deque.pop_back();
         InstrContext current_instruction{this->program_counter_};
         instruction_deque.push_front(current_instruction);
-		DebugFetch();
+		Fetch();
 
 		// Decode
         instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		DebugDecode();
+		Decode(true);
 
 		// Execute
 		instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		DebugExecute();
+		Execute();
 
 		// MemoryAccess
 		instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		DebugMemoryAccess();
+		MemoryAccess(true);
 
 		// WriteBack
 		instruction_deque.pop_back();
         instruction_deque.push_front(InstrContext{});
-		DebugWriteBack();
+		WriteBack(true);
 
-        
-        this->current_delta.new_pc = program_counter_;
-        while(this->undo_stack.size()>=this->max_undo_stack_size){
-            this->undo_stack.pop_back();
+        // get updated current_instruction
+        current_instruction = instruction_deque.back();
+
+        while(this->undo_instruction_stack.size()>=this->max_undo_stack_size){
+            this->undo_instruction_stack.pop_back();
         }
-        this->undo_stack.push_front(this->current_delta);
+        this->undo_instruction_stack.push_front(current_instruction);
 
-        // resetting current delta
-        this->current_delta = StepDelta();
     }
     else{
         std::cout << "vm program end!" << std::endl;
@@ -139,42 +134,40 @@ void RV5SVM::SingleCycleStep(bool dump){
 
 
 void RV5SVM::SingleCycleUndo(){
-    if (this->undo_stack.empty()) {
+    if (this->undo_instruction_stack.empty()) {
         std::cout << "Cannot undo." << std::endl;
         output_status_ = "VM_NO_MORE_UNDO";
         return;
     }
 
+    InstrContext last_instruction = undo_instruction_stack.front();
+    this->undo_instruction_stack.pop_front();
 
-    StepDelta last = this->undo_stack.front();
-    this->undo_stack.pop_front();
-
-    for (const auto &change : last.register_changes) {
-        switch (change.reg_type) {
-        case 0: { // GPR
-            registers_.WriteGpr(change.reg_index, change.old_value);
-            break;
+    // Changes in wb stage:
+    if(last_instruction.reg_write){
+        if(last_instruction.fcsr_update){
+            this->registers_.WriteCsr(0x003, last_instruction.fcsr_status);
         }
-        case 1: { // CSR
-            registers_.WriteCsr(change.reg_index, change.old_value);
-            break;
+        if(last_instruction.csr_op){
+            this->registers_.WriteCsr(last_instruction.csr_rd, last_instruction.csr_overwritten);
+            this->registers_.WriteGpr(last_instruction.rd, last_instruction.reg_overwritten);
         }
-        case 2: { // FPR
-            registers_.WriteFpr(change.reg_index, change.old_value);
-            break;
+        else if(last_instruction.reg_write_to_fpr){
+            this->registers_.WriteFpr(last_instruction.rd, last_instruction.reg_overwritten);
         }
-        default:std::cerr << "Invalid register type: " << change.reg_type << std::endl;
-            break;
+        else{
+            this->registers_.WriteGpr(last_instruction.rd, last_instruction.reg_overwritten);
         }
     }
 
-    for (const auto &change : last.memory_changes) {
-        for (size_t i = 0; i < change.old_bytes_vec.size(); ++i) {
-        memory_controller_.WriteByte(change.address + i, change.old_bytes_vec[i]);
+    // Changes in mem Stage:
+    if(last_instruction.mem_write){
+        for(size_t i=0;i<last_instruction.mem_access_bytes;i++){
+            this->memory_controller_.WriteByte(last_instruction.alu_out, last_instruction.mem_overwritten[i]);
         }
     }
 
-    this->program_counter_ = last.old_pc;
+    this->program_counter_ = last_instruction.pc;
     std::cout << "Program Counter: " << program_counter_ << std::endl;
 
     output_status_ = "Undo complete!";

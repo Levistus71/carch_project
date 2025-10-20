@@ -3,32 +3,20 @@
 using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 
-void RV5SVM::Decode() {
+void RV5SVM::Decode(bool debug_mode) {
 	InstrContext& id_instruction = GetIdInstruction();
 	decode_unit.DecodeInstruction(id_instruction, registers_);
 
 	if (id_instruction.opcode == get_instr_encoding(Instruction::kecall).opcode && 
 		id_instruction.funct3 == get_instr_encoding(Instruction::kecall).funct3) {
-		HandleSyscall(false);
-		return;
-	}
-}
-
-
-void RV5SVM::DebugDecode(){
-	InstrContext& id_instruction = GetIdInstruction();
-	decode_unit.DecodeInstruction(id_instruction, registers_);
-
-	if (id_instruction.opcode == get_instr_encoding(Instruction::kecall).opcode && 
-		id_instruction.funct3 == get_instr_encoding(Instruction::kecall).funct3) {
-		HandleSyscall(true);
+		HandleSyscall(debug_mode);
 		return;
 	}
 }
 
 
 void RV5SVM::HandleSyscall(bool debug_mode){
-
+	InstrContext& id_instruction = GetIdInstruction();
 	uint64_t syscall_number = registers_.ReadGpr(17);
 
 	switch (syscall_number) {
@@ -123,40 +111,26 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 				}
 
 				
-				std::vector<uint8_t> old_bytes_vec(length, 0);
-				std::vector<uint8_t> new_bytes_vec(length, 0);
-
-				for (size_t i = 0; i < length; ++i) {
-				old_bytes_vec[i] = memory_controller_.ReadByte(buffer_address + i);
+				if(debug_mode){
+					for (size_t i = 0; i < length; ++i) {
+						id_instruction.mem_overwritten.push_back(memory_controller_.ReadByte(buffer_address + i));
+					}
 				}
 				
 				for (size_t i = 0; i < input.size() && i < length; ++i) {
-				memory_controller_.WriteByte(buffer_address + i, static_cast<uint8_t>(input[i]));
+					memory_controller_.WriteByte(buffer_address + i, static_cast<uint8_t>(input[i]));
 				}
 				if (input.size() < length) {
-				memory_controller_.WriteByte(buffer_address + input.size(), '\0');
+					memory_controller_.WriteByte(buffer_address + input.size(), '\0');
 				}
 
-				for (size_t i = 0; i < length; ++i) {
-				new_bytes_vec[i] = memory_controller_.ReadByte(buffer_address + i);
-				}
 
-				if(debug_mode)
-					this->current_delta.memory_changes.push_back({
-						buffer_address, 
-						old_bytes_vec, 
-						new_bytes_vec
-					});
-
-				uint64_t old_reg = registers_.ReadGpr(10);
-				unsigned int reg_index = 10;
-				unsigned int reg_type = 0; // 0 for GPR, 1 for CSR, 2 for FPR
 				uint64_t new_reg = std::min(static_cast<uint64_t>(length), static_cast<uint64_t>(input.size()));
-				registers_.WriteGpr(10, new_reg); 
-				if (old_reg != new_reg) {
-					if(debug_mode)
-						this->current_delta.register_changes.push_back({reg_index, reg_type, old_reg, new_reg});
+				this->registers_.WriteGpr(10, new_reg);
+				if(debug_mode){
+					id_instruction.reg_overwritten = this->registers_.ReadGpr(10);
 				}
+				
 
 			} else {
 				std::cerr << "Unsupported file descriptor: " << file_descriptor << std::endl;
@@ -169,31 +143,28 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 			uint64_t length = registers_.ReadGpr(12);
 
 			if (file_descriptor == 1) { // stdout
-			std::cout << "VM_STDOUT_START";
-			output_status_ = "VM_STDOUT_START";
-			uint64_t bytes_printed = 0;
-			for (uint64_t i = 0; i < length; ++i) {
-				char c = memory_controller_.ReadByte(buffer_address + i);
-				// if (c == '\0') {
-				//     break;
-				// }
-				std::cout << c;
-				bytes_printed++;
-			}
-			std::cout << std::flush; 
-			output_status_ = "VM_STDOUT_END";
-			std::cout << "VM_STDOUT_END" << std::endl;
+				std::cout << "VM_STDOUT_START";
+				output_status_ = "VM_STDOUT_START";
+				uint64_t bytes_printed = 0;
+				for (uint64_t i = 0; i < length; ++i) {
+					char c = memory_controller_.ReadByte(buffer_address + i);
+					// if (c == '\0') {
+					//     break;
+					// }
+					std::cout << c;
+					bytes_printed++;
+				}
+				std::cout << std::flush; 
+				output_status_ = "VM_STDOUT_END";
+				std::cout << "VM_STDOUT_END" << std::endl;
 
-			uint64_t old_reg = registers_.ReadGpr(10);
-			unsigned int reg_index = 10;
-			unsigned int reg_type = 0; // 0 for GPR, 1 for CSR, 2 for FPR
-			uint64_t new_reg = std::min(static_cast<uint64_t>(length), bytes_printed);
-			registers_.WriteGpr(10, new_reg);
-			if (old_reg != new_reg) {
-				if(debug_mode)
-					this->current_delta.register_changes.push_back({reg_index, reg_type, old_reg, new_reg});
+				uint64_t new_reg = std::min(static_cast<uint64_t>(length), bytes_printed);
+				registers_.WriteGpr(10, new_reg);
+				if (debug_mode) {
+					id_instruction.reg_overwritten = this->registers_.ReadGpr(10);
+				}
 			}
-			} else {
+			else {
 				std::cerr << "Unsupported file descriptor: " << file_descriptor << std::endl;
 			}
 			break;

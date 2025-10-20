@@ -131,6 +131,23 @@ bool RV5SVM::DetectDataHazardWithForwarding(){
 }
 
 
+void RV5SVM::HandleDataHazard(){
+    AddToProgramCounter(-4);
+
+    std::deque<InstrContext> new_instruction_deque;
+    new_instruction_deque.push_back(GetIfInstruction());
+    new_instruction_deque.push_back(GetIdInstruction());
+    InstrContext bubble;
+    bubble.nopify();
+    new_instruction_deque.push_back(bubble);
+    new_instruction_deque.push_back(GetExInstruction());
+    new_instruction_deque.push_back(GetMemInstruction());
+
+    this->instruction_deque = new_instruction_deque;
+}
+
+
+
 
 bool RV5SVM::DetectControlHazard(){
     InstrContext& ex_instruction = GetExInstruction();

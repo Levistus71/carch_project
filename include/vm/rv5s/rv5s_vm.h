@@ -11,7 +11,7 @@
 
 #include "vm/rv5s/decoder/rv5s_decode_unit.h"
 #include "vm/rv5s/instruction_context/instr_context.h"
-#include "vm/rv5s/branch_predictor/branch_predictor.h"
+#include "vm/rv5s/pipelined/branch_predictor/branch_predictor.h"
 
 #include <stack>
 #include <vector>
@@ -29,25 +29,6 @@
 #include "config.h"
 
 
-struct RegisterChange {
-  unsigned int reg_index;
-  unsigned int reg_type; // 0 for GPR, 1 for CSR, 2 for FPR
-  uint64_t old_value;
-  uint64_t new_value;
-};
-
-struct MemoryChange {
-  uint64_t address;
-  std::vector<uint8_t> old_bytes_vec; 
-  std::vector<uint8_t> new_bytes_vec; 
-};
-
-struct StepDelta {
-  uint64_t old_pc;
-  uint64_t new_pc;
-  std::vector<RegisterChange> register_changes;
-  std::vector<MemoryChange> memory_changes;
-};
 
 class RV5SVM : public VmBase {
 
@@ -68,9 +49,8 @@ private:
 	
 	// DEBUG VARS
 	bool stop_requested = false;
-	std::deque<StepDelta> undo_stack;
+  std::deque<InstrContext> undo_instruction_stack;
 	size_t max_undo_stack_size;
-	StepDelta current_delta;
 	
 	// for input handling in syscalls:
 	std::mutex input_mutex;
@@ -79,46 +59,46 @@ private:
 	
 	// STAGES:
 	void Fetch();
-	void DebugFetch();
 
-	void Decode();
-	void DebugDecode();
+	void Decode(bool debug_mode);
 	void HandleSyscall(bool debug_mode);
 
 	void Execute();
-	void DebugExecute();
 	void ResolveBranch();
 	void ExecuteBasic();
 	void ExecuteFloat();
 	void ExecuteDouble();
 	
-	void MemoryAccess();
-	void DebugMemoryAccess();
+	void MemoryAccess(bool debug_mode);
 	
-	void WriteBack();
-	void DebugWriteBack();
+	void WriteBack(bool debug_mode);
 	void WriteBackCsr(bool debug_mode);
-	void DebugWriteBackCsr();
-
-	// RUN:
-	void RunSingleCycle();
 	
 	// hazards:
 	bool DetectDataHazardWithoutForwarding();
 	bool DetectDataHazardWithForwarding();
 	bool DetectControlHazard();
+  void HandleDataHazard();
   void HandleControlHazard();
 	
+	// RUN:
+  // SingleCycle
+	void RunSingleCycle();
 	// Pipeline
 	void RunPipelined();
-	void RunPipelinedWithoutHazardDetection();
-	void RunPipelinedWithHazardWithoutForwarding();
-	void RunPipelinedWithHazardWithForwarding();
+  void StepPipelined(bool debug_mode);
+	void RunPipelinedWithoutHazardDetection(bool debug_mode);
+	void RunPipelinedWithHazardWithoutForwarding(bool debug_mode);
+	void RunPipelinedWithHazardWithForwarding(bool debug_mode);
 	
 	// DEBUG RUN:
+  // SingleCycle
 	void DebugRunSingleCycle();
 	void SingleCycleStep(bool dump);
 	void SingleCycleUndo();
+  // Pipeline
+  void DebugRunPipelined();
+  void PipelinedUndo();
 
 public:
 
