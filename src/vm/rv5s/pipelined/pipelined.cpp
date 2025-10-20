@@ -191,10 +191,10 @@ void RV5SVM::PipelinedUndo(){
     this->undo_instruction_stack.pop_front();
 
     InstrContext curr_if_instruction = GetIfInstruction();
-    InstrContext curr_id_instruction = GetIdInstruction();
-    InstrContext curr_ex_instruction = GetExInstruction();
-    InstrContext curr_mem_instruction = GetMemInstruction();
-    InstrContext curr_wb_instruction = GetWbInstruction();
+    InstrContext& curr_id_instruction = GetIdInstruction();
+    InstrContext& curr_ex_instruction = GetExInstruction();
+    InstrContext& curr_mem_instruction = GetMemInstruction();
+    InstrContext& curr_wb_instruction = GetWbInstruction();
 
     // Throwing the if_instruction
     this->program_counter_ = curr_if_instruction.pc;
