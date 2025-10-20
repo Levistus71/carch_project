@@ -202,34 +202,34 @@ void RV5SVM::PipelinedUndo(){
 
 
     // Changes in wb stage:
-    if(last_instruction.reg_write){
-        if(last_instruction.fcsr_update){
-            this->registers_.WriteCsr(0x003, last_instruction.fcsr_status);
+    if(curr_wb_instruction.reg_write){
+        if(curr_wb_instruction.fcsr_update){
+            this->registers_.WriteCsr(0x003, curr_wb_instruction.fcsr_status);
         }
-        if(last_instruction.csr_op){
-            this->registers_.WriteCsr(last_instruction.csr_rd, last_instruction.csr_overwritten);
-            this->registers_.WriteGpr(last_instruction.rd, last_instruction.reg_overwritten);
+        if(curr_wb_instruction.csr_op){
+            this->registers_.WriteCsr(curr_wb_instruction.csr_rd, curr_wb_instruction.csr_overwritten);
+            this->registers_.WriteGpr(curr_wb_instruction.rd, curr_wb_instruction.reg_overwritten);
         }
-        else if(last_instruction.reg_write_to_fpr){
-            this->registers_.WriteFpr(last_instruction.rd, last_instruction.reg_overwritten);
+        else if(curr_wb_instruction.reg_write_to_fpr){
+            this->registers_.WriteFpr(curr_wb_instruction.rd, curr_wb_instruction.reg_overwritten);
         }
         else{
-            this->registers_.WriteGpr(last_instruction.rd, last_instruction.reg_overwritten);
+            this->registers_.WriteGpr(curr_wb_instruction.rd, curr_wb_instruction.reg_overwritten);
         }
     }
 
     // Changes in mem stage:
-    if(curr_wb_instruction.mem_write){
-        for(size_t i=0;i<last_instruction.mem_access_bytes;i++){
-            this->memory_controller_.WriteByte(last_instruction.alu_out, last_instruction.mem_overwritten[i]);
+    if(curr_mem_instruction.mem_write){
+        for(size_t i=0;i<curr_mem_instruction.mem_access_bytes;i++){
+            this->memory_controller_.WriteByte(curr_mem_instruction.alu_out, curr_mem_instruction.mem_overwritten[i]);
         }
     }
     else{
-        curr_wb_instruction.mem_out = 0;
+        curr_mem_instruction.mem_out = 0;
     }
 
     // Changes in the exec stage:
-    curr_mem_instruction.alu_out = 0;
+    curr_ex_instruction.alu_out = 0;
 
     // Changes in the id stage:
     curr_id_instruction.reset_id_vars();
