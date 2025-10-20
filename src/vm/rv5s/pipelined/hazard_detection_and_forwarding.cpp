@@ -34,7 +34,7 @@ bool RV5SVM::DetectDataHazardWithoutForwarding(){
 
     // if id instruction is nopped, there's no data hazard
     if(id_instruction.nopped)
-    return false;
+        return false;
     
     // if(ex_instruction.nopped) then ex_instruction.reg_write is false, idk why we check the nopped variable but ok
     if(!ex_instruction.nopped && ex_instruction.reg_write){   // checking if the ex instruction changes the register file
@@ -128,4 +128,23 @@ bool RV5SVM::DetectDataHazardWithForwarding(){
     }
 
     return false;
+}
+
+
+
+bool RV5SVM::DetectControlHazard(){
+    InstrContext& ex_instruction = GetExInstruction();
+
+    return ex_instruction.branch && (ex_instruction.branch_predicted_taken != ex_instruction.branch_taken);
+}
+
+
+void RV5SVM::HandleControlHazard(){
+    InstrContext& ex_instruction = GetExInstruction();
+    branch_predictor.update_btb(ex_instruction.pc, ex_instruction.branch_taken, this->program_counter_);
+    
+    InstrContext& if_instruction = GetIfInstruction();
+    if_instruction.nopify();
+    InstrContext& id_instruction = GetIdInstruction();
+    id_instruction.nopify();
 }

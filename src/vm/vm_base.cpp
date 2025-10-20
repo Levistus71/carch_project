@@ -23,8 +23,12 @@ uint64_t VmBase::GetProgramCounter() const {
     return program_counter_;
 }
 
-void VmBase::UpdateProgramCounter(int64_t value) {
+void VmBase::AddToProgramCounter(int64_t value) {
     program_counter_ = static_cast<uint64_t>(static_cast<int64_t>(program_counter_) + value);
+}
+
+void VmBase::SetProgramCounter(uint64_t value){
+    this->program_counter_ = value;
 }
 
 

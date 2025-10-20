@@ -4,8 +4,8 @@
  * @author Vishank Singh, https://github.com/VishankSingh
  */
 
-#include "vm/decoder/rv5s_decode_unit.h"
-#include "vm/decoder/decoder_helper.h"
+#include "vm/rv5s/decoder/rv5s_decode_unit.h"
+#include "vm/rv5s/decoder/decoder_helper.h"
 
 using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;

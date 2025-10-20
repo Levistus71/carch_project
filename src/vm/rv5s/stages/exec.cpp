@@ -37,18 +37,21 @@ void RV5SVM::ResolveBranch(){
 
 	if (opcode==get_instr_encoding(Instruction::kjalr).opcode || 
 			opcode==get_instr_encoding(Instruction::kjal).opcode) {
+
+		// updating branch_taken status
+		ex_instruction.branch_taken = true;
 		
 		// storing the current value of pc for returning (storing it in rd)
 		ex_instruction.alu_out = this->program_counter_;
 
 		// subtracting 4 from pc (updated in Fetch())
-		UpdateProgramCounter(-4);
+		AddToProgramCounter(-4);
 		
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
-			UpdateProgramCounter(ex_instruction.alu_out - this->program_counter_);
+			SetProgramCounter(ex_instruction.alu_out);
 		}
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
-			UpdateProgramCounter(ex_instruction.immediate);
+			AddToProgramCounter(ex_instruction.immediate);
 		}
 		return;
 	}
@@ -88,9 +91,12 @@ void RV5SVM::ResolveBranch(){
 		}
 
 		if (branch_flag) {
+			// Updating branch_taken status
+			ex_instruction.branch_taken = true;
+
 			// Subtracting 4 from pc (updated in Fetch())
-			UpdateProgramCounter(-4);
-			UpdateProgramCounter(ex_instruction.immediate);
+			AddToProgramCounter(-4);
+			AddToProgramCounter(ex_instruction.immediate);
 		}
 	}
 }

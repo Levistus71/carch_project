@@ -30,6 +30,11 @@ void RV5SVM::LoadVM() {
 	}
 	this->max_undo_stack_size = vm_config::config.getMaxUndoStackSize();
 
+	std::vector<bool> t = vm_config::config.getBranchPredictionStatus();
+	this->branch_prediction_enabled = t[0];
+	this->branch_prediction_static = t[1];
+	this->branch_prediction_dynamic = t[2];
+
 	// Loading the instructions (machine code) into memory
 	unsigned int counter = 0;
 	for (const auto &instruction: program_.text_buffer) {

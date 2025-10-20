@@ -45,6 +45,10 @@ struct VmConfig {
   bool data_forwarding_enabled = false;
   bool hazard_detection_enabled = false;
 
+  bool branch_prediction_enabled = false;
+  bool branch_prediction_static = false;
+  bool branch_prediction_dynamic = false;
+
   void setVmType(const VmTypes &type) {
     vm_type = type;
   }
@@ -138,6 +142,10 @@ struct VmConfig {
     return hazard_detection_enabled;
   }
 
+  std::vector<bool> getBranchPredictionStatus(){
+    return {branch_prediction_enabled, branch_prediction_static, branch_prediction_dynamic};
+  }
+
   void setMaxUndoStackSize(size_t size){
     max_undo_stack_size = size;
   }
@@ -194,6 +202,22 @@ struct VmConfig {
           std::cout << "The value you are trying to set is too large." << std::endl;
           throw std::out_of_range("");
         }
+      }
+      else if(key == "enable_branch_prediction"){
+        this->branch_prediction_enabled = true;
+        if(value == "static"){
+          this->branch_prediction_static = true;
+          this->branch_prediction_dynamic = false;
+        }
+        else if(value == "dynamic"){
+          this->branch_prediction_static = false;
+          this->branch_prediction_dynamic = true;
+        }
+      }
+      else if(key == "disable_branch_prediction"){
+        this->branch_prediction_enabled = false;
+        this->branch_prediction_static = false;
+        this->branch_prediction_dynamic = true;
       }
       else {
         throw std::invalid_argument("Unknown key: " + key);

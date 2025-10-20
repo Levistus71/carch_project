@@ -60,7 +60,8 @@ public:
     uint64_t program_size_ = 0;
 
     uint64_t GetProgramCounter() const;
-    void UpdateProgramCounter(int64_t value);
+    void AddToProgramCounter(int64_t value);
+    void SetProgramCounter(uint64_t value);
     
 
     void AddBreakpoint(uint64_t val, bool is_line = true);

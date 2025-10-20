@@ -9,8 +9,9 @@
 
 #include "vm/vm_base.h"
 
-#include "vm/decoder/rv5s_decode_unit.h"
-#include "vm/instruction_context/instr_context.h"
+#include "vm/rv5s/decoder/rv5s_decode_unit.h"
+#include "vm/rv5s/instruction_context/instr_context.h"
+#include "vm/rv5s/branch_predictor/branch_predictor.h"
 
 #include <stack>
 #include <vector>
@@ -49,114 +50,132 @@ struct StepDelta {
 };
 
 class RV5SVM : public VmBase {
+
+private:
+	// vm vars 
+	bool pipelining_enabled = false;
+	bool data_forwarding_enabled = false;
+	bool hazard_detection_enabled = false;
+
+	bool branch_prediction_enabled = false;
+	bool branch_prediction_static = false;
+	bool branch_prediction_dynamic = false;
+	
+	std::deque<InstrContext> instruction_deque;
+	RV5SDecodeUnit decode_unit;
+  RV5SBranchPredictor branch_predictor;
+
+	
+	// DEBUG VARS
+	bool stop_requested = false;
+	std::deque<StepDelta> undo_stack;
+	size_t max_undo_stack_size;
+	StepDelta current_delta;
+	
+	// for input handling in syscalls:
+	std::mutex input_mutex;
+	std::condition_variable input_cv;
+	std::queue<std::string> input_queue;
+	
+	// STAGES:
+	void Fetch();
+	void DebugFetch();
+
+	void Decode();
+	void DebugDecode();
+	void HandleSyscall(bool debug_mode);
+
+	void Execute();
+	void DebugExecute();
+	void ResolveBranch();
+	void ExecuteBasic();
+	void ExecuteFloat();
+	void ExecuteDouble();
+	
+	void MemoryAccess();
+	void DebugMemoryAccess();
+	
+	void WriteBack();
+	void DebugWriteBack();
+	void WriteBackCsr(bool debug_mode);
+	void DebugWriteBackCsr();
+
+	// RUN:
+	void RunSingleCycle();
+	
+	// hazards:
+	bool DetectDataHazardWithoutForwarding();
+	bool DetectDataHazardWithForwarding();
+	bool DetectControlHazard();
+  void HandleControlHazard();
+	
+	// Pipeline
+	void RunPipelined();
+	void RunPipelinedWithoutHazardDetection();
+	void RunPipelinedWithHazardWithoutForwarding();
+	void RunPipelinedWithHazardWithForwarding();
+	
+	// DEBUG RUN:
+	void DebugRunSingleCycle();
+	void SingleCycleStep(bool dump);
+	void SingleCycleUndo();
+
 public:
 
-  // consts 
-  bool pipelining_enabled = false;
-  bool data_forwarding_enabled = false;
-  bool hazard_detection_enabled = false;
-
-  std::deque<InstrContext> instruction_deque;
-  InstrContext& GetIfInstruction(){
-    return instruction_deque[0];
-  }
-  InstrContext& GetIdInstruction(){
-    return instruction_deque[1];
-  }
-  InstrContext& GetExInstruction(){
-    return instruction_deque[2];
-  }
-  InstrContext& GetMemInstruction(){
-    return instruction_deque[3];
-  }
-  InstrContext& GetWbInstruction(){
-    return instruction_deque[4];
-  }
-
-  RV5SDecodeUnit decode_unit;
-
-  bool stop_requested = false;
+    InstrContext& GetIfInstruction(){
+      return instruction_deque[0];
+    }
+    InstrContext& GetIdInstruction(){
+      return instruction_deque[1];
+    }
+    InstrContext& GetExInstruction(){
+      return instruction_deque[2];
+    }
+    InstrContext& GetMemInstruction(){
+      return instruction_deque[3];
+    }
+    InstrContext& GetWbInstruction(){
+      return instruction_deque[4];
+    }
 
 
-  std::deque<StepDelta> undo_stack;
-  size_t max_undo_stack_size;
+    void LoadVM() override;
 
-  StepDelta current_delta;
+    RV5SVM() : instruction_deque(5) {
+      GetIfInstruction().nopify();
+      GetIdInstruction().nopify();
+      GetExInstruction().nopify();
+      GetMemInstruction().nopify();
+      GetWbInstruction().nopify();
+    }
+    ~RV5SVM() = default;
 
-  // for input handling in syscalls:
-  std::mutex input_mutex;
-  std::condition_variable input_cv;
-  std::queue<std::string> input_queue;
+    void Run() override;
 
-  void LoadVM() override;
+    void DebugRun() override;
 
-  void Fetch();
-  void DebugFetch();
+    void Step() override;
 
-  void Decode();
-  void DebugDecode();
-  void HandleSyscall(bool debug_mode);
 
-  void Execute();
-  void DebugExecute();
-  void ResolveBranch();
-  void ExecuteBasic();
-  void ExecuteFloat();
-  void ExecuteDouble();
+    void Undo() override;
 
-  void MemoryAccess();
-  void DebugMemoryAccess();
+    void Reset() override;
 
-  void WriteBack();
-  void DebugWriteBack();
-  void WriteBackCsr(bool debug_mode);
-  void DebugWriteBackCsr();
+    void RequestStop() {
+      this->stop_requested = true;
+    }
 
-  RV5SVM() : instruction_deque(5) {
-    GetIfInstruction().nopify();
-    GetIdInstruction().nopify();
-    GetExInstruction().nopify();
-    GetMemInstruction().nopify();
-    GetWbInstruction().nopify();
-  }
-  ~RV5SVM() = default;
+    bool IsStopRequested() const {
+      return this->stop_requested;
+    }
+    
+    void ClearStop() {
+      this->stop_requested = false;
+    }
 
-  void Run() override;
-  void RunSingleCycle();
-
-  bool DetectDataHazardWithoutForwarding();
-  bool DetectDataHazardWithForwarding();
-  void RunPipelined();
-  void RunPipelinedWithoutHazardDetection();
-  void RunPipelinedWithHazardWithoutForwarding();
-  void RunPipelinedWithHazardWithForwarding();
-
-  void DebugRun() override;
-  void DebugRunSingleCycle();
-
-  void Step() override;
-  void SingleCycleStep(bool dump);
-
-  void Undo() override;
-  void SingleCycleUndo();
-
-  void Reset() override;
-
-  void RequestStop() {
-    this->stop_requested = true;
-  }
-
-  bool IsStopRequested() const {
-    return this->stop_requested;
-  }
-  
-  void ClearStop() {
-    this->stop_requested = false;
-  }
-
-  void PrintType() {
-    std::cout << "rvssvm" << std::endl;
-  }
+    void PrintType() {
+      std::cout << "rvssvm" << std::endl;
+    }
 };
 
 #endif // RVSS_VM_H

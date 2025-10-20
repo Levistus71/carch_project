@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vm/alu.h"    // FIXME: uint8_t not working on mac without this (or any other header)
+#include "vm/alu.h"
 
 struct InstrContext{
 
@@ -38,6 +38,8 @@ struct InstrContext{
     
     // branch signals:
     bool branch = false;
+    bool branch_predicted_taken = false; // job of the 'FETCH' stage to update this. (For branch prediction)
+    bool branch_taken = false; // job of the 'EXEC' stage to update this. (For branch prediction)
     
     // registers:
     uint8_t rs1;

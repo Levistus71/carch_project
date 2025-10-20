@@ -1,16 +1,10 @@
-/**
- * @file control_unit_base.h
- * @brief Control unit base class definition
- * @author Vishank Singh, https://github.com/VishankSingh
- */
-#ifndef CONTROL_UNIT_BASE_H
-#define CONTROL_UNIT_BASE_H
+#pragma once
 
 #include <cstdint>
 
 #include "common/instructions.h"
 #include "vm/alu.h"
-#include "vm/instruction_context/instr_context.h"
+#include "vm/rv5s/instruction_context/instr_context.h"
 #include "vm/registers.h"
 
 /**
@@ -64,4 +58,3 @@ private:
     int32_t ImmGenerator(InstrContext& instr_context);
 };
 
-#endif // CONTROL_UNIT_BASE_H

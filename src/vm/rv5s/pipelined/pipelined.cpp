@@ -31,7 +31,7 @@ void RV5SVM::RunPipelinedWithoutHazardDetection(){
         if(this->program_counter_ < this->program_size_)
             this->instruction_deque.push_front(InstrContext{this->program_counter_});
         else{
-            UpdateProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs
+            AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs
             InstrContext nop;
             nop.nopify();
             this->instruction_deque.push_front(nop);
@@ -99,7 +99,7 @@ void RV5SVM::RunPipelinedWithHazardWithoutForwarding(){
         if(this->program_counter_ < this->program_size_)
             this->instruction_deque.push_front(InstrContext{this->program_counter_});
         else{
-            UpdateProgramCounter(-4);   // so that the nop we insert now doesn't cause any problems
+            AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any problems
             InstrContext nop;
             nop.nopify();
             this->instruction_deque.push_front(nop);
@@ -126,8 +126,12 @@ void RV5SVM::RunPipelinedWithHazardWithoutForwarding(){
         // MemoryAccess
         MemoryAccess();
         
+        if(DetectControlHazard()){
+            HandleControlHazard();
+        }
+
         if(DetectDataHazardWithoutForwarding()){
-            UpdateProgramCounter(-4);
+            AddToProgramCounter(-4);
 
             std::deque<InstrContext> new_instruction_deque;
             new_instruction_deque.push_back(GetIfInstruction());
@@ -165,15 +169,15 @@ while loop start:
     0 1 2 3 4 
     now AFTER fetching 0, writing back 4, executing 2, accessing memory by 3 and decoding 1, we check if 1 collides with 2 / 3
     DECODE AND HAZARD DETECTION HAPPEN LAST
-
-*/
-void RV5SVM::RunPipelinedWithHazardWithForwarding(){
-    ClearStop();
-    uint64_t instruction_executed = 0;
     
-    while (!stop_requested) {
-        // this line mannn. why???
-        if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
+    */
+   void RV5SVM::RunPipelinedWithHazardWithForwarding(){
+       ClearStop();
+       uint64_t instruction_executed = 0;
+       
+       while (!stop_requested) {
+           // this line mannn. why???
+           if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
             break;
         
         // popping previous cycle's wb_instruction
@@ -182,7 +186,7 @@ void RV5SVM::RunPipelinedWithHazardWithForwarding(){
         if(this->program_counter_ < this->program_size_)
             this->instruction_deque.push_front(InstrContext{this->program_counter_});
         else{
-            UpdateProgramCounter(-4);   // so that the nop we insert now doesn't cause any problems
+            AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any problems
             InstrContext nop;
             nop.nopify();
             this->instruction_deque.push_front(nop);
@@ -206,9 +210,13 @@ void RV5SVM::RunPipelinedWithHazardWithForwarding(){
         // Decode
         Decode();
 
+        if(DetectControlHazard()){
+            HandleControlHazard();
+        }
+        
         if(DetectDataHazardWithForwarding()){
-            UpdateProgramCounter(-4);
-
+            AddToProgramCounter(-4);
+            
             std::deque<InstrContext> new_instruction_deque;
             new_instruction_deque.push_back(GetIfInstruction());
             new_instruction_deque.push_back(GetIdInstruction());
