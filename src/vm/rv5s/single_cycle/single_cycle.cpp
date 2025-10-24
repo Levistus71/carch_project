@@ -80,7 +80,6 @@ void RV5SVM::SingleCycleStep(bool dump){
 
     if (this->program_counter_ < this->program_size_) {
 
-        InstrContext current_instruction{this->program_counter_};
 
         // Fetch
         instruction_deque.pop_back();

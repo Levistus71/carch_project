@@ -20,7 +20,7 @@ private:
     
 public:
 
-    RV5SBranchPredictor() : branch_target_buffer(btb_size) {}
+    RV5SBranchPredictor() : btb_size{256}, branch_target_buffer(btb_size) {}
 
     std::pair<bool, uint64_t> static_predict(uint64_t branch_instruction_address);  
 

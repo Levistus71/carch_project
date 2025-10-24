@@ -261,7 +261,7 @@ int main(int, char**)
         ImGui::SetNextWindowSize(ImVec2(1100, 600));
         // ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(800, 400));
         {
-            ImGui::Begin("Alu window", nullptr, ImGuiWindowFlags_MenuBar);
+            ImGui::Begin("Processor window", nullptr, ImGuiWindowFlags_MenuBar);
             
             // Temporary Menu Bar for the window
             if(ImGui::BeginMenuBar()){

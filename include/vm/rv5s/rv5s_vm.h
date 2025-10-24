@@ -121,13 +121,20 @@ public:
 
     void LoadVM() override;
 
-    RV5SVM() : instruction_deque(5) {
-      GetIfInstruction().nopify();
-      GetIdInstruction().nopify();
-      GetExInstruction().nopify();
-      GetMemInstruction().nopify();
-      GetWbInstruction().nopify();
-    }
+  RV5SVM() : VmBase(), instruction_deque(5) {
+    DumpRegisters(globals::registers_dump_file_path, registers_);
+    DumpState(globals::vm_state_dump_file_path);
+
+    pipelining_enabled = vm_config::config.getPipeliningStatus();
+    hazard_detection_enabled = vm_config::config.getHazardDetectionStatus();
+    data_forwarding_enabled = vm_config::config.getDataFowardingStatus();
+
+    GetIfInstruction().nopify();
+    GetIdInstruction().nopify();
+    GetExInstruction().nopify();
+    GetMemInstruction().nopify();
+    GetWbInstruction().nopify();
+  }
     ~RV5SVM() = default;
 
     void Run() override;

@@ -11,14 +11,6 @@ using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 
 
-RV5SVM::RV5SVM() : VmBase() {
-  DumpRegisters(globals::registers_dump_file_path, registers_);
-  DumpState(globals::vm_state_dump_file_path);
-
-  pipelining_enabled = vm_config::config.getPipeliningStatus();
-  hazard_detection_enabled = vm_config::config.getHazardDetectionStatus();
-  data_forwarding_enabled = vm_config::config.getDataFowardingStatus();
-}
 
 
 void RV5SVM::LoadVM() {

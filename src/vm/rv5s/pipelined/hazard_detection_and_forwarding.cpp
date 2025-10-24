@@ -139,6 +139,7 @@ void RV5SVM::HandleDataHazard(){
     new_instruction_deque.push_back(GetIdInstruction());
     InstrContext bubble;
     bubble.nopify();
+    bubble.bubbled = true;
     new_instruction_deque.push_back(bubble);
     new_instruction_deque.push_back(GetExInstruction());
     new_instruction_deque.push_back(GetMemInstruction());

@@ -84,6 +84,7 @@ struct InstrContext{
 
     // nop flag
     bool nopped = false;
+    bool bubbled = false;
 
     // DEBUG:
     std::vector<uint8_t> mem_overwritten;

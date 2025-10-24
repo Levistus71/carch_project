@@ -1,7 +1,5 @@
 #include "vm/rv5s/pipelined/branch_predictor/branch_predictor.h"
 
-RV5SBranchPredictor::RV5SBranchPredictor() : branch_target_buffer(256) {}
-
 std::pair<bool, uint64_t> RV5SBranchPredictor::static_predict(uint64_t branch_instruction_address){
     uint8_t index = (branch_instruction_address >> sll_pc) & btb_index_mask;
     BTBValue& btb_value = branch_target_buffer[index];

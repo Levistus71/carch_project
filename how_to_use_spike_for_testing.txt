@@ -1,0 +1,116 @@
+THE .S FILE SHOULD FOLLOW THIS FORMAT:
+
+##############################################################################################################
+
+.data
+.align 3
+.global tohost
+tohost: .dword 0
+
+.text
+.global _start
+_start:
+    # our code to test goes here
+
+.global finish
+finish:
+    # x10 (a0) already holds 0 for success or non-zero for failure.
+    la a1, tohost 
+    sd a0, 0(a1) 
+    j finish
+
+##############################################################################################################
+
+
+link.ld FILE:
+##############################################################################################################
+/*
+ * FILE: link.ld
+ * PURPOSE: Minimal Linker Script for RISC-V 64-bit Bare-Metal Tests with Spike.
+ *
+ * Defines the memory layout and the necessary 'tohost' mechanism 
+ * for the simulator to halt cleanly.
+ */
+
+/* Specify the target architecture */
+OUTPUT_ARCH( "riscv" )
+
+/* Define the entry point for execution */
+ENTRY(_start)
+
+/* Define the memory layout */
+SECTIONS
+{
+    /* Start address of the entire program, typical for bare-metal/boot code */
+    . = 0x80000000;
+    
+    /* 1. TEXT Section: Contains program code (instructions) */
+    .text :
+    {
+        /* Define the label _start at the beginning of the text section */
+        _start = .; 
+        
+        /* Include all .text sections from object files */
+        *(.text)
+        
+        /* Align the next section boundary */
+        . = ALIGN(0x1000);
+    } 
+    
+    /* 2. READ-ONLY DATA Section: Contains constants and read-only data */
+    .rodata : 
+    {
+        /* Include all .rodata sections from object files */
+        *(.rodata)
+        . = ALIGN(0x1000);
+    }
+    
+    /* 3. DATA Section: Contains initialized read/write data */
+    .data : 
+    {
+        /* Include all .data sections from object files */
+        *(.data)
+        . = ALIGN(0x1000);
+    }
+
+    /* 4. HTIF (Host Target Interface) Exit Section */
+    /* This section MUST be present and correctly aligned for Spike to work. */
+    .tohost :
+    {
+        /* Align to a 64-bit boundary (8 bytes) */
+        . = ALIGN(8);
+        
+        /* Include the tohost symbol definition */
+        *(.tohost)
+        *(.tohost.*)
+
+        /* Define the symbols for external use, if needed */
+        . = ALIGN(8);
+    }
+    
+    .fromhost :
+    {
+        . = ALIGN(8);
+        *(.fromhost)
+        *(.fromhost.*)
+        . = ALIGN(8);
+    }
+    
+    /* Define the program break/end address */
+    _end = .;
+}
+##############################################################################################################
+
+
+TO RUN THE .S FILE IN SPIKE:
+
+1. riscv64-unknown-elf-as -march=rv64imf -mabi=lp64f -o test.o test.s
+2. riscv64-unknown-elf-gcc -nostdlib -march=rv64imf -mabi=lp64f -T link.ld -o test.elf test.s \
+    -Wl,--defsym=tohost=0x80001000 \
+    -Wl,--defsym=fromhost=0x80001008
+3. spike -l --log-commits --isa=rv64imf --instructions=20 test.elf > log_file.log 2>&1
+
+either:
+    change the -instructions=20 to a suitable number. the log_file.log contains the logs of spike.
+or:
+    run until you see the line "core   0: >>>>  finish" in the log_file.log

@@ -196,9 +196,19 @@ void RV5SVM::PipelinedUndo(){
     InstrContext& curr_mem_instruction = GetMemInstruction();
     InstrContext& curr_wb_instruction = GetWbInstruction();
 
-    // Throwing the if_instruction
+    // Throwing the dirty instruction (if the ex instruction was bubbled, then we pop the ex bubble)
     this->program_counter_ = curr_if_instruction.pc;
-    this->instruction_deque.pop_front();
+    if(!curr_ex_instruction.bubbled){
+        this->instruction_deque.pop_front();
+    }
+    else{
+        this->instruction_deque.pop_back();
+        this->instruction_deque.pop_back();
+        this->instruction_deque.pop_back();
+        this->instruction_deque.push_back(curr_mem_instruction);
+        this->instruction_deque.push_back(curr_wb_instruction);
+    }
+
 
 
     // Changes in wb stage:
