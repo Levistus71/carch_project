@@ -31,6 +31,7 @@ public:
         Instruction,
         Register,
         AssemblerDirective,
+        Label,
 		Number,
 		String,
 		Comment,
@@ -170,7 +171,7 @@ public:
         
     };
     static const LanguageDefinition& RiscV();
-    PaletteIndex GetPaletteIndexFromToken(const std::string& token);
+    PaletteIndex GetPaletteIndexFromToken(const std::string& token, const char& separator);
 
 	TextEditor();
 	~TextEditor();
@@ -364,6 +365,7 @@ private:
 	Palette mPalette;
 	LanguageDefinition mLanguageDefinition;
     std::unordered_set<char> mTokenSeparator;
+    std::unordered_set<std::string> mLabels;
 
 	bool mCheckComments;
 	Breakpoints mBreakpoints;

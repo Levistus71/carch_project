@@ -1957,6 +1957,7 @@ const TextEditor::Palette & TextEditor::GetDarkPalette()
 			ImGui::ColorConvertFloat4ToU32({123.0f/255.0f, 107.0f/255.0f, 227.0f/255.0f, 1.0f}),	// Instruction
 			ImGui::ColorConvertFloat4ToU32({194.0f/255.0f, 25.0f/255.0f, 70.0f/255.0f, 1.0f}),	// Register
 			ImGui::ColorConvertFloat4ToU32({219.0f/255.0f, 144.0f/255.0f, 114.0f/255.0f, 1.0f}), // AssemblerDirective
+            ImGui::ColorConvertFloat4ToU32({230.0f/255.0f, 180.0f/255.0f, 40.0f/255.0f, 1.0f}), // Label
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}), // Number
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}),	// String
 			ImGui::ColorConvertFloat4ToU32({16.0f/255.0f, 148.0f/255.0f, 18.0f/255.0f, 1.0f}), // Comment (single line)
@@ -2070,7 +2071,7 @@ void TextEditor::ColorizeRange(int aFromLine, int aToLine)
                     hasTokenizeResult = true;
                     token_end = scan;
                     token_begin = first;
-                    token_color = GetPaletteIndexFromToken(token);
+                    token_color = GetPaletteIndexFromToken(token, *scan);
                     break;
                 }
                 if(scan!=first)
@@ -2079,7 +2080,7 @@ void TextEditor::ColorizeRange(int aFromLine, int aToLine)
                     hasTokenizeResult = true;
                     token_end = scan+1;
                     token_begin = first;
-                    token_color = GetPaletteIndexFromToken(token);
+                    token_color = GetPaletteIndexFromToken(token, *scan);
                 }
             }
             if(token_end == token_begin){
@@ -2351,7 +2352,7 @@ void TextEditor::UndoRecord::Redo(TextEditor * aEditor)
 }
 
 
-TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(const std::string& token){
+TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(const std::string& token, const char& separator){
     if(mLanguageDefinition.mName=="RiscV"){
         if(mLanguageDefinition.mInstructions.count(token)!=0){
             return PaletteIndex::Instruction;
@@ -2361,6 +2362,15 @@ TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(const std::string&
         }
         else if(mLanguageDefinition.mRegisters.count(token)!=0){
             return PaletteIndex::Register;
+        }
+
+        if(separator == ':'){
+            mLabels.insert(token);
+            return PaletteIndex::Label;
+        }
+
+        if(mLabels.count(token)!=0){
+            return PaletteIndex::Label;
         }
     }
     return PaletteIndex::Default;
@@ -2489,7 +2499,7 @@ void editor_main(){
         ImVec2 text_area_pos = {0.0f, 0.0f};
         ImGui::SetCursorPos(text_area_pos);
 
-        ImGui::PushFont(EDITOR_LARGE_FONT);
+        ImGui::PushFont(EDITOR_MEDIUM_FONT);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color for editor bg
 
         // static std::string editor_text = "some text";
