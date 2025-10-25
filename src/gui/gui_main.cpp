@@ -21,6 +21,7 @@
 
 #include "../../include/gui/gui_processor_window.h"
 #include "../../include/gui/gui_editor.h"
+#include "../../include/gui/gui_common.h"
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -113,7 +114,8 @@ int main(int, char**)
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
     //IM_ASSERT(font != nullptr);
     
-    ImGui::PushFont(io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f));
+    LoadFonts(io);
+    ImGui::PushFont(STANDARD_FONT);
 
     static bool in_editor = false;
     static bool in_processor = true;
