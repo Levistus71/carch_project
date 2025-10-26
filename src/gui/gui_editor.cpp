@@ -27,6 +27,7 @@ TextEditor::TextEditor()
 	, mScrollToTop(false)
 	, mTextChanged(false)
 	, mColorizerEnabled(true)
+	, mShowLineNumbers(true)
 	, mTextStart(20.0f)
 	, mLeftMargin(10)
 	, mCursorPositionChanged(false)
@@ -37,6 +38,7 @@ TextEditor::TextEditor()
 	, mHandleMouseInputs(true)
 	, mIgnoreImGuiChild(false)
 	, mShowWhitespaces(true)
+	, mTiedToFile(false)
 	, mCheckComments(true)
 	, mStartTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 	, mLastClick(-1.0f)
@@ -53,10 +55,6 @@ TextEditor::~TextEditor()
 void TextEditor::SetLanguageDefinition(const LanguageDefinition & aLanguageDef)
 {
 	mLanguageDefinition = aLanguageDef;  
-    
-    for(auto& k : aLanguageDef.mTokenSeparator){
-        mTokenSeparator.insert(k);
-    }
 
 	Colorize();
 }
@@ -679,9 +677,9 @@ ImU32 TextEditor::GetGlyphColor(const Glyph & aGlyph) const
 void TextEditor::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	auto shift = io.KeyShift;
-	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
-	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+	auto shift = ImGui::IsKeyDown(ImGuiKey_ModShift);
+	auto ctrl = ImGui::IsKeyDown(ImGuiKey_ModCtrl);
+	auto alt = ImGui::IsKeyDown(ImGuiKey_ModAlt);
 
 	if (ImGui::IsWindowFocused())
 	{
@@ -834,6 +832,14 @@ void TextEditor::HandleMouseInputs()
 
 void TextEditor::Render()
 {
+	// if(mTiedToFile){
+	// 	std::filesystem::file_time_type last_modified_time = std::filesystem::last_write_time(mFilePath);
+	// 	if(mLastReadTime != last_modified_time){
+	//		ReadFile();
+	// 		mLastReadTime = last_modified_time;
+	// 	}
+	// }
+
 	/* Compute mCharAdvance regarding to scaled font size (Ctrl + mouse wheel)*/
 	const float fontSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "#", nullptr, nullptr).x;
 	mCharAdvance = ImVec2(fontSize, ImGui::GetTextLineHeightWithSpacing() * mLineSpacing);
@@ -863,13 +869,28 @@ void TextEditor::Render()
 	auto scrollY = ImGui::GetScrollY();
 
 	auto lineNo = (int)floor(scrollY / mCharAdvance.y);
-	auto globalLineMax = (int)mLines.size();
+	auto globalLineMax = std::max(1,(int)mLines.size());
 	auto lineMax = std::max(0, std::min((int)mLines.size() - 1, lineNo + (int)floor((scrollY + contentSize.y) / mCharAdvance.y)));
 
 	// Deduce mTextStart by evaluating mLines size (global lineMax) plus two spaces as text width
 	char buf[16];
-	snprintf(buf, 16, " %d ", globalLineMax);
+	int all_8 = 0;
+	{
+		int i=0;
+		for(i = 0; (static_cast<int>(std::pow(10,i)))/globalLineMax == 0; i++){
+			all_8 *= 10;
+			all_8++;
+		}
+		if(globalLineMax % static_cast<int>(std::pow(10,i)) == 0){
+			all_8 *= 10;
+			all_8++;
+		}
+	}
+	all_8 *= 8;
+	snprintf(buf, 16, "%d ", all_8);
 	mTextStart = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x + mLeftMargin;
+	std::string eight = "8";
+	auto _8width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, eight.c_str(), nullptr, nullptr).x;
 
 	if (!mLines.empty())
 	{
@@ -929,10 +950,26 @@ void TextEditor::Render()
 			}
 
 			// Draw line number (right aligned)
-			snprintf(buf, 16, "%d  ", lineNo + 1);
-
-			auto lineNoWidth = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x;
-			drawList->AddText(ImVec2(lineStartScreenPos.x + mTextStart - lineNoWidth, lineStartScreenPos.y), mPalette[(int)PaletteIndex::LineNumber], buf);
+			if(mShowLineNumbers)
+			{
+				int i;
+				for(i = 0; (static_cast<int>(std::pow(10,i)))/(lineNo+1) == 0; i++){
+					char t_buff[2];
+					int print_int = (lineNo+1)%static_cast<int>(std::pow(10,i+1)) / static_cast<int>(std::pow(10,i));
+					snprintf(t_buff, 2, "%d", print_int);
+					if(print_int==1){
+						drawList->AddText(ImVec2(lineStartScreenPos.x + mTextStart - 2*_8width - i*_8width + _8width/4.0f, lineStartScreenPos.y), mPalette[(int)PaletteIndex::LineNumber], t_buff);
+					}
+					else{
+						drawList->AddText(ImVec2(lineStartScreenPos.x + mTextStart - 2*_8width - i*_8width, lineStartScreenPos.y), mPalette[(int)PaletteIndex::LineNumber], t_buff);
+					}
+				}
+				if((lineNo+1) % static_cast<int>(std::pow(10,i)) == 0){
+					char t_buff[2];
+					snprintf(t_buff, 2, "%d", 1);
+					drawList->AddText(ImVec2(lineStartScreenPos.x + mTextStart - 2*_8width - i*_8width + _8width/4.0f, lineStartScreenPos.y), mPalette[(int)PaletteIndex::LineNumber], t_buff);
+				}
+			}
 
 			if (mState.mCursorPosition.mLine == lineNo)
 			{
@@ -1337,6 +1374,25 @@ void TextEditor::SetReadOnly(bool aValue)
 	mReadOnly = aValue;
 }
 
+void TextEditor::SetShowLineNumbers(bool aValue){
+	mShowLineNumbers = aValue;
+}
+
+
+void TextEditor::TieToFile(std::string aValue){
+	mTiedToFile = true;
+
+	SetFilePath(aValue);
+
+	ReadFile();
+
+	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+}
+
+void TextEditor::SetFilePath(std::string aValue){
+	mFilePath = aValue;
+}
+
 void TextEditor::SetColorizerEnable(bool aValue)
 {
 	mColorizerEnabled = aValue;
@@ -1441,6 +1497,31 @@ void TextEditor::DeleteSelection()
 	SetSelection(mState.mSelectionStart, mState.mSelectionStart);
 	SetCursorPosition(mState.mSelectionStart);
 	Colorize(mState.mSelectionStart.mLine, 1);
+}
+
+
+void TextEditor::ReadFile(){
+	mLines.clear();
+
+	std::ifstream file(mFilePath);
+
+	if(!file.is_open()){
+		return;
+	}
+
+	std::string line;
+
+	while(getline(file, line)){
+		Line new_line;
+
+		for(auto& c : line){
+			new_line.push_back(Glyph{static_cast<Char>(c), PaletteIndex::Default});
+		}
+
+		mLines.push_back(new_line);
+	}
+
+	file.close();
 }
 
 void TextEditor::MoveUp(int aAmount, bool aSelect)
@@ -1950,7 +2031,7 @@ void TextEditor::Redo(int aSteps)
 		mUndoBuffer[mUndoIndex++].Redo(this);
 }
 
-const TextEditor::Palette & TextEditor::GetDarkPalette()
+const TextEditor::Palette& TextEditor::GetDarkPalette()
 {
 	const static Palette p = { {
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}),	// Default
@@ -1963,12 +2044,35 @@ const TextEditor::Palette & TextEditor::GetDarkPalette()
 			ImGui::ColorConvertFloat4ToU32({16.0f/255.0f, 148.0f/255.0f, 18.0f/255.0f, 1.0f}), // Comment (single line)
 			ImGui::ColorConvertFloat4ToU32({51.0f/255.0f, 51.0f/255.0f, 51.0f/255.0f, 1.0f}), // Background
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}), // Cursor
-			0x800020ff, // Selection
+			ImGui::ColorConvertFloat4ToU32({111.0f/255.0f, 123.0f/255.0f, 130.0f/255.0f, 0.7f}), // Selection
 			ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 0.0f/255.0f, 13.0f/255.0f, 1.0f}), // ErrorMarker
 			ImGui::ColorConvertFloat4ToU32({143.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 0.6f}), // Line number
 			0x40000000, // Current line fill
 			0x40808080, // Current line fill (inactive)
 			0x40a0a0a0, // Current line edge
+		} };
+	return p;
+}
+
+const TextEditor::Palette& TextEditor::GetConsolePalette()
+{
+	const static Palette p = { {
+			ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), // Default
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Instruction
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Register
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // AssemblerDirective
+            ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Label
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Number
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // String
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Comment (single line)
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Background
+			ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), // Cursor
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Selection
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // ErrorMarker
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Line number
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line fill
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line fill (inactive)
+			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line edge
 		} };
 	return p;
 }
@@ -2062,8 +2166,6 @@ void TextEditor::ColorizeRange(int aFromLine, int aToLine)
 
             bool hasTokenizeResult = false;
 
-            // "add" works
-            // "add " crashes
             std::string token = "";
             token += *first;
             for(const char* scan = first; scan < last; scan++){
@@ -2352,8 +2454,9 @@ void TextEditor::UndoRecord::Redo(TextEditor * aEditor)
 }
 
 
-TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(const std::string& token, const char& separator){
+TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(std::string token, const char& separator){
     if(mLanguageDefinition.mName=="RiscV"){
+		std::transform(token.begin(), token.end(), token.begin(), [](unsigned char c){ return std::tolower(c); });
         if(mLanguageDefinition.mInstructions.count(token)!=0){
             return PaletteIndex::Instruction;
         }
@@ -2365,11 +2468,6 @@ TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(const std::string&
         }
 
         if(separator == ':'){
-            mLabels.insert(token);
-            return PaletteIndex::Label;
-        }
-
-        if(mLabels.count(token)!=0){
             return PaletteIndex::Label;
         }
     }
@@ -2459,9 +2557,6 @@ const TextEditor::LanguageDefinition& TextEditor::RiscV()
             "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",
             "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",
             "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11",
-            "ft12", "ft13", "ft14", "ft15", "ft16", "ft17", "ft18", "ft19",
-            "ft20", "ft21", "ft22", "ft23", "ft24", "ft25", "ft26", "ft27",
-            "ft28", "ft29", "ft30", "ft31",
 
             "fflags", "frm", "fcsr"
         };
@@ -2485,6 +2580,14 @@ const TextEditor::LanguageDefinition& TextEditor::RiscV()
 
 		inited = true;
 	}
+	return langDef;
+}
+
+
+const TextEditor::LanguageDefinition& TextEditor::Console()
+{
+	static LanguageDefinition langDef;
+	langDef.mName = "Console";
 	return langDef;
 }
 

@@ -5,6 +5,12 @@ ImFont* EDITOR_SMALL_FONT;
 ImFont* EDITOR_MEDIUM_FONT;
 ImFont* EDITOR_LARGE_FONT;
 
+bool in_editor = false;
+bool in_processor = true;
+bool in_execute = false;
+bool show_gpr = true;
+bool show_fpr = false;
+
 void LoadFonts(ImGuiIO& io){
     STANDARD_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f);
     EDITOR_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Karla-Regular.ttf", 15.0f);

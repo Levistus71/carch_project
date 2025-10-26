@@ -21,6 +21,11 @@
 #include <unordered_map>
 #include <map>
 #include <regex>
+#include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <chrono>
+#include <filesystem>
 
 class TextEditor
 {
@@ -171,7 +176,8 @@ public:
         
     };
     static const LanguageDefinition& RiscV();
-    PaletteIndex GetPaletteIndexFromToken(const std::string& token, const char& separator);
+	static const LanguageDefinition& Console();
+    PaletteIndex GetPaletteIndexFromToken(const std::string token, const char& separator);
 
 	TextEditor();
 	~TextEditor();
@@ -202,6 +208,10 @@ public:
 	bool IsReadOnly() const { return mReadOnly; }
 	bool IsTextChanged() const { return mTextChanged; }
 	bool IsCursorPositionChanged() const { return mCursorPositionChanged; }
+
+	void SetShowLineNumbers(bool aValue);
+
+	void TieToFile(std::string aValue);
 
 	bool IsColorizerEnabled() const { return mColorizerEnabled; }
 	void SetColorizerEnable(bool aValue);
@@ -254,6 +264,7 @@ public:
 	void Redo(int aSteps = 1);
 
 	static const Palette& GetDarkPalette();
+	static const Palette& GetConsolePalette();
 
 private:
 	typedef std::vector<std::pair<std::regex, PaletteIndex>> RegexList;
@@ -332,6 +343,8 @@ private:
 	std::string GetWordUnderCursor() const;
 	std::string GetWordAt(const Coordinates& aCoords) const;
 	ImU32 GetGlyphColor(const Glyph& aGlyph) const;
+	void ReadFile();
+	void SetFilePath(std::string aValue);
 
 	void HandleKeyboardInputs();
 	void HandleMouseInputs();
@@ -351,6 +364,7 @@ private:
 	bool mScrollToTop;
 	bool mTextChanged;
 	bool mColorizerEnabled;
+	bool mShowLineNumbers;
 	float mTextStart;                   // position (in pixels) where a code line starts relative to the left of the TextEditor.
 	int  mLeftMargin;
 	bool mCursorPositionChanged;
@@ -365,7 +379,10 @@ private:
 	Palette mPalette;
 	LanguageDefinition mLanguageDefinition;
     std::unordered_set<char> mTokenSeparator;
-    std::unordered_set<std::string> mLabels;
+
+	std::string mFilePath;
+	bool mTiedToFile;
+	std::filesystem::file_time_type mLastReadTime;
 
 	bool mCheckComments;
 	Breakpoints mBreakpoints;
