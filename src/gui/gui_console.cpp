@@ -10,7 +10,7 @@ void console_main(){
     console.SetShowWhitespaces(false);
     console.SetShowLineNumbers(false);
     console.SetPalette(console.GetConsolePalette());
-    console.SetLanguageDefinition(console.Console());
+    console.SetLanguageDefinition(console.mConsoleLangDef);
     console.TieToFile("./test_console.txt");
 
     ImVec2 window_size = ImGui::GetWindowSize();

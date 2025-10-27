@@ -175,8 +175,10 @@ public:
 			:  mAutoIndentation(true), mCaseSensitive(false) {}
         
     };
-    static const LanguageDefinition& RiscV();
-	static const LanguageDefinition& Console();
+    static void InitRiscV();
+	static void InitConsole();
+	static LanguageDefinition mRiscVLangDef;
+	static LanguageDefinition mConsoleLangDef;
     PaletteIndex GetPaletteIndexFromToken(const std::string token, const char& separator);
 
 	TextEditor();
@@ -378,7 +380,6 @@ private:
 	Palette mPaletteBase;
 	Palette mPalette;
 	LanguageDefinition mLanguageDefinition;
-    std::unordered_set<char> mTokenSeparator;
 
 	std::string mFilePath;
 	bool mTiedToFile;

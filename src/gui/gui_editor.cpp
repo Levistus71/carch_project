@@ -44,7 +44,9 @@ TextEditor::TextEditor()
 	, mLastClick(-1.0f)
 {
 	SetPalette(GetDarkPalette());
-	SetLanguageDefinition(RiscV());
+	InitConsole();
+	InitRiscV();
+	SetLanguageDefinition(mConsoleLangDef);
 	mLines.push_back(Line());
 }
 
@@ -54,7 +56,7 @@ TextEditor::~TextEditor()
 
 void TextEditor::SetLanguageDefinition(const LanguageDefinition & aLanguageDef)
 {
-	mLanguageDefinition = aLanguageDef;  
+	mLanguageDefinition = aLanguageDef;
 
 	Colorize();
 }
@@ -2169,7 +2171,7 @@ void TextEditor::ColorizeRange(int aFromLine, int aToLine)
             std::string token = "";
             token += *first;
             for(const char* scan = first; scan < last; scan++){
-                if(mTokenSeparator.count(*scan)!=0){
+                if(mLanguageDefinition.mTokenSeparator.count(*scan)!=0){
                     hasTokenizeResult = true;
                     token_end = scan;
                     token_begin = first;
@@ -2474,11 +2476,11 @@ TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(std::string token,
     return PaletteIndex::Default;
 }
 
+TextEditor::LanguageDefinition TextEditor::mRiscVLangDef;
 
-const TextEditor::LanguageDefinition& TextEditor::RiscV()
+void TextEditor::InitRiscV()
 {
 	static bool inited = false;
-	static LanguageDefinition langDef;
 	if (!inited)
 	{
 		static const char* const risc_v_instructions[] = {
@@ -2525,14 +2527,14 @@ const TextEditor::LanguageDefinition& TextEditor::RiscV()
             "fcvt.l.d", "fcvt.lu.d", "fmv.x.d", "fcvt.d.l", "fcvt.d.lu", "fmv.d.x"
 		};
 		for (auto& k : risc_v_instructions)
-			langDef.mInstructions.insert(k);
+			mRiscVLangDef.mInstructions.insert(k);
 
 		static const char* const risc_v_assember_directives[] = {
 			".text", ".section", ".data", ".bss"
 		};
 		for (auto& k : risc_v_assember_directives)
 		{
-			langDef.mAssemblerDirectives.insert(k);
+			mRiscVLangDef.mAssemblerDirectives.insert(k);
 		}
 
 
@@ -2561,34 +2563,32 @@ const TextEditor::LanguageDefinition& TextEditor::RiscV()
             "fflags", "frm", "fcsr"
         };
         for(auto& k : risc_v_registers){
-            langDef.mRegisters.insert(k);
+            mRiscVLangDef.mRegisters.insert(k);
         }
 
         static const char risc_v_token_separator[] = {
             ' ', ',', ':', '\t', '\n'
         };
         for (auto& k : risc_v_token_separator){
-            langDef.mTokenSeparator.insert(k);
+            mRiscVLangDef.mTokenSeparator.insert(k);
         }
 
-		langDef.mSingleLineComment = "#";
+		mRiscVLangDef.mSingleLineComment = "#";
 
-		langDef.mCaseSensitive = false;
-		langDef.mAutoIndentation = true;
+		mRiscVLangDef.mCaseSensitive = false;
+		mRiscVLangDef.mAutoIndentation = true;
 
-		langDef.mName = "RiscV";
+		mRiscVLangDef.mName = "RiscV";
 
 		inited = true;
 	}
-	return langDef;
 }
 
+TextEditor::LanguageDefinition TextEditor::mConsoleLangDef;
 
-const TextEditor::LanguageDefinition& TextEditor::Console()
+void TextEditor::InitConsole()
 {
-	static LanguageDefinition langDef;
-	langDef.mName = "Console";
-	return langDef;
+	mConsoleLangDef.mName = "Console";
 }
 
 #include <iostream>
@@ -2596,6 +2596,11 @@ const TextEditor::LanguageDefinition& TextEditor::Console()
 void editor_main(){
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 size = {window_size.x * 0.99f, window_size.y * 0.99f};
+
+	static TextEditor text_editor{};
+	text_editor.SetLanguageDefinition(text_editor.mRiscVLangDef);
+	text_editor.SetShowWhitespaces(false);
+
     ImGui::BeginChild("Editor", size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     {        
         ImVec2 text_area_size = {window_size.x * 0.99f, window_size.y * 0.99f};
@@ -2608,8 +2613,6 @@ void editor_main(){
         // static std::string editor_text = "some text";
         // ImGui::InputTextMultiline("##editortext", &editor_text, text_area_size, ImGuiInputTextFlags_AllowTabInput);
 
-        static TextEditor text_editor{};
-        text_editor.SetShowWhitespaces(false);
         text_editor.Render("Editor", text_area_size, true);
 
         ImGui::PopStyleColor();
