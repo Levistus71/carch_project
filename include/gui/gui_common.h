@@ -12,7 +12,8 @@
 #include <algorithm>
 #include <vector>
 
-extern ImFont* STANDARD_FONT;
+extern ImFont* STANDARD_SMALL_FONT;
+extern ImFont* STANDARD_MEDIUM_FONT;
 extern ImFont* EDITOR_SMALL_FONT;
 extern ImFont* EDITOR_MEDIUM_FONT;
 extern ImFont* EDITOR_LARGE_FONT;
@@ -20,6 +21,8 @@ extern ImFont* EDITOR_LARGE_FONT;
 extern bool in_editor;
 extern bool in_processor;
 extern bool in_execute;
+extern bool in_memory;
+
 extern bool show_gpr;
 extern bool show_fpr;
 

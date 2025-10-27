@@ -396,6 +396,7 @@ private:
 	float mLastClick;
 };
 
-#include <vector>
 
 void editor_main();
+void editor_execute();
+extern TextEditor text_editor;

@@ -24,6 +24,8 @@
 #include "../../include/gui/gui_common.h"
 #include "../../include/gui/gui_register.h"
 #include "../../include/gui/gui_console.h"
+#include "../../include/gui/gui_execute.h"
+#include "../../include/gui/gui_memory.h"
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -69,7 +71,7 @@ int main(int, char**)
 
     // Create window with graphics context
     float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
-    GLFWwindow* window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale), "RISCV Simulator", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -114,7 +116,7 @@ int main(int, char**)
     //IM_ASSERT(font != nullptr);
     
     LoadFonts(io);
-    ImGui::PushFont(STANDARD_FONT);
+    ImGui::PushFont(STANDARD_SMALL_FONT);
     
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -152,16 +154,25 @@ int main(int, char**)
                     in_editor = true;
                     in_processor = false;
                     in_execute = false;
+                    in_memory = false;
                 }
                 if(ImGui::Button("Processor", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
                     in_editor = false;
                     in_processor = true;
                     in_execute = false;
+                    in_memory = false;
                 }
                 if(ImGui::Button("Execute", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
                     in_editor = false;
                     in_processor = false;
                     in_execute = true;
+                    in_memory = false;
+                }
+                if(ImGui::Button("Memory", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
+                    in_editor = false;
+                    in_processor = false;
+                    in_execute = false;
+                    in_memory = true;
                 }
             }
             ImGui::End();
@@ -273,9 +284,9 @@ int main(int, char**)
             // editor
             else if(in_editor)
             {
-                ImVec2 editor_window_pos{CENTER_POS.x, CENTER_POS.y};
+                ImVec2 EDITOR_WINDOW_POS{CENTER_POS.x, CENTER_POS.y};
                 ImVec2 EDITOR_SHEATH_SIZE{CENTER_SIZE.x, CENTER_SIZE.y};
-                ImGui::SetNextWindowPos(editor_window_pos);
+                ImGui::SetNextWindowPos(EDITOR_WINDOW_POS);
                 ImGui::SetNextWindowSize(EDITOR_SHEATH_SIZE);
                 ImGui::Begin("Editor Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
                 {
@@ -285,7 +296,64 @@ int main(int, char**)
             }
             // execute
             else if(in_execute){
-                
+                // The Editor for side by side comparision (like in RARS)
+                ImVec2 EDITOR_WINDOW_POS{CENTER_POS.x, CENTER_POS.y};
+                ImVec2 EDITOR_SHEATH_SIZE{CENTER_SIZE.x * 0.75f / 2.0f, CENTER_SIZE.y * 0.65f};
+                ImGui::SetNextWindowPos(EDITOR_WINDOW_POS);
+                ImGui::SetNextWindowSize(EDITOR_SHEATH_SIZE);
+                ImGui::Begin("Editor Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    editor_execute();
+                }
+                ImGui::End();
+
+                ImVec2 ASSEMBLED_WINDOW_POS{CENTER_POS.x + EDITOR_SHEATH_SIZE.x, CENTER_POS.y};
+                ImVec2 ASSEMBLED_WINDOW_SIZE{CENTER_SIZE.x * 0.75f / 2.0f, CENTER_SIZE.y * 0.65f};
+                ImGui::SetNextWindowPos(ASSEMBLED_WINDOW_POS);
+                ImGui::SetNextWindowSize(ASSEMBLED_WINDOW_SIZE);
+                ImGui::Begin("Assembled Editor Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    assembled_editor_main();
+                }
+                ImGui::End();
+
+                // console
+                ImVec2 CONSOLE_WINDOW_POS{CENTER_POS.x, CENTER_POS.y + EDITOR_SHEATH_SIZE.y};
+                ImVec2 CONSOLE_WINDOW_SIZE{EDITOR_SHEATH_SIZE.x + ASSEMBLED_WINDOW_SIZE.x, CENTER_SIZE.y - EDITOR_SHEATH_SIZE.y};
+                ImGui::SetNextWindowPos(CONSOLE_WINDOW_POS);
+                ImGui::SetNextWindowSize(CONSOLE_WINDOW_SIZE);
+                ImGui::Begin("Console Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    console_main();
+                }
+                ImGui::End();
+
+                // registers
+                ImVec2 REGISTER_WINDOW_POS{CENTER_POS.x + EDITOR_SHEATH_SIZE.x + ASSEMBLED_WINDOW_SIZE.x, CENTER_POS.y};
+                ImVec2 REGISTER_WINDOW_SIZE{CENTER_SIZE.x - (EDITOR_SHEATH_SIZE.x + ASSEMBLED_WINDOW_SIZE.x), CENTER_SIZE.y};
+                ImGui::SetNextWindowPos(REGISTER_WINDOW_POS);
+                ImGui::SetNextWindowSize(REGISTER_WINDOW_SIZE);
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(31.0f/255.0f, 31.0f/255.0f, 31.0f/255.0f, 1.00f)); // loading gray color bg
+                ImGui::Begin("Register Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    register_execute();
+                }
+                ImGui::End();
+                ImGui::PopStyleColor();
+            }
+            // memory
+            else if(in_memory){
+                ImVec2 MEMORY_SHEATH_POS{CENTER_POS.x, CENTER_POS.y};
+                ImVec2 MEMORY_SHEATH_SIZE{CENTER_SIZE.x, CENTER_SIZE.y};
+                ImGui::SetNextWindowPos(MEMORY_SHEATH_POS);
+                ImGui::SetNextWindowSize(MEMORY_SHEATH_SIZE);
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
+                ImGui::Begin("Memory Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    memory_main();
+                }
+                ImGui::PopStyleColor();
+                ImGui::End();
             }
 
             ImGui::End();

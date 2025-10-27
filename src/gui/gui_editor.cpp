@@ -2591,15 +2591,16 @@ void TextEditor::InitConsole()
 	mConsoleLangDef.mName = "Console";
 }
 
-#include <iostream>
+// The main TextEditor (where the user code lives)
+TextEditor text_editor{};
 
 void editor_main(){
-    ImVec2 window_size = ImGui::GetWindowSize();
+	ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 size = {window_size.x * 0.99f, window_size.y * 0.99f};
 
-	static TextEditor text_editor{};
 	text_editor.SetLanguageDefinition(text_editor.mRiscVLangDef);
 	text_editor.SetShowWhitespaces(false);
+	text_editor.SetReadOnly(false);
 
     ImGui::BeginChild("Editor", size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     {        

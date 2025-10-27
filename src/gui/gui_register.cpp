@@ -19,19 +19,23 @@ void draw_gpr_register_file(){
 
     static uint64_t register_vals[32] = {0};
 
-    if(ImGui::BeginTable("GPR register file", 3)){
-        const char* name_header = "Name";
-        const char* alias_header = "Alias";
-        const char* value_header = "Value";
+    if(ImGui::BeginTable("GPR register file", 3, ImGuiTableFlags_Borders)){
+        const char* name_header = " Name ";
+        const char* alias_header = " Alias ";
+        const char* value_header = " Value ";
         auto name_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, name_header, nullptr, nullptr).x;
-        auto alias_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, name_header, nullptr, nullptr).x;
+        auto alias_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, alias_header, nullptr, nullptr).x;
         ImGui::TableSetupColumn(name_header, ImGuiTableColumnFlags_WidthFixed, name_width);
         ImGui::TableSetupColumn(alias_header, ImGuiTableColumnFlags_WidthFixed, alias_width);
         ImGui::TableSetupColumn(value_header);
 
         ImGui::TableHeadersRow();
 
+        ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
         for(int i=0;i<32;i++){
+            if(i%2==1){
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, alternate_dark_color);
+            }
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::Text("%s", register_names[i].c_str());
@@ -63,19 +67,23 @@ void draw_fpr_register_file(){
 
     static uint64_t register_vals[32] = {0};
 
-    if(ImGui::BeginTable("FPR register file", 3)){
-        const char* name_header = "Name";
-        const char* alias_header = "Alias";
-        const char* value_header = "Value";
+    if(ImGui::BeginTable("FPR register file", 3, ImGuiTableFlags_Borders)){
+        const char* name_header = " Name ";
+        const char* alias_header = " Alias ";
+        const char* value_header = " Value ";
         auto name_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, name_header, nullptr, nullptr).x;
-        auto alias_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, name_header, nullptr, nullptr).x;
+        auto alias_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, alias_header, nullptr, nullptr).x;
         ImGui::TableSetupColumn(name_header, ImGuiTableColumnFlags_WidthFixed, name_width);
         ImGui::TableSetupColumn(alias_header, ImGuiTableColumnFlags_WidthFixed, alias_width);
         ImGui::TableSetupColumn(value_header);
 
         ImGui::TableHeadersRow();
-
+        
+        ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
         for(int i=0;i<32;i++){
+            if(i%2==1){
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, alternate_dark_color);
+            }
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::Text("%s", register_names[i].c_str());
@@ -140,4 +148,60 @@ void register_main(){
         }
     }
     ImGui::EndChild();
+}
+
+
+void register_execute(){
+    ImVec2 WINDOW_POS = ImGui::GetWindowPos();
+    ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
+
+    ImVec2 register_file_selection_pos{WINDOW_POS.x, WINDOW_POS.y};
+    ImVec2 register_file_selection_size{WINDOW_SIZE.x, WINDOW_SIZE.y * 0.1f};
+    ImGui::SetNextWindowPos(register_file_selection_pos);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.4f, 0.5f, 1.0f));
+    ImGui::BeginChild("Register File Selection Window", register_file_selection_size);
+    {
+        ImVec4 selection_button_colors{77.0f/255.0f, 77.0f/255.0f, 77.0f/255.0f, 1.0f};
+        ImVec2 button_size{register_file_selection_size.x * 0.15f, register_file_selection_size.y * 0.3f};
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+        ImGui::PushStyleColor(ImGuiCol_Button, selection_button_colors);
+        {
+            ImVec2 gpr_position{register_file_selection_size.x * 0.5f - button_size.x * 1.3f, register_file_selection_size.y * 0.3f};
+            ImGui::SetCursorPos(gpr_position);
+            if (ImGui::Button("GPR", button_size))
+            {
+                show_gpr = true;
+                show_fpr = false;
+            }
+            
+            ImVec2 fpr_position{register_file_selection_size.x * 0.5f + button_size.x * 0.3f, gpr_position.y};
+            ImGui::SetCursorPos(fpr_position);
+            if (ImGui::Button("FPR", button_size))
+            {
+                show_gpr = false;
+                show_fpr = true;
+            }
+        }
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+    }
+    ImGui::PopStyleColor();
+    ImGui::EndChild();
+
+
+    ImVec2 register_file_pos{WINDOW_POS.x + WINDOW_SIZE.x * 0.1f, WINDOW_POS.y + register_file_selection_size.y};
+    ImVec2 register_file_size{WINDOW_SIZE.x * 0.89f, WINDOW_SIZE.y * 0.85f};
+    ImGui::SetNextWindowPos(register_file_pos);
+    ImGui::PushFont(STANDARD_MEDIUM_FONT);
+    ImGui::BeginChild("Register File", register_file_size);
+    {
+        if(show_gpr){
+            draw_gpr_register_file();
+        }
+        else if(show_fpr){
+            draw_fpr_register_file();
+        }
+    }
+    ImGui::EndChild();
+    ImGui::PopFont();
 }
