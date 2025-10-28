@@ -70,6 +70,17 @@ public:
 		{}
 	};
 
+	struct DebugLines{
+		size_t IfLine;
+		size_t IdLine;
+		size_t ExLine;
+		size_t MemLine;
+		size_t WbLine;
+		ImU32 DebugLineColor = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 40.0f/255.0f, 0.4f});
+		ImU32 DebugTextColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+	};
+	DebugLines mDebugLines;
+
 	// Represents a character coordinate from the user's point of view,
 	// i. e. consider an uniform grid (assuming fixed-width font) on the
 	// screen as it is rendered, and each cell has its own coordinate, starting from 0.
@@ -214,6 +225,10 @@ public:
 	void SetShowLineNumbers(bool aValue);
 
 	void TieToFile(std::string aValue);
+
+	void SetDebugMode(bool aValue);
+	void SetDebugModeTypeSingleCycle(bool singleCycle);
+	void SetDebugLines(size_t aIfLine, size_t aIdLine, size_t aExLine, size_t aMemLine, size_t aWbLine);
 
 	bool IsColorizerEnabled() const { return mColorizerEnabled; }
 	void SetColorizerEnable(bool aValue);
@@ -376,6 +391,8 @@ private:
 	bool mHandleMouseInputs;
 	bool mIgnoreImGuiChild;
 	bool mShowWhitespaces;
+	bool mDebugMode;
+	bool mSingleCycle;
 
 	Palette mPaletteBase;
 	Palette mPalette;

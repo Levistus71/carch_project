@@ -38,6 +38,8 @@ TextEditor::TextEditor()
 	, mHandleMouseInputs(true)
 	, mIgnoreImGuiChild(false)
 	, mShowWhitespaces(true)
+	, mDebugMode(false)
+	, mSingleCycle(false)
 	, mTiedToFile(false)
 	, mCheckComments(true)
 	, mStartTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
@@ -1021,6 +1023,63 @@ void TextEditor::Render()
 				}
 			}
 
+			// Debug mode highlighting
+			if(mDebugMode){
+				if(mSingleCycle){
+					if(static_cast<size_t>(lineNo) == mDebugLines.IfLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+					}
+				}
+				else{
+					if(static_cast<size_t>(lineNo) == mDebugLines.IfLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+
+						const char* stage_label = "IF  ";
+						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
+						ImVec2 offset{end.x - text_size, start.y};
+						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
+					}
+					else if(static_cast<size_t>(lineNo) == mDebugLines.IdLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+
+						const char* stage_label = "ID  ";
+						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
+						ImVec2 offset{end.x - text_size, start.y};
+						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
+					}
+					else if(static_cast<size_t>(lineNo) == mDebugLines.ExLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+
+						const char* stage_label = "EX  ";
+						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
+						ImVec2 offset{end.x - text_size, start.y};
+						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
+					}
+					else if(static_cast<size_t>(lineNo) == mDebugLines.MemLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+
+						const char* stage_label = "MEM  ";
+						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
+						ImVec2 offset{end.x - text_size, start.y};
+						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
+					}
+					else if(static_cast<size_t>(lineNo) == mDebugLines.WbLine){
+						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
+						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
+
+						const char* stage_label = "WB  ";
+						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
+						ImVec2 offset{end.x - text_size, start.y};
+						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
+					}
+				}
+			}
+
 			// Render colorized text
 			auto prevColor = line.empty() ? mPalette[(int)PaletteIndex::Default] : GetGlyphColor(line[0]);
 			ImVec2 bufferOffset;
@@ -1389,6 +1448,22 @@ void TextEditor::TieToFile(std::string aValue){
 	ReadFile();
 
 	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+}
+
+void TextEditor::SetDebugMode(bool aValue){
+	mDebugMode = aValue;
+}
+
+void TextEditor::SetDebugModeTypeSingleCycle(bool aValue){
+	mSingleCycle = aValue;
+}
+
+void TextEditor::SetDebugLines(size_t aIfLine, size_t aIdLine, size_t aExLine, size_t aMemLine, size_t aWbLine){
+	mDebugLines.IfLine = aIfLine;
+	mDebugLines.IdLine = aIdLine;
+	mDebugLines.ExLine = aExLine;
+	mDebugLines.MemLine = aMemLine;
+	mDebugLines.WbLine = aWbLine;
 }
 
 void TextEditor::SetFilePath(std::string aValue){
@@ -2614,6 +2689,7 @@ void editor_main(){
         // static std::string editor_text = "some text";
         // ImGui::InputTextMultiline("##editortext", &editor_text, text_area_size, ImGuiInputTextFlags_AllowTabInput);
 
+		text_editor.SetDebugMode(false);
         text_editor.Render("Editor", text_area_size, true);
 
         ImGui::PopStyleColor();

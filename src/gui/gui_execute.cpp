@@ -17,6 +17,10 @@ void editor_execute(){
         ImGui::PushFont(EDITOR_MEDIUM_FONT);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f));
 
+        text_editor.SetDebugMode(true);
+        text_editor.SetDebugModeTypeSingleCycle(false);
+		text_editor.SetDebugLines(3, 4, 5, 6, 7);
+
         text_editor.Render("Editor Read Only", text_area_size, true);
 
         ImGui::PopStyleColor();
