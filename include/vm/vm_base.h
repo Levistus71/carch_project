@@ -10,6 +10,7 @@
 #include "registers.h"
 #include "memory_controller.h"
 #include "alu.h"
+#include "globals.h"
 
 #include "vm_asm_mw.h"
 

@@ -101,7 +101,7 @@ void VmBase::PrintString(uint64_t address) {
     while (true) {
         char c = memory_controller_.ReadByte(address);
         if (c == '\0') break;
-        std::cout << c;
+        globals::vm_cout_file << c;
         address++;
     }
 }

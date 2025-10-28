@@ -740,6 +740,10 @@ void TextEditor::HandleKeyboardInputs()
 			Cut();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_A))
 			SelectAll();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
+			SaveFile();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_O))
+			OpenFile();
 		else if (!IsReadOnly() && !ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Enter))
 			EnterCharacter('\n', false);
 		else if (!IsReadOnly() && !ctrl && !alt && ImGui::IsKeyPressed(ImGuiKey_Tab))
@@ -836,13 +840,22 @@ void TextEditor::HandleMouseInputs()
 
 void TextEditor::Render()
 {
-	// if(mTiedToFile){
-	// 	std::filesystem::file_time_type last_modified_time = std::filesystem::last_write_time(mFilePath);
-	// 	if(mLastReadTime != last_modified_time){
-	//		ReadFile();
-	// 		mLastReadTime = last_modified_time;
-	// 	}
-	// }
+	if(mTiedToFile){
+		std::filesystem::file_time_type last_modified_time = std::filesystem::last_write_time(mFilePath);
+		if(mLastReadTime != last_modified_time){
+			ReadFile();
+		}
+	}
+
+	if(mShowPopup){
+		static std::string filepath = "";
+		filepath = GetFilePathGui();
+
+		if(!mShowPopup){
+			if(TieToFile(filepath))
+				(this->*mServeFunction)();
+		}
+	}
 
 	/* Compute mCharAdvance regarding to scaled font size (Ctrl + mouse wheel)*/
 	const float fontSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "#", nullptr, nullptr).x;
@@ -1440,7 +1453,11 @@ void TextEditor::SetShowLineNumbers(bool aValue){
 }
 
 
-void TextEditor::TieToFile(std::string aValue){
+bool TextEditor::TieToFileAndRead(std::string aValue){
+	if(!std::filesystem::exists(aValue)){
+        globals::vm_cout_file << "Couldn't open file :( Try checking the RELATIVE path again." << std::endl;
+		return false;
+    }
 	mTiedToFile = true;
 
 	SetFilePath(aValue);
@@ -1448,6 +1465,25 @@ void TextEditor::TieToFile(std::string aValue){
 	ReadFile();
 
 	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+
+	return true;
+}
+
+bool TextEditor::TieToFile(std::string aValue){
+	if(!std::filesystem::exists(aValue)){
+        globals::vm_cout_file << "Couldn't open file :( Try checking the RELATIVE path again." << std::endl;
+		return false;
+    }
+
+	mTiedToFile = true;
+
+	SetFilePath(aValue);
+
+	return true;
+}
+
+bool TextEditor::TiedToFile(){
+	return mTiedToFile;
 }
 
 void TextEditor::SetDebugMode(bool aValue){
@@ -1583,6 +1619,7 @@ void TextEditor::ReadFile(){
 	std::ifstream file(mFilePath);
 
 	if(!file.is_open()){
+		globals::vm_cout_file << "Failed to open file :(" << std::endl;
 		return;
 	}
 
@@ -1599,6 +1636,95 @@ void TextEditor::ReadFile(){
 	}
 
 	file.close();
+	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+}
+
+
+std::string TextEditor::GetFilePathGui(){
+	static char file_path[256] = "";
+	static std::string file_path_str = "";
+
+	if(mShowPopup){
+		ImGui::OpenPopup("String Input Dialog");
+	}
+
+	if (ImGui::BeginPopupModal("String Input Dialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Type the relative path:");
+        
+        bool confirmed = ImGui::InputText("##StringInput", file_path, 256, ImGuiInputTextFlags_EnterReturnsTrue);
+
+        ImGui::Separator();
+
+        if (ImGui::Button("OK", ImVec2(120, 0)) || confirmed) 
+        {
+			mShowPopup = false;
+			file_path_str = file_path;
+            ImGui::CloseCurrentPopup();
+        }
+        
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+        
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) 
+        {
+			mShowPopup = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+	return file_path_str;
+}
+
+
+std::string TextEditor::FilePath(){
+	return mFilePath;
+}
+
+void TextEditor::SaveFile(){
+	if(!TiedToFile()){
+		mShowPopup = true;
+		mServeFunction = &TextEditor::SaveFile;
+		return;
+	}
+
+	std::ofstream file(mFilePath);
+
+	if(!file.is_open()){
+		globals::vm_cout_file << "Failed to open file :(" << std::endl;
+		return;
+	}
+	
+	for(size_t i=0;i<mLines.size();i++){
+		std::string line = "";
+		for(size_t j=0;j<mLines[i].size();j++){
+			line += static_cast<char>(mLines[i][j].mChar);
+		}
+		file << line << std::endl;
+	}
+
+	globals::vm_cout_file << "Successfully saved to file!" << std::endl;
+
+	// update mLastReadTime
+	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+
+	file.close();
+}
+
+
+void TextEditor::OpenFile(){
+	static bool force_open = true;
+	if(force_open){
+		mShowPopup = true;
+		mServeFunction = &TextEditor::OpenFile;
+		force_open = false;
+		return;
+	}
+
+	ReadFile();
+	force_open = true;
 }
 
 void TextEditor::MoveUp(int aAmount, bool aSelect)

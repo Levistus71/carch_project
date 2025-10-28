@@ -94,7 +94,7 @@ void RV5SVM::LoadVM() {
 		}, data);
 	}
 
-	std::cout << "VM Program Loaded!" << std::endl;
+	globals::vm_cout_file << "VM Program Loaded!" << std::endl;
 	output_status_ = "VM_PROGRAM_LOADED";
 
 	DumpState(globals::vm_state_dump_file_path);
@@ -138,7 +138,7 @@ void RV5SVM::Undo() {
 		SingleCycleUndo();
 	}
 	else{
-		std::cout << "Still working on pipelining." << std::endl; 
+		globals::vm_cout_file << "Still working on pipelining." << std::endl; 
 	}
 }
 

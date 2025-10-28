@@ -43,6 +43,7 @@ void assembled_editor_main(){
     assembled_editor.SetPalette(assembled_editor.GetDarkPalette());
     assembled_editor.SetShowWhitespaces(false);
     assembled_editor.SetShowLineNumbers(true);
+    assembled_editor.TieToFileAndRead("./vm_state/disassembly.txt");
 
     ImGui::BeginChild("Assembled Editor Read Only", size, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     {        

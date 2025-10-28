@@ -180,26 +180,26 @@ void Memory::WriteDouble(uint64_t address, double value) {
 
 void Memory::PrintMemory(const uint64_t address, unsigned int rows) {
   constexpr size_t bytes_per_row = 8; // One row equals 64 bytes
-  std::cout << "Memory Dump at Address: 0x" << std::hex << address << std::dec << "\n";
-  std::cout << "-----------------------------------------------------------------\n";
+  globals::vm_cout_file << "Memory Dump at Address: 0x" << std::hex << address << std::dec << "\n";
+  globals::vm_cout_file << "-----------------------------------------------------------------\n";
   for (uint64_t i = 0; i < rows; ++i) {
     uint64_t current_address = address + (i*bytes_per_row);
     if (current_address >= memory_size_) {
       break;
     }
-    std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0') << current_address << " | ";
+    globals::vm_cout_file << "0x" << std::hex << std::setw(16) << std::setfill('0') << current_address << " | ";
     for (size_t j = 0; j < bytes_per_row; ++j) {
       if (current_address + j >= memory_size_) {
         break;
       }
-      std::cout << std::hex << std::setw(2) << std::setfill('0')
+      globals::vm_cout_file << std::hex << std::setw(2) << std::setfill('0')
                 << static_cast<int>(Read(current_address + j)) << " ";
     }
-    std::cout << "| 0x" << std::hex << std::setw(16) << std::setfill('0')
+    globals::vm_cout_file << "| 0x" << std::hex << std::setw(16) << std::setfill('0')
               << static_cast<int64_t>(ReadDoubleWord(current_address));
-    std::cout << std::dec << std::setfill(' ') << "\n";
+    globals::vm_cout_file << std::dec << std::setfill(' ') << "\n";
   }
-  std::cout << "-----------------------------------------------------------------\n";
+  globals::vm_cout_file << "-----------------------------------------------------------------\n";
 }
 
 void Memory::DumpMemory(std::vector<std::string> args) {
@@ -242,7 +242,7 @@ void Memory::DumpMemory(std::vector<std::string> args) {
     file << "}\n";
     file.close();
 
-    std::cout << "VM_MEMORY_DUMPED" << std::endl;
+    globals::vm_cout_file << "VM_MEMORY_DUMPED" << std::endl;
 
 }
 
@@ -270,14 +270,14 @@ void Memory::GetMemoryPoint(std::string addr_str) {
 
 
 void Memory::printMemoryUsage() const {
-  std::cout << "Memory Usage Report:\n";
-  std::cout << "---------------------\n";
-  std::cout << "Block Count: " << blocks_.size() << "\n";
+  globals::vm_cout_file << "Memory Usage Report:\n";
+  globals::vm_cout_file << "---------------------\n";
+  globals::vm_cout_file << "Block Count: " << blocks_.size() << "\n";
   for (const auto &[block_index, block] : blocks_) {
     size_t used_bytes = std::count_if(block.data.begin(), block.data.end(),
                                       [](uint8_t byte) { return byte!=0; });
     if (used_bytes > 0) {
-      std::cout << "Block " << block_index << ": " << used_bytes
+      globals::vm_cout_file << "Block " << block_index << ": " << used_bytes
                 << " / " << block_size_ << " bytes used\n";
     }
   }

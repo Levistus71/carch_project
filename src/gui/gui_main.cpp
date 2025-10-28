@@ -7,25 +7,7 @@
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
 
-#include "imgui.h"
-#include "../imgui/backends/imgui_impl_glfw.h"
-#include "../imgui/backends/imgui_impl_opengl3.h"
-#include <stdio.h>
-#define GL_SILENCE_DEPRECATION
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <GLES2/gl2.h>
-#endif
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
-#include <algorithm>
-#include <vector>
-
-#include "../../include/gui/gui_processor_window.h"
-#include "../../include/gui/gui_editor.h"
-#include "../../include/gui/gui_common.h"
-#include "../../include/gui/gui_register.h"
-#include "../../include/gui/gui_console.h"
-#include "../../include/gui/gui_execute.h"
-#include "../../include/gui/gui_memory.h"
+#include "../../include/gui/gui_main.h"
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -34,7 +16,7 @@ static void glfw_error_callback(int error, const char* description)
 }
 
 // Main code
-int main(int, char**)
+int gui_main()
 {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -97,26 +79,15 @@ int main(int, char**)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details. If you like the default font but want it to scale better, consider using the 'ProggyVector' from the same author!
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //style.FontSizeBase = 20.0f;
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
-    //IM_ASSERT(font != nullptr);
     
     LoadFonts(io);
     ImGui::PushFont(STANDARD_SMALL_FONT);
+
+
+    // main()
+    RV5SVM vm;
+    globals::vm_cout_file << "Virtual Machine started. Hello!" << std::endl;
+    
     
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -191,7 +162,19 @@ int main(int, char**)
             {
                 float offset = 0;
                 if(ImGui::Button("Assemble", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    
+                    text_editor.SaveFile();
+                    try{
+                        vm.program_ = assemble(text_editor.FilePath());
+                        globals::vm_cout_file << "Assembly successful!" << std::endl << std::endl;
+                        in_editor = false;
+                        in_execute = true;
+                        in_processor = false;
+                        in_memory = false;
+                    }
+                    catch(const std::runtime_error& e){
+                        globals::vm_cout_file << "Assembly failed :(" << std::endl;
+                        std::cerr << e.what() << std::endl;
+                    }
                 }
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);

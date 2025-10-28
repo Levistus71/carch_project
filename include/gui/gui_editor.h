@@ -224,7 +224,15 @@ public:
 
 	void SetShowLineNumbers(bool aValue);
 
-	void TieToFile(std::string aValue);
+	std::string GetFilePathGui();
+	std::string FilePath();
+	bool mShowPopup = false;
+	void (TextEditor::*mServeFunction)();
+	void SaveFile();
+	void OpenFile();
+	bool TieToFile(std::string aValue);
+	bool TieToFileAndRead(std::string aValue);
+	bool TiedToFile();
 
 	void SetDebugMode(bool aValue);
 	void SetDebugModeTypeSingleCycle(bool singleCycle);

@@ -16,23 +16,14 @@ set(SRC_DIR "src")
 set(INCLUDE_DIR "include")
 set(IMGUI_DIR "imgui")
 
-# --- (non-GUI) ---
-file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
+file(GLOB_RECURSE CORE_SRC_FILES "${SRC_DIR}/*.cpp")
 
-# Exclude anything under src/gui
-file(GLOB_RECURSE GUI_FILES
+file(GLOB_RECURSE TEMP_GUI_FILES
     "${SRC_DIR}/gui/*.cpp"
 )
-list(REMOVE_ITEM SRC_FILES ${GUI_FILES})
+list(REMOVE_ITEM CORE_SRC_FILES ${TEMP_GUI_FILES})
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR})
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -frounding-math -ffloat-store -g)
-target_link_libraries(${PROJECT_NAME} PRIVATE m)
-
-# --- 'vm_gui' executable ---
 set(GUI_SRC_FILES
-    # GUI specific files from src/gui
     ${SRC_DIR}/gui/gui_main.cpp
     ${SRC_DIR}/gui/gui_processor_window.cpp
     ${SRC_DIR}/gui/gui_editor.cpp
@@ -43,7 +34,6 @@ set(GUI_SRC_FILES
     ${SRC_DIR}/gui/gui_memory.cpp
 )
 
-# Use file(GLOB) for the external library sources
 file(GLOB IMGUI_CORE_SOURCES
     "${IMGUI_DIR}/*.cpp"
 )
@@ -55,30 +45,35 @@ set(IMGUI_BACKEND_SOURCES
     "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
 )
 
-add_executable(vm_gui
+set(ALL_SOURCES
+    ${CORE_SRC_FILES}
     ${GUI_SRC_FILES}
     ${IMGUI_CORE_SOURCES}
     ${IMGUI_MISC_SOURCES}
     ${IMGUI_BACKEND_SOURCES}
 )
 
-target_include_directories(vm_gui PRIVATE
+add_executable(${PROJECT_NAME} ${ALL_SOURCES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE 
     ${INCLUDE_DIR}
     ${IMGUI_DIR}
     /opt/homebrew/include
     /usr/local/include
 )
 
-target_compile_options(vm_gui PRIVATE
-    -Wall -Wextra -pedantic -g -O2
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wall -Wextra -pedantic -g
+    -frounding-math -ffloat-store
+    -O2
 )
 
-## 6. Link Libraries
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(vm_gui PRIVATE
-    /opt/homebrew/lib/libglfw3.a  # Explicit path to libglfw3.a, or just 'glfw3' if the linker can find it
-
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    m
+    
+    /opt/homebrew/lib/libglfw3.a
     ${OPENGL_LIBRARIES}
     "-framework Cocoa"
     "-framework IOKit"
@@ -92,23 +87,10 @@ add_custom_target(run
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
-add_custom_target(run_gui
-    COMMAND vm_gui
-    DEPENDS vm_gui
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-
 add_custom_target(debug
     COMMAND gdb ${PROJECT_NAME}
     DEPENDS ${PROJECT_NAME}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
-add_custom_target(debug_gui
-    COMMAND gdb vm_gui
-    DEPENDS vm_gui
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-
-message(STATUS "SRC_FILES: ${SRC_FILES}")
-message(STATUS "Done")
+message(STATUS "Done.")

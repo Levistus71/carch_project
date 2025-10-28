@@ -22,69 +22,69 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 	switch (syscall_number) {
 		case SYSCALL_PRINT_INT: {
 			if (!globals::vm_as_backend) {
-				std::cout << "[Syscall output: ";
+				globals::vm_cout_file << "[Syscall output: ";
 			} else {
-			std::cout << "VM_STDOUT_START";
+			globals::vm_cout_file << "VM_STDOUT_START";
 			}
-			std::cout << static_cast<int64_t>(registers_.ReadGpr(10)); // Print signed integer
+			globals::vm_cout_file << static_cast<int64_t>(registers_.ReadGpr(10)); // Print signed integer
 			if (!globals::vm_as_backend) {
-				std::cout << "]" << std::endl;
+				globals::vm_cout_file << "]" << std::endl;
 			} else {
-			std::cout << "VM_STDOUT_END" << std::endl;
+			globals::vm_cout_file << "VM_STDOUT_END" << std::endl;
 			}
 			break;
 		}
 		case SYSCALL_PRINT_FLOAT: { // print float
 			if (!globals::vm_as_backend) {
-				std::cout << "[Syscall output: ";
+				globals::vm_cout_file << "[Syscall output: ";
 			} else {
-			std::cout << "VM_STDOUT_START";
+			globals::vm_cout_file << "VM_STDOUT_START";
 			}
 			float float_value;
 			uint64_t raw = registers_.ReadGpr(10);
 			std::memcpy(&float_value, &raw, sizeof(float_value));
-			std::cout << std::setprecision(std::numeric_limits<float>::max_digits10) << float_value;
+			globals::vm_cout_file << std::setprecision(std::numeric_limits<float>::max_digits10) << float_value;
 			if (!globals::vm_as_backend) {
-				std::cout << "]" << std::endl;
+				globals::vm_cout_file << "]" << std::endl;
 			} else {
-			std::cout << "VM_STDOUT_END" << std::endl;
+			globals::vm_cout_file << "VM_STDOUT_END" << std::endl;
 			}
 			break;
 		}
 		case SYSCALL_PRINT_DOUBLE: { // print double
 			if (!globals::vm_as_backend) {
-				std::cout << "[Syscall output: ";
+				globals::vm_cout_file << "[Syscall output: ";
 			} else {
-			std::cout << "VM_STDOUT_START";
+			globals::vm_cout_file << "VM_STDOUT_START";
 			}
 			double double_value;
 			uint64_t raw = registers_.ReadGpr(10);
 			std::memcpy(&double_value, &raw, sizeof(double_value));
-			std::cout << std::setprecision(std::numeric_limits<double>::max_digits10) << double_value;
+			globals::vm_cout_file << std::setprecision(std::numeric_limits<double>::max_digits10) << double_value;
 			if (!globals::vm_as_backend) {
-				std::cout << "]" << std::endl;
+				globals::vm_cout_file << "]" << std::endl;
 			} else {
-			std::cout << "VM_STDOUT_END" << std::endl;
+			globals::vm_cout_file << "VM_STDOUT_END" << std::endl;
 			}
 			break;
 		}
 		case SYSCALL_PRINT_STRING: {
 			if (!globals::vm_as_backend) {
-				std::cout << "[Syscall output: ";
+				globals::vm_cout_file << "[Syscall output: ";
 			}
 			PrintString(registers_.ReadGpr(10)); // Print string
 			if (!globals::vm_as_backend) {
-				std::cout << "]" << std::endl;
+				globals::vm_cout_file << "]" << std::endl;
 			}
 			break;
 		}
 		case SYSCALL_EXIT: {
 			this->stop_requested = true; // Stop the VM
 			if (!globals::vm_as_backend) {
-				std::cout << "VM_EXIT" << std::endl;
+				globals::vm_cout_file << "VM_EXIT" << std::endl;
 			}
 			output_status_ = "VM_EXIT";
-			std::cout << "Exited with exit code: " << registers_.ReadGpr(10) << std::endl;
+			globals::vm_cout_file << "Exited with exit code: " << registers_.ReadGpr(10) << std::endl;
 			exit(0); // Exit the program
 			break;
 		}
@@ -97,14 +97,14 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 				// Read from stdin
 				std::string input;
 				{
-					std::cout << "VM_STDIN_START" << std::endl;
+					globals::vm_cout_file << "VM_STDIN_START" << std::endl;
 					output_status_ = "VM_STDIN_START";
 					std::unique_lock<std::mutex> lock(this->input_mutex);
 					this->input_cv.wait(lock, [this]() { 
 						return !this->input_queue.empty(); 
 					});
 					output_status_ = "VM_STDIN_END";
-					std::cout << "VM_STDIN_END" << std::endl;
+					globals::vm_cout_file << "VM_STDIN_END" << std::endl;
 
 					input = this->input_queue.front();
 					this->input_queue.pop();
@@ -143,7 +143,7 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 			uint64_t length = registers_.ReadGpr(12);
 
 			if (file_descriptor == 1) { // stdout
-				std::cout << "VM_STDOUT_START";
+				globals::vm_cout_file << "VM_STDOUT_START";
 				output_status_ = "VM_STDOUT_START";
 				uint64_t bytes_printed = 0;
 				for (uint64_t i = 0; i < length; ++i) {
@@ -151,12 +151,12 @@ void RV5SVM::HandleSyscall(bool debug_mode){
 					// if (c == '\0') {
 					//     break;
 					// }
-					std::cout << c;
+					globals::vm_cout_file << c;
 					bytes_printed++;
 				}
-				std::cout << std::flush; 
+				globals::vm_cout_file << std::flush; 
 				output_status_ = "VM_STDOUT_END";
-				std::cout << "VM_STDOUT_END" << std::endl;
+				globals::vm_cout_file << "VM_STDOUT_END" << std::endl;
 
 				uint64_t new_reg = std::min(static_cast<uint64_t>(length), bytes_printed);
 				registers_.WriteGpr(10, new_reg);

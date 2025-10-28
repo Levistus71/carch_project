@@ -35,11 +35,11 @@ void RV5SVM::RunSingleCycle(){
 		WriteBack(false);
 
 		instruction_executed++;
-		std::cout << "Program Counter: " << program_counter_ << std::endl;
+		globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
 	}
 
 	if (program_counter_ >= program_size_) {
-		std::cout << "VM_PROGRAM_END" << std::endl;
+		globals::vm_cout_file << "VM_PROGRAM_END" << std::endl;
 		output_status_ = "VM_PROGRAM_END";
 	}
 
@@ -62,13 +62,13 @@ void RV5SVM::DebugRunSingleCycle(){
             std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
         }        
         else {
-            std::cout << " Breakpoint was hit. pc : " << program_counter_ << std::endl;
+            globals::vm_cout_file << " Breakpoint was hit. pc : " << program_counter_ << std::endl;
             output_status_ = "VM_BREAKPOINT_HIT";
             break;
         }
     }
     if (program_counter_ >= program_size_) {
-        std::cout << "VM_PROGRAM_END" << std::endl;
+        globals::vm_cout_file << "VM_PROGRAM_END" << std::endl;
         output_status_ = "VM_PROGRAM_END";
     }
     DumpRegisters(globals::registers_dump_file_path, registers_);
@@ -117,13 +117,13 @@ void RV5SVM::SingleCycleStep(bool dump){
 
     }
     else{
-        std::cout << "vm program end!" << std::endl;
+        globals::vm_cout_file << "vm program end!" << std::endl;
         this->output_status_ = "VM_PROGRAM_END";
     }
     
     if(dump){
-        std::cout << "Program Counter: " << program_counter_ << std::endl;
-        std::cout << "Step completed!" << std::endl;
+        globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
+        globals::vm_cout_file << "Step completed!" << std::endl;
         this->output_status_ = "VM_STEP_COMPLETED";
         DumpRegisters(globals::registers_dump_file_path, registers_);
         DumpState(globals::vm_state_dump_file_path);
@@ -134,7 +134,7 @@ void RV5SVM::SingleCycleStep(bool dump){
 
 void RV5SVM::SingleCycleUndo(){
     if (this->undo_instruction_stack.empty()) {
-        std::cout << "Cannot undo." << std::endl;
+        globals::vm_cout_file << "Cannot undo." << std::endl;
         output_status_ = "VM_NO_MORE_UNDO";
         return;
     }
@@ -167,10 +167,10 @@ void RV5SVM::SingleCycleUndo(){
     }
 
     this->program_counter_ = last_instruction.pc;
-    std::cout << "Program Counter: " << program_counter_ << std::endl;
+    globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
 
     output_status_ = "Undo complete!";
-    std::cout << "VM_UNDO_COMPLETED" << std::endl;
+    globals::vm_cout_file << "VM_UNDO_COMPLETED" << std::endl;
 
     DumpRegisters(globals::registers_dump_file_path, registers_);
     DumpState(globals::vm_state_dump_file_path);

@@ -502,7 +502,6 @@ static std::string decode_fclass(uint16_t res) {
       else if (std::isnan(af)) res |= 1 << 9; // quiet NaN
 
       std::fesetround(original_rm);
-      // std::cout << "Class: " << decode_fclass(res) << "\n";
 
 
       return {res, fcsr};

@@ -1,5 +1,4 @@
 #include "globals.h"
-#include <filesystem>
 
 std::filesystem::path globals::invokation_path = std::filesystem::current_path();
 
@@ -11,9 +10,14 @@ std::filesystem::path globals::registers_dump_file_path = (globals::invokation_p
 std::filesystem::path globals::memory_dump_file_path = (globals::invokation_path / "vm_state" / "memory_dump.json");
 std::filesystem::path globals::cache_dump_file_path = (globals::invokation_path / "vm_state" / "cache_dump.json");
 std::filesystem::path globals::vm_state_dump_file_path = (globals::invokation_path / "vm_state" / "vm_state_dump.json");
+std::filesystem::path globals::vm_cout_file_path = (globals::invokation_path / "vm_state" / "vm_cout.txt");
+std::ofstream globals::vm_cout_file(globals::vm_cout_file_path.string());
 
 bool globals::verbose_errors_print = false;
 bool globals::verbose_warnings = false;
 bool globals::vm_as_backend = false;
 
+
 unsigned int globals::text_section_start = 0x00000000;
+
+

@@ -27,16 +27,6 @@ AssembledProgram assemble(const std::string &filename) {
   }
 
   std::vector<Token> tokens = lexer->getTokenList();
-  // int previous_line = -1;
-  // for (const Token& token : tokens) {
-  //     if (token.line_number != previous_line) {
-  //         if (previous_line != -1) {
-  //             std::cout << std::endl;
-  //         }
-  //         previous_line = token.line_number;
-  //     }
-  //     std::cout << token << std::endl;
-  // }
 
   Parser parser(lexer->getFilename(), tokens);
   parser.parse();

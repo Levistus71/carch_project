@@ -700,19 +700,19 @@ const std::map<std::string, SymbolData> &Parser::getSymbolTable() const {
 void Parser::printErrors() const {
   for (const auto &error : errors_.all_errors) {
     std::visit([](auto &&arg) {
-      std::cout << arg;
+      globals::vm_cout_file << arg;
     }, error);
   }
 }
 
 void Parser::printSymbolTable() const {
   if (symbol_table_.empty()) {
-    std::cout << "Symbol table is empty." << std::endl;
+    globals::vm_cout_file << "Symbol table is empty." << std::endl;
     return;
   }
 
   for (const auto &pair : symbol_table_) {
-    std::cout << pair.first << " -> " << pair.second.address << " " << pair.second.isData << '\n';
+    globals::vm_cout_file << pair.first << " -> " << pair.second.address << " " << pair.second.isData << '\n';
   }
 }
 
@@ -733,33 +733,33 @@ void Parser::printDataBuffers() const {
   };
 
   for (const auto &data : data_buffer_) {
-    std::cout << std::hex;
+    globals::vm_cout_file << std::hex;
     if (std::holds_alternative<uint8_t>(data)) {
-      std::cout << std::get<uint8_t>(data);
+      globals::vm_cout_file << std::get<uint8_t>(data);
     } else if (std::holds_alternative<uint16_t>(data)) {
-      std::cout << std::get<uint16_t>(data);
+      globals::vm_cout_file << std::get<uint16_t>(data);
     } else if (std::holds_alternative<uint32_t>(data)) {
-      std::cout << std::get<uint32_t>(data);
+      globals::vm_cout_file << std::get<uint32_t>(data);
     } else if (std::holds_alternative<uint64_t>(data)) {
-      std::cout << std::get<uint64_t>(data);
+      globals::vm_cout_file << std::get<uint64_t>(data);
     } else if (std::holds_alternative<std::string>(data)) {
-      std::cout << stringToHex(std::get<std::string>(data));
+      globals::vm_cout_file << stringToHex(std::get<std::string>(data));
     }
 
-    std::cout << std::dec;
-    std::cout << '\n';
+    globals::vm_cout_file << std::dec;
+    globals::vm_cout_file << '\n';
   }
 
 }
 
 void Parser::printIntermediateCode() const {
   if (intermediate_code_.empty()) {
-    std::cout << "Intermediate code is empty." << std::endl;
+    globals::vm_cout_file << "Intermediate code is empty." << std::endl;
     return;
   }
 
   for (const auto &pair : intermediate_code_) {
-    std::cout << pair.first << " -> " << pair.second << '\n';
+    globals::vm_cout_file << pair.first << " -> " << pair.second << '\n';
   }
 }
 

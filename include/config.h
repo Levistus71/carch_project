@@ -58,7 +58,7 @@ struct VmConfig {
   }
   void setRunStepDelay(uint64_t delay) {
     run_step_delay = delay;
-    std::cout << "Run step delay set to: " << run_step_delay << " ms" << std::endl;
+    globals::vm_cout_file << "Run step delay set to: " << run_step_delay << " ms" << std::endl;
   }
   uint64_t getRunStepDelay() const {
     return run_step_delay;
@@ -199,7 +199,7 @@ struct VmConfig {
           throw e;
         }
         catch(const std::out_of_range& e){
-          std::cout << "The value you are trying to set is too large." << std::endl;
+          globals::vm_cout_file << "The value you are trying to set is too large." << std::endl;
           throw std::out_of_range("");
         }
       }

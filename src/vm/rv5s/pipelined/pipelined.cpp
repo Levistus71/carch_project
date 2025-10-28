@@ -41,10 +41,10 @@ void RV5SVM::RunPipelinedWithoutHazardDetection(bool debug_mode){
         }
     
         instruction_executed++;
-        std::cout << "Program Counter: " << program_counter_ << std::endl;
+        globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
     }
     
-    std::cout << "Vm: the loaded program has ended!" << std::endl;
+    globals::vm_cout_file << "Vm: the loaded program has ended!" << std::endl;
     output_status_ = "VM_PROGRAM_END";
     
     DumpRegisters(globals::registers_dump_file_path, registers_);
@@ -88,10 +88,10 @@ void RV5SVM::RunPipelinedWithHazardWithoutForwarding(bool debug_mode){
         }
 
         instruction_executed++;
-        std::cout << "Program Counter: " << program_counter_ << std::endl;
+        globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
     }
     
-    std::cout << "Vm: the loaded program has ended!" << std::endl;
+    globals::vm_cout_file << "Vm: the loaded program has ended!" << std::endl;
     output_status_ = "VM_PROGRAM_END";
     
     DumpRegisters(globals::registers_dump_file_path, registers_);
@@ -124,10 +124,10 @@ void RV5SVM::RunPipelinedWithHazardWithForwarding(bool debug_mode){
         }
     
         instruction_executed++;
-        std::cout << "Program Counter: " << program_counter_ << std::endl;
+        globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
     }
     
-    std::cout << "Vm: the loaded program has ended!" << std::endl;
+    globals::vm_cout_file << "Vm: the loaded program has ended!" << std::endl;
     output_status_ = "VM_PROGRAM_END";
     
     DumpRegisters(globals::registers_dump_file_path, registers_);
@@ -182,7 +182,7 @@ void RV5SVM::StepPipelined(bool debug_mode){
 
 void RV5SVM::PipelinedUndo(){
     if (this->undo_instruction_stack.empty()) {
-        std::cout << "Cannot undo." << std::endl;
+        globals::vm_cout_file << "Cannot undo." << std::endl;
         output_status_ = "VM_NO_MORE_UNDO";
         return;
     }
@@ -247,10 +247,10 @@ void RV5SVM::PipelinedUndo(){
     // Pushing last_instruction into the queue
     this->instruction_deque.push_back(last_instruction);
 
-    std::cout << "Program Counter: " << program_counter_ << std::endl;
+    globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
 
     output_status_ = "Undo complete!";
-    std::cout << "VM_UNDO_COMPLETED" << std::endl;
+    globals::vm_cout_file << "VM_UNDO_COMPLETED" << std::endl;
 
     DumpRegisters(globals::registers_dump_file_path, registers_);
     DumpState(globals::vm_state_dump_file_path);

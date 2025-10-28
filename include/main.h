@@ -3,3 +3,4 @@
 
 #include "assembler/assembler.h"
 #include "vm/rv5s/rv5s_vm.h"
+#include "gui/gui_main.h"

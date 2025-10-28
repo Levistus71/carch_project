@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "globals.h"
+
 extern ImFont* STANDARD_SMALL_FONT;
 extern ImFont* STANDARD_MEDIUM_FONT;
 extern ImFont* EDITOR_SMALL_FONT;

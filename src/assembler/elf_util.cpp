@@ -73,5 +73,5 @@ void generateElfFile(const AssembledProgram &program, const std::string &output_
   // Write `.shstrtab` section
   elfFile.write(shstrtab.c_str(), shstrtab.size());
 
-  std::cout << "ELF file generated: " << output_filename << std::endl;
+  globals::vm_cout_file << "ELF file generated: " << output_filename << std::endl;
 }

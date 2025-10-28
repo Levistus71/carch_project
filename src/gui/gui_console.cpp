@@ -11,7 +11,7 @@ void console_main(){
     console.SetShowLineNumbers(false);
     console.SetPalette(console.GetConsolePalette());
     console.SetLanguageDefinition(console.mConsoleLangDef);
-    console.TieToFile("./test_console.txt");
+    console.TieToFileAndRead("./vm_state/vm_cout.txt");
 
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 size = {window_size.x, window_size.y};
@@ -25,7 +25,6 @@ void console_main(){
         ImGui::PushFont(EDITOR_MEDIUM_FONT);
 
         console.Render("Console", text_area_size, true);
-        // std::cout << console.GetText() << std::endl;
 
         ImGui::PopFont();
     }

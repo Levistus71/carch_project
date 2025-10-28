@@ -161,7 +161,7 @@ public:
     }
 
     void PrintType() {
-      std::cout << "rvssvm" << std::endl;
+      globals::vm_cout_file << "rvssvm" << std::endl;
     }
 };
 
