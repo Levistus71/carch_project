@@ -15,12 +15,12 @@ bool show_gpr = true;
 bool show_fpr = false;
 
 void LoadFonts(ImGuiIO& io){
-    STANDARD_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f);
-    STANDARD_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Roboto-Medium.ttf", 17.0f);
+    STANDARD_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f);
+    STANDARD_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 17.0f);
 
-    EDITOR_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Karla-Regular.ttf", 15.0f);
-    EDITOR_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Karla-Regular.ttf", 20.0f);
-    EDITOR_LARGE_FONT = io.Fonts->AddFontFromFileTTF("../../../imgui/misc/fonts/Karla-Regular.ttf", 25.0f);
+    EDITOR_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Karla-Regular.ttf", 15.0f);
+    EDITOR_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Karla-Regular.ttf", 20.0f);
+    EDITOR_LARGE_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Karla-Regular.ttf", 25.0f);
 
     io.Fonts->Build();
 }
