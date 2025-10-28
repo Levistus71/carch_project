@@ -343,8 +343,8 @@ int main(int, char**)
             }
             // memory
             else if(in_memory){
-                ImVec2 MEMORY_SHEATH_POS{CENTER_POS.x, CENTER_POS.y};
-                ImVec2 MEMORY_SHEATH_SIZE{CENTER_SIZE.x, CENTER_SIZE.y};
+                ImVec2 MEMORY_SHEATH_SIZE{CENTER_SIZE.x * 0.9f, CENTER_SIZE.y * 0.8f};
+                ImVec2 MEMORY_SHEATH_POS{CENTER_POS.x + MEMORY_SHEATH_SIZE.x * 0.02f, CENTER_POS.y + MEMORY_SHEATH_SIZE.x * 0.02f};
                 ImGui::SetNextWindowPos(MEMORY_SHEATH_POS);
                 ImGui::SetNextWindowSize(MEMORY_SHEATH_SIZE);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
@@ -354,11 +354,18 @@ int main(int, char**)
                 }
                 ImGui::PopStyleColor();
                 ImGui::End();
+
+                ImVec2 memory_vars_pos{CENTER_POS.x, CENTER_POS.y + MEMORY_SHEATH_SIZE.y};
+                ImVec2 memory_vars_size{CENTER_SIZE.x, CENTER_SIZE.y - MEMORY_SHEATH_SIZE.y};
+                ImGui::BeginChild("Memory Window Variables", memory_vars_size);
+                {
+
+                }
+                ImGui::EndChild();
             }
 
             ImGui::End();
         }
-
         // ImGui::ShowDemoWindow();
 
         // Rendering

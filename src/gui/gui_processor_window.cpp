@@ -125,8 +125,8 @@ int processor_main() {
     // Our window (Processor rendering):
     
     {
-        ImVec2 PROCESSOR_SIZE{1000.0f, 500.0f};
-        ImGui::BeginChild("Processor window", PROCESSOR_SIZE, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+        ImVec2 PROCESSOR_SIZE{950.0f, 450.0f};
+        ImGui::BeginChild("Processor window", PROCESSOR_SIZE, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_HorizontalScrollbar);
 
         // remove spacing between stages
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));      
