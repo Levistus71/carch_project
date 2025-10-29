@@ -18,8 +18,19 @@ void editor_execute(){
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f));
 
         text_editor.SetDebugMode(true);
-        text_editor.SetDebugModeTypeSingleCycle(false);
-		text_editor.SetDebugLines(3, 4, 5, 6, 7);
+        if(!vm.PipeliningEnabled()){
+            text_editor.SetDebugModeTypeSingleCycle(true);
+            size_t text_line_number = vm.program_.instruction_number_line_number_mapping[vm.GetInstructionPCs()[0] / 4];
+            text_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+        }
+        else{
+            text_editor.SetDebugModeTypeSingleCycle(false);
+            std::vector<uint64_t> pcs = vm.GetInstructionPCs();
+            for(int i=0;i<5;i++)
+                pcs[i] = vm.program_.instruction_number_line_number_mapping[pcs[i] / 4];
+            text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+        }
+        
 
         text_editor.Render("Editor Read Only", text_area_size, true);
 
@@ -53,6 +64,21 @@ void assembled_editor_main(){
 
         ImGui::PushFont(EDITOR_MEDIUM_FONT);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f));
+
+
+        assembled_editor.SetDebugMode(true);
+        if(!vm.PipeliningEnabled()){
+            assembled_editor.SetDebugModeTypeSingleCycle(true);
+            size_t text_line_number = vm.program_.instruction_number_disassembly_mapping[vm.GetInstructionPCs()[0] / 4];
+            assembled_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+        }
+        else{
+            assembled_editor.SetDebugModeTypeSingleCycle(false);
+            std::vector<uint64_t> pcs = vm.GetInstructionPCs();
+            for(int i=0;i<5;i++)
+                pcs[i] = vm.program_.instruction_number_disassembly_mapping[pcs[i] / 4];
+            assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+        }
 
         assembled_editor.Render("Assembled Editor Read Only", text_area_size, true);
 

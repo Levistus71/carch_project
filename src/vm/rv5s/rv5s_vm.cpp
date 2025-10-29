@@ -14,6 +14,9 @@ using instruction_set::get_instr_encoding;
 
 
 void RV5SVM::LoadVM() {
+	// resseting vm
+	Reset();
+
 	// updating VM state
 	this->pipelining_enabled = vm_config::config.getPipeliningStatus();
 	if(this->pipelining_enabled){

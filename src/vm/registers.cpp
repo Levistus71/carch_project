@@ -53,12 +53,12 @@ void RegisterFile::WriteCsr(size_t reg, uint64_t value) {
   csr_[reg] = value;
 }
 
-std::vector<uint64_t> RegisterFile::GetGprValues() const {
-  return {gpr_.begin(), gpr_.end()};
+const std::array<uint64_t, RegisterFile::NUM_GPR>& RegisterFile::GetGprValues() const {
+  return this->gpr_;
 }
 
-std::vector<uint64_t> RegisterFile::GetFprValues() const {
-  return {fpr_.begin(), fpr_.end()};
+const std::array<uint64_t, RegisterFile::NUM_GPR>& RegisterFile::GetFprValues() const {
+  return this->fpr_;
 }
 
 void RegisterFile::ModifyRegister(const std::string &reg_name, uint64_t value) {

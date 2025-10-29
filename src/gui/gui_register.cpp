@@ -17,8 +17,6 @@ void draw_gpr_register_file(){
         "t3", "t4", "t5", "t6"
     };
 
-    static uint64_t register_vals[32] = {0};
-
     if(ImGui::BeginTable("GPR register file", 3, ImGuiTableFlags_Borders)){
         const char* name_header = " Name ";
         const char* alias_header = " Alias ";
@@ -32,7 +30,11 @@ void draw_gpr_register_file(){
         ImGui::TableHeadersRow();
 
         ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
-        for(int i=0;i<32;i++){
+    
+        static constexpr size_t NUM_GPR = vm.registers_.GetNumGpr();
+        const std::array<uint64_t, NUM_GPR>& gpr_registers = vm.registers_.GetGprValues();
+
+        for(size_t i=0;i<NUM_GPR;i++){
             if(i%2==1){
                 ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, alternate_dark_color);
             }
@@ -42,7 +44,7 @@ void draw_gpr_register_file(){
             ImGui::TableNextColumn();
             ImGui::Text("%s",register_alias[i].c_str());
             ImGui::TableNextColumn();
-            ImGui::Text("%s", std::to_string(register_vals[i]).c_str());
+            ImGui::Text("%s", std::to_string(gpr_registers[i]).c_str());
         }
 
         ImGui::EndTable();
@@ -65,7 +67,6 @@ void draw_fpr_register_file(){
         "fs8", "fs9", "fs10", "fs11", "ft8", "ft9", "ft10", "ft11"
     };
 
-    static uint64_t register_vals[32] = {0};
 
     if(ImGui::BeginTable("FPR register file", 3, ImGuiTableFlags_Borders)){
         const char* name_header = " Name ";
@@ -80,7 +81,11 @@ void draw_fpr_register_file(){
         ImGui::TableHeadersRow();
         
         ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
-        for(int i=0;i<32;i++){
+
+        static constexpr size_t NUM_FPR = vm.registers_.GetNumFpr();
+        const std::array<uint64_t, NUM_FPR>& fpr_registers = vm.registers_.GetFprValues();
+
+        for(size_t i=0;i<NUM_FPR;i++){
             if(i%2==1){
                 ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, alternate_dark_color);
             }
@@ -90,7 +95,7 @@ void draw_fpr_register_file(){
             ImGui::TableNextColumn();
             ImGui::Text("%s",register_alias[i].c_str());
             ImGui::TableNextColumn();
-            ImGui::Text("%s", std::to_string(register_vals[i]).c_str());
+            ImGui::Text("%s", std::to_string(fpr_registers[i]).c_str());
         }
 
         ImGui::EndTable();

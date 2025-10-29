@@ -18,7 +18,7 @@
  * @brief Represents a register file containing integer, floating-point, and vector registers.
  */
 class RegisterFile {
- private:
+private:
   static constexpr size_t NUM_GPR = 32; ///< Number of General-Purpose Registers (GPR).
   static constexpr size_t NUM_FPR = 32; ///< Number of Floating-Point Registers (FPR).
 
@@ -29,7 +29,7 @@ class RegisterFile {
 
   std::array<uint64_t, NUM_CSR> csr_ = {}; ///< Array for storing CSR values.
 
- public:
+public:
   /**
    * @brief Enum representing the type of a register.
    */
@@ -81,13 +81,17 @@ class RegisterFile {
    * @brief Retrieves the values of all General-Purpose Registers (GPR).
    * @return A vector containing the values of all GPRs.
    */
-  [[nodiscard]] std::vector<uint64_t> GetGprValues() const;
+  [[nodiscard]] const std::array<uint64_t, RegisterFile::NUM_GPR>& GetGprValues() const;
 
   /**
    * @brief Retrieves the values of all Floating-Point Registers (FPR).
    * @return A vector containing the values of all FPRs.
    */
-  [[nodiscard]] std::vector<uint64_t> GetFprValues() const;
+  [[nodiscard]] const std::array<uint64_t, RegisterFile::NUM_FPR>& GetFprValues() const;
+
+
+  inline static constexpr size_t GetNumGpr() {return NUM_GPR;}
+  inline static constexpr size_t GetNumFpr() {return NUM_FPR;}
 
 
   void ModifyRegister(const std::string &reg_name, uint64_t value);

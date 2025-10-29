@@ -11,6 +11,7 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include "gui_common.h"
+#include "vm/registers.h"
 
 
 void register_main();

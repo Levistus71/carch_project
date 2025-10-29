@@ -14,6 +14,8 @@ bool in_memory = false;
 bool show_gpr = true;
 bool show_fpr = false;
 
+RV5SVM vm;
+
 void LoadFonts(ImGuiIO& io){
     STANDARD_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f);
     STANDARD_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 17.0f);

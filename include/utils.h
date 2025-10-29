@@ -49,7 +49,7 @@ void DumpErrors(const std::filesystem::path &filename, const std::vector<ParseEr
 
 void DumpNoErrors(const std::filesystem::path &filename);
 
-void DumpRegisters(const std::filesystem::path &filename, RegisterFile &register_file);
+void DumpRegisters(const std::filesystem::path &filename, const RegisterFile& register_file);
 
 void DumpDisasssembly(const std::filesystem::path &filename, AssembledProgram &program);
 

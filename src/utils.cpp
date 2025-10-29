@@ -158,10 +158,10 @@ void DumpNoErrors(const std::filesystem::path &filename) {
   file.close();
 }
 
-void DumpRegisters(const std::filesystem::path &filename, RegisterFile &register_file) {
+void DumpRegisters(const std::filesystem::path &filename, const RegisterFile& register_file) {
 
-  std::vector<uint64_t> gp_registers = register_file.GetGprValues();
-  std::vector<uint64_t> fp_registers = register_file.GetFprValues();
+  const std::array<uint64_t, RegisterFile::GetNumGpr()>& gp_registers = register_file.GetGprValues();
+  const std::array<uint64_t, RegisterFile::GetNumFpr()>& fp_registers = register_file.GetFprValues();
 
   std::ofstream file(filename);
   if (!file.is_open()) {

@@ -118,6 +118,17 @@ public:
       return instruction_deque[4];
     }
 
+    bool PipeliningEnabled(){
+      return pipelining_enabled;
+    }
+
+    std::vector<uint64_t> GetInstructionPCs(){
+      if(pipelining_enabled)
+        return {instruction_deque[0].pc, instruction_deque[1].pc, instruction_deque[2].pc, instruction_deque[3].pc, instruction_deque[4].pc};
+      else
+        return {this->program_counter_};
+    }
+
 
     void LoadVM() override;
 

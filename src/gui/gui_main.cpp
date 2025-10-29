@@ -85,7 +85,6 @@ int gui_main()
 
 
     // main()
-    RV5SVM vm;
     globals::vm_cout_file << "Virtual Machine started. Hello!" << std::endl;
     
     
@@ -170,6 +169,8 @@ int gui_main()
                         in_execute = true;
                         in_processor = false;
                         in_memory = false;
+
+                        vm.LoadVM();
                     }
                     catch(const std::runtime_error& e){
                         globals::vm_cout_file << "Assembly failed :(" << std::endl;
@@ -184,7 +185,7 @@ int gui_main()
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
                 if(ImGui::Button("Step Forward", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    
+                    vm.Step();
                 }
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
