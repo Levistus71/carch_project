@@ -1,0 +1,98 @@
+InstrContext:
+    holds all the related info regarding an instruction.
+
+
+BELOW IS ALL THE VM CLASS HOLDS:
+
+FUNCTIONS:
+Stages:
+    void Fetch();
+        needs an InstrContext, a decoder, a branch predictor, and current pc
+
+    void Decode(bool debug_mode);
+    void HandleSyscall(bool debug_mode);
+        needs an InstrContext, a decode unit, a register file,
+
+    void Execute();
+    void ResolveBranch();
+    void ExecuteBasic();
+    void ExecuteFloat();
+    void ExecuteDouble();
+        needs an InstrContext, an alu, current pc
+    
+    void MemoryAccess(bool debug_mode);
+        needs an InstrContext and a memory_controller
+
+    void WriteBack(bool debug_mode);
+    void WriteBackCsr(bool debug_mode);
+        needs an InstrContext and a register file
+
+
+Main Logic:
+    needs the instruction_deque, the undo_instruction_deque, and the above stages
+
+    // hazards:
+	bool DetectDataHazardWithoutForwarding();
+	bool DetectDataHazardWithForwarding();
+	bool DetectControlHazard();
+  	void InsertBubble();
+  	void HandleControlHazard();
+	
+	// RUN:
+  	// SingleCycle
+	void RunSingleCycle();
+
+	// Pipeline
+  	void DrivePipeline(bool debug_mode);
+  	void PopWbInstruction(bool debug_mode);
+
+	void RunPipelined();
+  	void StepPipelined(bool debug_mode);
+
+	void RunPipelinedWithoutHazardDetection(bool debug_mode);
+  	void StepPipelinedWithoutHazardDetection(bool debug_mode);
+  
+	void RunPipelinedWithHazardWithoutForwarding(bool debug_mode);
+  	void StepPipelinedWithHazardWithoutForwarding(bool debug_mode);
+  
+	void RunPipelinedWithHazardWithForwarding(bool debug_mode);
+  	void StepPipelinedWithHazardWithForwarding(bool debug_mode);
+	
+	// DEBUG RUN:
+  	// SingleCycle
+	void DebugRunSingleCycle();
+	void SingleCycleStep(bool dump);
+	void SingleCycleUndo();
+	// Pipeline
+	void DebugRunPipelined();
+	void PipelinedUndo();
+
+
+A FEW API FUNCTIONS
+
+
+
+VARS:
+    a decode unit (gets an InstrContext and a register file, Decode() basically uses this)
+    a branch predictor (has almost relation to the vm, all prediction and training done internally)
+
+    // DEBUG VARS
+	bool stop_requested = false;
+  	std::deque<InstrContext> undo_instruction_stack;
+	size_t max_undo_stack_size;
+	
+	// for input handling in syscalls:
+	std::mutex input_mutex;
+	std::condition_variable input_cv;
+	std::queue<std::string> input_queue;
+
+    a "AssembledProgram" class which stores the disassembled code, unordered_maps for mapping .text to .s files (idk why this still here, memory hogging)
+    a uint64_t program_counter
+
+    MemoryController memory_controller_;
+
+    RegisterFile registers_;
+    
+    alu::Alu alu_;
+    
+    and a few breakpoints

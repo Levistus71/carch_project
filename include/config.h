@@ -39,11 +39,11 @@ struct VmConfig {
   bool f_extension_enabled = true;
   bool d_extension_enabled = true;
 
-  size_t max_undo_stack_size = 256; // Default number of undo's allowed
+  size_t max_undo_stack_size = 256; // Default number of undos allowed
 
-  bool pipelining_enabled = false;
+  bool pipelining_enabled = true;
   bool data_forwarding_enabled = false;
-  bool hazard_detection_enabled = false;
+  bool hazard_detection_enabled = true;
 
   bool branch_prediction_enabled = false;
   bool branch_prediction_static = false;

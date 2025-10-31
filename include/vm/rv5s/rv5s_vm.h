@@ -40,16 +40,15 @@ private:
 
 	bool branch_prediction_enabled = false;
 	bool branch_prediction_static = false;
-	bool branch_prediction_dynamic = false;
 	
 	std::deque<InstrContext> instruction_deque;
 	RV5SDecodeUnit decode_unit;
-  RV5SBranchPredictor branch_predictor;
+  	RV5SBranchPredictor branch_predictor;
 
 	
 	// DEBUG VARS
 	bool stop_requested = false;
-  std::deque<InstrContext> undo_instruction_stack;
+  	std::deque<InstrContext> undo_instruction_stack;
 	size_t max_undo_stack_size;
 	
 	// for input handling in syscalls:
@@ -72,35 +71,52 @@ private:
 	void MemoryAccess(bool debug_mode);
 	
 	void WriteBack(bool debug_mode);
-	void WriteBackCsr(bool debug_mode);
+	void WriteBackCsr(bool debug_mode);	
 	
 	// hazards:
 	bool DetectDataHazardWithoutForwarding();
 	bool DetectDataHazardWithForwarding();
 	bool DetectControlHazard();
-  void HandleDataHazard();
-  void HandleControlHazard();
+  	void InsertBubble();
+  	void HandleControlHazard();
 	
 	// RUN:
-  // SingleCycle
+  	// SingleCycle
 	void RunSingleCycle();
+
 	// Pipeline
+  	void DrivePipeline(bool debug_mode);
+  	void PopWbInstruction(bool debug_mode);
+
 	void RunPipelined();
-  void StepPipelined(bool debug_mode);
+  	void StepPipelined(bool debug_mode);
+
 	void RunPipelinedWithoutHazardDetection(bool debug_mode);
+  	void StepPipelinedWithoutHazardDetection(bool debug_mode);
+  
 	void RunPipelinedWithHazardWithoutForwarding(bool debug_mode);
+  	void StepPipelinedWithHazardWithoutForwarding(bool debug_mode);
+  
 	void RunPipelinedWithHazardWithForwarding(bool debug_mode);
+  	void StepPipelinedWithHazardWithForwarding(bool debug_mode);
 	
 	// DEBUG RUN:
-  // SingleCycle
+  	// SingleCycle
 	void DebugRunSingleCycle();
 	void SingleCycleStep(bool dump);
 	void SingleCycleUndo();
-  // Pipeline
-  void DebugRunPipelined();
-  void PipelinedUndo();
+	// Pipeline
+	void DebugRunPipelined();
+	void PipelinedUndo();
 
 public:
+
+	bool GetBranchPredictionStatus(){
+		return branch_prediction_enabled;
+	}
+	bool BranchPredictionIsStatic(){
+		return branch_prediction_static;
+	}
 
     InstrContext& GetIfInstruction(){
       return instruction_deque[0];
@@ -132,20 +148,20 @@ public:
 
     void LoadVM() override;
 
-  RV5SVM() : VmBase(), instruction_deque(5) {
-    DumpRegisters(globals::registers_dump_file_path, registers_);
-    DumpState(globals::vm_state_dump_file_path);
+	RV5SVM() : VmBase(), instruction_deque(5) {
+		DumpRegisters(globals::registers_dump_file_path, registers_);
+		DumpState(globals::vm_state_dump_file_path);
 
-    pipelining_enabled = vm_config::config.getPipeliningStatus();
-    hazard_detection_enabled = vm_config::config.getHazardDetectionStatus();
-    data_forwarding_enabled = vm_config::config.getDataFowardingStatus();
+		pipelining_enabled = vm_config::config.getPipeliningStatus();
+		hazard_detection_enabled = vm_config::config.getHazardDetectionStatus();
+		data_forwarding_enabled = vm_config::config.getDataFowardingStatus();
 
-    GetIfInstruction().nopify();
-    GetIdInstruction().nopify();
-    GetExInstruction().nopify();
-    GetMemInstruction().nopify();
-    GetWbInstruction().nopify();
-  }
+		GetIfInstruction().nopify();
+		GetIdInstruction().nopify();
+		GetExInstruction().nopify();
+		GetMemInstruction().nopify();
+		GetWbInstruction().nopify();
+	}
     ~RV5SVM() = default;
 
     void Run() override;

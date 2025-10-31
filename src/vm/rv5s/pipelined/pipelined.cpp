@@ -24,6 +24,18 @@ void RV5SVM::DebugRunPipelined(){
     }
 }
 
+void RV5SVM::StepPipelined(bool debug_mode){
+    if(!this->hazard_detection_enabled){
+        StepPipelinedWithoutHazardDetection(debug_mode);
+    }
+    else if(this->hazard_detection_enabled && !this->data_forwarding_enabled){
+        StepPipelinedWithHazardWithoutForwarding(debug_mode);
+    }
+    else if(this->hazard_detection_enabled && this->data_forwarding_enabled){
+        StepPipelinedWithHazardWithForwarding(debug_mode);
+    }
+}
+
 void RV5SVM::RunPipelinedWithoutHazardDetection(bool debug_mode){
     ClearStop();
     uint64_t instruction_executed = 0;
@@ -33,7 +45,7 @@ void RV5SVM::RunPipelinedWithoutHazardDetection(bool debug_mode){
             break;
 
         
-        StepPipelined(debug_mode);
+        StepPipelinedWithoutHazardDetection(debug_mode);
 
         if(this->program_counter_ >= this->program_size_){
             if(GetIdInstruction().nopped && GetExInstruction().nopped && GetMemInstruction().nopped && GetWbInstruction().nopped)
@@ -49,6 +61,14 @@ void RV5SVM::RunPipelinedWithoutHazardDetection(bool debug_mode){
     
     DumpRegisters(globals::registers_dump_file_path, registers_);
     DumpState(globals::vm_state_dump_file_path);
+}
+
+
+void RV5SVM::StepPipelinedWithoutHazardDetection(bool debug_mode){    
+    // poppping last cycle's wb
+    PopWbInstruction(debug_mode);
+
+    DrivePipeline(debug_mode);
 }
 
 /*
@@ -71,21 +91,7 @@ void RV5SVM::RunPipelinedWithHazardWithoutForwarding(bool debug_mode){
         if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
             break;
 
-
-        StepPipelined(debug_mode);
-
-        if(this->program_counter_ >= this->program_size_){
-            if(GetIdInstruction().nopped && GetExInstruction().nopped && GetMemInstruction().nopped && GetWbInstruction().nopped)
-                break;
-        }
-        
-        if(DetectControlHazard()){
-            HandleControlHazard();
-        }
-
-        if(DetectDataHazardWithoutForwarding()){
-            HandleDataHazard();
-        }
+        StepPipelinedWithHazardWithoutForwarding(debug_mode);
 
         instruction_executed++;
         globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
@@ -97,6 +103,29 @@ void RV5SVM::RunPipelinedWithHazardWithoutForwarding(bool debug_mode){
     DumpRegisters(globals::registers_dump_file_path, registers_);
     DumpState(globals::vm_state_dump_file_path);
 }
+
+
+void RV5SVM::StepPipelinedWithHazardWithoutForwarding(bool debug_mode){
+    static bool data_hazard_detected = false;
+    if(data_hazard_detected){
+        InsertBubble();
+    }
+    PopWbInstruction(debug_mode);
+
+    DrivePipeline(debug_mode);
+
+    if(this->program_counter_ >= this->program_size_){
+        if(GetIdInstruction().nopped && GetExInstruction().nopped && GetMemInstruction().nopped && GetWbInstruction().nopped)
+            return;
+    }
+    
+    if(DetectControlHazard()){
+        HandleControlHazard();
+    }
+
+    data_hazard_detected = DetectDataHazardWithoutForwarding();
+}
+
 
 
 void RV5SVM::RunPipelinedWithHazardWithForwarding(bool debug_mode){
@@ -107,21 +136,7 @@ void RV5SVM::RunPipelinedWithHazardWithForwarding(bool debug_mode){
         if (instruction_executed > vm_config::config.getInstructionExecutionLimit())
             break;
         
-        
-        StepPipelined(debug_mode);
-
-        if(this->program_counter_ >= this->program_size_){
-            if(GetIdInstruction().nopped && GetExInstruction().nopped && GetMemInstruction().nopped && GetWbInstruction().nopped)
-                break;
-        }
-
-        if(DetectControlHazard()){
-            HandleControlHazard();
-        }
-        
-        if(DetectDataHazardWithForwarding()){
-            HandleDataHazard();
-        }
+            StepPipelinedWithHazardWithForwarding(debug_mode);
     
         instruction_executed++;
         globals::vm_cout_file << "Program Counter: " << program_counter_ << std::endl;
@@ -135,49 +150,27 @@ void RV5SVM::RunPipelinedWithHazardWithForwarding(bool debug_mode){
 }
 
 
-void RV5SVM::StepPipelined(bool debug_mode){    
-    // Popping the last 'cycle' wb
-    this->instruction_deque.pop_back();
+void RV5SVM::StepPipelinedWithHazardWithForwarding(bool debug_mode){
+    static bool data_hazard_detected = false;
 
+    if(data_hazard_detected){
+        InsertBubble();
+    }
+    PopWbInstruction(debug_mode);
 
-    if(debug_mode){
-        InstrContext retired_instruction = instruction_deque.back();
-        this->instruction_deque.pop_back();
-        while(this->undo_instruction_stack.size() >= this->max_undo_stack_size){
-            undo_instruction_stack.pop_back();
-        }
-        this->undo_instruction_stack.push_front(retired_instruction);
+    DrivePipeline(debug_mode);
+
+    if(this->program_counter_ >= this->program_size_){
+        if(GetIdInstruction().nopped && GetExInstruction().nopped && GetMemInstruction().nopped && GetWbInstruction().nopped)
+            return;
     }
 
-    // Pushing a new instruction infront of the instruction deque
-    if(this->program_counter_ < this->program_size_)
-        this->instruction_deque.push_front(InstrContext{this->program_counter_});
-    else{
-        AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs in fetch
-        InstrContext nop;
-        nop.nopify();
-        this->instruction_deque.push_front(nop);
+    if(DetectControlHazard()){
+        HandleControlHazard();
     }
-
-    // Fetch
-    Fetch();
-
-    /**
-     * WriteBack() happens before decode, following "write first"
-     */
-    // WriteBack
-    WriteBack(debug_mode);
-
-    // Decode
-    Decode(debug_mode);
-
-    // Execute
-    Execute();
-
-    // MemoryAccess
-    MemoryAccess(debug_mode);
+    
+    data_hazard_detected = DetectDataHazardWithForwarding();
 }
-
 
 
 void RV5SVM::PipelinedUndo(){
@@ -254,4 +247,50 @@ void RV5SVM::PipelinedUndo(){
 
     DumpRegisters(globals::registers_dump_file_path, registers_);
     DumpState(globals::vm_state_dump_file_path);
+}
+
+
+
+void RV5SVM::PopWbInstruction(bool debug_mode){
+    if(debug_mode){
+        InstrContext retired_instruction = instruction_deque.back();
+        this->instruction_deque.pop_back();
+        while(this->undo_instruction_stack.size() >= this->max_undo_stack_size){
+            undo_instruction_stack.pop_back();
+        }
+        this->undo_instruction_stack.push_front(retired_instruction);
+    }
+    else{
+        this->instruction_deque.pop_back();
+    }
+}
+
+void RV5SVM::DrivePipeline(bool debug_mode){
+    // Pushing a new instruction infront of the instruction deque
+    if(this->program_counter_ < this->program_size_)
+        this->instruction_deque.push_front(InstrContext{this->program_counter_});
+    else{
+        AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs in fetch
+        InstrContext nop;
+        nop.nopify();
+        this->instruction_deque.push_front(nop);
+    }
+
+    // Fetch
+    Fetch();
+
+    /**
+     * WriteBack() happens before decode, following "write first"
+     */
+    // WriteBack
+    WriteBack(debug_mode);
+
+    // Decode
+    Decode(debug_mode);
+
+    // Execute
+    Execute();
+
+    // MemoryAccess
+    MemoryAccess(debug_mode);
 }
