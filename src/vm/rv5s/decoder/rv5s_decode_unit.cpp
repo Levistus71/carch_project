@@ -41,7 +41,7 @@ void RV5SDecodeUnit::SetRegImmValues(InstrContext& instr_context, RegisterFile& 
     // ReadGpr uses size_t. implicit sign extension retains the correct register value.
     
     instr_context.rs1_value = rf.ReadGpr(instr_context.rs1);
-    instr_context.rs2_value = rf.ReadGpr(instr_context.rs1);
+    instr_context.rs2_value = rf.ReadGpr(instr_context.rs2);
 
     instr_context.frs1_value = rf.ReadFpr(instr_context.rs1);
     instr_context.frs2_value = rf.ReadFpr(instr_context.rs2);

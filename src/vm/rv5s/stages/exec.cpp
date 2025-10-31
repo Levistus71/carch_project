@@ -8,6 +8,7 @@ void RV5SVM::Execute() {
 	uint8_t& opcode = ex_instruction.opcode;
 	uint8_t& funct3 = ex_instruction.funct3;
 
+	// TODO: modify this. alu shouldn't check anything
 	if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
 		ExecuteFloat();
 		return;
