@@ -180,7 +180,7 @@ int gui_main()
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
                 if(ImGui::Button("Undo", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    
+                    vm.Undo();
                 }
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
@@ -190,12 +190,12 @@ int gui_main()
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
                 if(ImGui::Button("Run (debug)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    
+                    vm.DebugRun();
                 }
                 offset+=left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
                 if(ImGui::Button("Run (no interaction)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    
+                    vm.Run();
                 }
             }
             ImGui::End();

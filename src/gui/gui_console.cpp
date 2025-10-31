@@ -23,7 +23,7 @@ void console_main(){
         ImGui::SetCursorPos(text_area_pos);
 
         ImGui::PushFont(EDITOR_MEDIUM_FONT);
-
+        console.SetCursorPosition({console.GetTotalLines()-1, 0});
         console.Render("Console", text_area_size, true);
 
         ImGui::PopFont();

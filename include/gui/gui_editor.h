@@ -76,7 +76,7 @@ public:
 		size_t ExLine;
 		size_t MemLine;
 		size_t WbLine;
-		ImU32 DebugLineColor = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 40.0f/255.0f, 0.4f});
+		ImU32 DebugLineColor = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 40.0f/255.0f, 0.2f});
 		ImU32 DebugTextColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
 	};
 	DebugLines mDebugLines;

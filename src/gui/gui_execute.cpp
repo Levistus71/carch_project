@@ -22,6 +22,7 @@ void editor_execute(){
             text_editor.SetDebugModeTypeSingleCycle(true);
             size_t text_line_number = vm.program_.instruction_number_line_number_mapping[vm.GetInstructionPCs()[0] / 4];
             text_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+            text_editor.SetCursorPosition({static_cast<int>(text_line_number),0});
         }
         else{
             text_editor.SetDebugModeTypeSingleCycle(false);
@@ -29,6 +30,7 @@ void editor_execute(){
             for(int i=0;i<5;i++)
                 pcs[i] = vm.program_.instruction_number_line_number_mapping[pcs[i] / 4];
             text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+            text_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
         }
         
 
@@ -71,6 +73,7 @@ void assembled_editor_main(){
             assembled_editor.SetDebugModeTypeSingleCycle(true);
             size_t text_line_number = vm.program_.instruction_number_disassembly_mapping[vm.GetInstructionPCs()[0] / 4];
             assembled_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+            assembled_editor.SetCursorPosition({static_cast<int>(text_line_number), 0});
         }
         else{
             assembled_editor.SetDebugModeTypeSingleCycle(false);
@@ -78,6 +81,7 @@ void assembled_editor_main(){
             for(int i=0;i<5;i++)
                 pcs[i] = vm.program_.instruction_number_disassembly_mapping[pcs[i] / 4];
             assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+            assembled_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
         }
 
         assembled_editor.Render("Assembled Editor Read Only", text_area_size, true);

@@ -134,13 +134,10 @@ void RV5SVM::ExecuteFloat() {
 		rm = registers_.ReadCsr(0x002);
 	}
 
-	uint64_t& reg1_value = ex_instruction.frs1_value;
+	uint64_t& reg1_value = (ex_instruction.rs1_from_fprf) ? ex_instruction.frs1_value : ex_instruction.rs1_value;
 	uint64_t& reg2_value = ex_instruction.frs2_value;
 	uint64_t& reg3_value = ex_instruction.frs3_value;
 
-	if (funct7==0b1101000 || funct7==0b1111000 || opcode==0b0000111 || opcode==0b0100111) {
-		reg1_value = ex_instruction.rs1_value;
-	}
 
 	if (ex_instruction.imm_to_alu) {
 		reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));

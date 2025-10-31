@@ -31,7 +31,7 @@ void RV5SVM::WriteBack(bool debug_mode) {
 	}
 	else{
 		if(debug_mode){
-			wb_instruction.reg_overwritten = this->registers_.ReadCsr(wb_instruction.rd);
+			wb_instruction.reg_overwritten = this->registers_.ReadGpr(wb_instruction.rd);
 		}
 		this->registers_.WriteGpr(wb_instruction.rd, write_data);
 	}

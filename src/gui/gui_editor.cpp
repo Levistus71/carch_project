@@ -2238,11 +2238,11 @@ const TextEditor::Palette& TextEditor::GetDarkPalette()
 {
 	const static Palette p = { {
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}),	// Default
-			ImGui::ColorConvertFloat4ToU32({123.0f/255.0f, 107.0f/255.0f, 227.0f/255.0f, 1.0f}),	// Instruction
-			ImGui::ColorConvertFloat4ToU32({194.0f/255.0f, 25.0f/255.0f, 70.0f/255.0f, 1.0f}),	// Register
+			ImGui::ColorConvertFloat4ToU32({54.0f/255.0f, 177.0f/255.0f, 250.0f/255.0f, 1.0f}),	// Instruction
+			ImGui::ColorConvertFloat4ToU32({245.0f/255.0f, 61.0f/255.0f, 110.0f/255.0f, 1.0f}),	// Register
 			ImGui::ColorConvertFloat4ToU32({219.0f/255.0f, 144.0f/255.0f, 114.0f/255.0f, 1.0f}), // AssemblerDirective
             ImGui::ColorConvertFloat4ToU32({230.0f/255.0f, 180.0f/255.0f, 40.0f/255.0f, 1.0f}), // Label
-			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}), // Number
+			ImGui::ColorConvertFloat4ToU32({173.0f/255.0f, 173.0f/255.0f, 173.0f/255.0f, 1.0f}), // Number
 			ImGui::ColorConvertFloat4ToU32({255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f}),	// String
 			ImGui::ColorConvertFloat4ToU32({16.0f/255.0f, 148.0f/255.0f, 18.0f/255.0f, 1.0f}), // Comment (single line)
 			ImGui::ColorConvertFloat4ToU32({51.0f/255.0f, 51.0f/255.0f, 51.0f/255.0f, 1.0f}), // Background
@@ -2268,14 +2268,14 @@ const TextEditor::Palette& TextEditor::GetConsolePalette()
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Number
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // String
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Comment (single line)
-			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Background
+			ImGui::ColorConvertFloat4ToU32({69.0f/255.0f, 69.0f/255.0f, 69.0f/255.0f, 1.0f}), // Background
 			ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), // Cursor
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Selection
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // ErrorMarker
 			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Line number
-			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line fill
-			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line fill (inactive)
-			ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), // Current line edge
+			ImGui::ColorConvertFloat4ToU32({69.0f/255.0f, 69.0f/255.0f, 69.0f/255.0f, 1.0f}), // Current line fill
+			ImGui::ColorConvertFloat4ToU32({69.0f/255.0f, 69.0f/255.0f, 69.0f/255.0f, 1.0f}), // Current line fill (inactive)
+			ImGui::ColorConvertFloat4ToU32({69.0f/255.0f, 69.0f/255.0f, 69.0f/255.0f, 1.0f}), // Current line edge
 		} };
 	return p;
 }
@@ -2673,6 +2673,14 @@ TextEditor::PaletteIndex TextEditor::GetPaletteIndexFromToken(std::string token,
         if(separator == ':'){
             return PaletteIndex::Label;
         }
+
+		try{
+			std::stoi(token);
+			return PaletteIndex::Number;
+		}
+		catch(const std::invalid_argument& e){
+			return PaletteIndex::Default;
+		}
     }
     return PaletteIndex::Default;
 }
