@@ -15,7 +15,7 @@ private:
         bool take_branch;
     };
 
-    int btb_size = 256;
+    size_t btb_size = 256;
     int btb_index_mask = 0xFF;
     int sll_pc = 2; // last 2 bits of pc is always 0
 

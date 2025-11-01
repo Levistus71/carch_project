@@ -158,10 +158,10 @@ void DumpNoErrors(const std::filesystem::path &filename) {
   file.close();
 }
 
-void DumpRegisters(const std::filesystem::path &filename, const RegisterFile& register_file) {
+void DumpRegisters(const std::filesystem::path &filename, const register_file::RegisterFile& register_file) {
 
-  const std::array<uint64_t, RegisterFile::GetNumGpr()>& gp_registers = register_file.GetGprValues();
-  const std::array<uint64_t, RegisterFile::GetNumFpr()>& fp_registers = register_file.GetFprValues();
+  const std::array<uint64_t, register_file::RegisterFile::GetNumGpr()>& gp_registers = register_file.GetGprValues();
+  const std::array<uint64_t, register_file::RegisterFile::GetNumFpr()>& fp_registers = register_file.GetFprValues();
 
   std::ofstream file(filename);
   if (!file.is_open()) {
@@ -171,9 +171,9 @@ void DumpRegisters(const std::filesystem::path &filename, const RegisterFile& re
   file << "{\n";
 
   file << "    \"control and status registers\": {\n";
-  if (!csr_to_address.empty()) {
-    auto it = csr_to_address.begin();
-    auto end = csr_to_address.end();
+  if (!register_file::csr_to_address.empty()) {
+    auto it = register_file::csr_to_address.begin();
+    auto end = register_file::csr_to_address.end();
 
     while (true) {
       const auto &key = it->first;

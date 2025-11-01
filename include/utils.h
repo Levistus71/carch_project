@@ -9,7 +9,6 @@
 
 #include "assembler/parser.h"
 #include "vm/registers.h"
-#include "vm/vm_base.h"
 #include "vm_asm_mw.h"
 
 #include <string>

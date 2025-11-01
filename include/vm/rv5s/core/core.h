@@ -50,7 +50,7 @@ public:
 
     Core();
 
-    const uint64_t GetProgramCounter() const;
+    uint64_t GetProgramCounter() const;
     void AddToProgramCounter(int64_t value);
     void SetProgramCounter(uint64_t value);
 

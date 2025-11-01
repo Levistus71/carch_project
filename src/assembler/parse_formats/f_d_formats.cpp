@@ -12,6 +12,8 @@
 
 #include <string>
 
+using namespace register_file;
+
 bool Parser::parse_O_FPR_C_FPR_C_FPR_C_FPR() {
   if (peekToken(1).line_number==currentToken().line_number
       && peekToken(1).type==TokenType::FP_REGISTER

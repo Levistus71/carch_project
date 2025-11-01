@@ -1,4 +1,4 @@
-#include "vm/rv5s_modularized/executor/executor.h"
+#include "vm/rv5s/executor/executor.h"
 
 namespace rv5s
 {

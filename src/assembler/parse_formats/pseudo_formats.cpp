@@ -12,6 +12,8 @@
 
 #include <string>
 
+using namespace register_file;
+
 bool Parser::parse_pseudo() {
   if (currentToken().value=="la") {
     if (peekToken(1).line_number==currentToken().line_number

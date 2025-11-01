@@ -11,6 +11,10 @@
 
 #include <string>
 
+#include "globals.h"
+#include "config.h"
+using namespace register_file;
+
 bool Parser::parse_O() {
   if (peekToken(1).type==TokenType::EOF_ || peekToken(1).line_number!=currentToken().line_number
       ) {

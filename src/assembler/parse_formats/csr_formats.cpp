@@ -12,6 +12,8 @@
 
 #include <string>
 
+using namespace register_file;
+
 bool Parser::parse_O_GPR_C_CSR_C_GPR() {
   if (peekToken(1).line_number==currentToken().line_number
       && peekToken(1).type==TokenType::GP_REGISTER

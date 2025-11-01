@@ -41,9 +41,9 @@ struct VmConfig {
 
   size_t max_undo_stack_size = 256; // Default number of undos allowed
 
-  bool pipelining_enabled = true;
+  bool pipelining_enabled = false;
   bool data_forwarding_enabled = false;
-  bool hazard_detection_enabled = true;
+  bool hazard_detection_enabled = false;
 
   bool branch_prediction_enabled = false;
   bool branch_prediction_static = false;

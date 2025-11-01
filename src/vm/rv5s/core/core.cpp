@@ -1,4 +1,4 @@
-#include "vm/rv5s_modularized/core/core.h"
+#include "vm/rv5s/core/core.h"
 
 namespace rv5s{
 
@@ -10,7 +10,7 @@ void Core::AddToProgramCounter(int64_t value){
     program_counter_ = static_cast<uint64_t>(static_cast<int64_t>(program_counter_) + value);
 }
 
-const uint64_t Core::GetProgramCounter() const {
+uint64_t Core::GetProgramCounter() const {
     return program_counter_;
 }
 

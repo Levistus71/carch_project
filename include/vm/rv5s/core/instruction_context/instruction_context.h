@@ -172,7 +172,7 @@ namespace rv5s {
             fcsr_update = false;
     
             // nop flag
-            bool nopped = false;
+            nopped = false;
         }
     };
 

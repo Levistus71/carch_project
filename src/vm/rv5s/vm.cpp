@@ -1,4 +1,4 @@
-#include "vm/rv5s_modularized/vm.h"
+#include "vm/rv5s/vm.h"
 
 namespace rv5s{
 
@@ -32,7 +32,18 @@ void VM::Undo(){
     Executor::Undo(vm_core_);
 }
 
-std::vector<uint64_t> VM::GetInstructionPCs(Core& vm_core){
+bool VM::PipeliningEnabled(){
+    return vm_core_.pipelining_enabled_;
+}
+
+const std::array<uint64_t, 32>& VM::GetGprValues(){
+    return vm_core_.register_file_.GetGprValues();
+}
+const std::array<uint64_t, 32>& VM::GetFprValues(){
+    return vm_core_.register_file_.GetFprValues();
+}
+
+std::vector<uint64_t> VM::GetInstructionPCs(){
     if(vm_core_.pipelining_enabled_)
         return {vm_core_.instruction_deque_[0].pc, vm_core_.instruction_deque_[1].pc, vm_core_.instruction_deque_[2].pc, vm_core_.instruction_deque_[3].pc, vm_core_.instruction_deque_[4].pc};
     else

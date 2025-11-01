@@ -64,7 +64,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra -pedantic -g
-    -frounding-math -ffloat-store
+    -frounding-math
     -O2
 )
 

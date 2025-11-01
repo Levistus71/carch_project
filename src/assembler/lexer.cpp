@@ -18,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 
+using namespace register_file;
+
 Lexer::Lexer(std::string filename) : filename_(std::move(filename)), line_number_(0), column_number_(0), pos_(0) {
   input_.open(filename_);
   if (!input_) {

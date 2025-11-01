@@ -46,7 +46,7 @@ struct ICUnit {
   ICUnit(const ICUnit& other) = default;
   ICUnit(ICUnit&& other) noexcept = default;
   ICUnit& operator=(const ICUnit& other) = default;
-  ICUnit& operator=(const ICUnit&& other) noexcept = default;
+  ICUnit& operator=(ICUnit&& other) noexcept = default;
 
   friend std::ostream &operator<<(std::ostream &os, const ICUnit &unit) {
     auto emit_if_filled = [&os](const std::array<char, 6> &field,

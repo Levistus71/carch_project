@@ -31,8 +31,8 @@ void draw_gpr_register_file(){
 
         ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
     
-        static constexpr size_t NUM_GPR = vm.registers_.GetNumGpr();
-        const std::array<uint64_t, NUM_GPR>& gpr_registers = vm.registers_.GetGprValues();
+        static constexpr size_t NUM_GPR = 32;
+        const std::array<uint64_t, NUM_GPR>& gpr_registers = vm.GetGprValues();
 
         for(size_t i=0;i<NUM_GPR;i++){
             if(i%2==1){
@@ -82,8 +82,8 @@ void draw_fpr_register_file(){
         
         ImU32 alternate_dark_color = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 40.0f/255.0f, 40.0f/255.0f, 1.0f});
 
-        static constexpr size_t NUM_FPR = vm.registers_.GetNumFpr();
-        const std::array<uint64_t, NUM_FPR>& fpr_registers = vm.registers_.GetFprValues();
+        static constexpr size_t NUM_FPR = 32;
+        const std::array<uint64_t, NUM_FPR>& fpr_registers = vm.GetFprValues();
 
         for(size_t i=0;i<NUM_FPR;i++){
             if(i%2==1){

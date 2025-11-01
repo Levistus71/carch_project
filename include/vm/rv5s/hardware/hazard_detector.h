@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/core.h"
 
 namespace rv5s {
+class Core;
 
 class HazardDetector {    
 public:
@@ -16,6 +16,8 @@ public:
     
 private:
 
+    bool DetectDataHazardWithoutForwarding(Core& vm_core);
+    bool DetectDataHazardWithForwarding(Core& vm_core);
 
 };
 

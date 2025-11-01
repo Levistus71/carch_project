@@ -1,4 +1,4 @@
-#include "vm/rv5s_modularized/stages/stages.h"
+#include "vm/rv5s/stages/stages.h"
 #include "common/instructions.h"
 
 namespace rv5s{

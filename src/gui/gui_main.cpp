@@ -163,14 +163,12 @@ int gui_main()
                 if(ImGui::Button("Assemble", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
                     text_editor.SaveFile();
                     try{
-                        vm.program_ = assemble(text_editor.FilePath());
+                        vm.LoadVM(assemble(text_editor.FilePath()));
                         globals::vm_cout_file << "Assembly successful!" << std::endl << std::endl;
                         in_editor = false;
                         in_execute = true;
                         in_processor = false;
                         in_memory = false;
-
-                        vm.LoadVM();
                     }
                     catch(const std::runtime_error& e){
                         globals::vm_cout_file << "Assembly failed :(" << std::endl;

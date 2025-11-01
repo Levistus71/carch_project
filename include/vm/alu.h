@@ -16,8 +16,6 @@
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
-#pragma GCC optimize ("no-fast-math") 
-
 #define FCSR_INVALID_OP   (1 << 0)  // Invalid operation
 #define FCSR_DIV_BY_ZERO  (1 << 1)  // Divide by zero
 #define FCSR_OVERFLOW     (1 << 2)  // Overflow

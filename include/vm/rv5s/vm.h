@@ -8,7 +8,7 @@ namespace rv5s{
 
 class VM{
 public:
-    VM();
+    VM() = default;
 
     void Reset();
 
@@ -24,11 +24,17 @@ public:
 
     void Undo();
 
-    std::vector<uint64_t> GetInstructionPCs(Core& vm_core);
+    bool PipeliningEnabled();
+
+    const std::array<uint64_t, 32>& GetGprValues();
+    const std::array<uint64_t, 32>& GetFprValues();
+
+    std::vector<uint64_t> GetInstructionPCs();
+
+    AssembledProgram program_;
 
 private:
     Core vm_core_;
-	AssembledProgram program_;
 };
 
 
