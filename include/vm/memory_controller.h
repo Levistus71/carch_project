@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+namespace memory_controller{
 
 /**
  * @brief The MemoryController class is responsible for managing memory in the VM.
@@ -76,6 +77,8 @@ public:
     }
 
 };
+
+} // namespace memory_controller
 
 #endif // MEMORY_CONTROLLER_H
 

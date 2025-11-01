@@ -12,6 +12,10 @@
 #include <vector>
 #include <array>
 
+
+namespace register_file{
+
+
 RegisterFile::RegisterFile() = default;
 
 void RegisterFile::Reset() {
@@ -265,3 +269,5 @@ bool IsValidFloatingPointRegister(const std::string &reg) {
 bool IsValidCsr(const std::string &reg) {
   return valid_csr_registers.find(reg)!=valid_csr_registers.end();
 }
+
+} // namespace register_file

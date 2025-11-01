@@ -110,14 +110,6 @@ private:
 	void PipelinedUndo();
 
 public:
-
-	bool GetBranchPredictionStatus(){
-		return branch_prediction_enabled;
-	}
-	bool BranchPredictionIsStatic(){
-		return branch_prediction_static;
-	}
-
     InstrContext& GetIfInstruction(){
       return instruction_deque[0];
     }

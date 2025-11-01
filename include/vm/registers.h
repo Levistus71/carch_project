@@ -14,6 +14,9 @@
 #include <string>
 #include <cstdint>
 
+
+namespace register_file{
+
 /**
  * @brief Represents a register file containing integer, floating-point, and vector registers.
  */
@@ -116,5 +119,7 @@ bool IsValidGeneralPurposeRegister(const std::string &reg);
 bool IsValidFloatingPointRegister(const std::string &reg);
 
 bool IsValidCsr(const std::string &reg);
+
+} // namespace register_file
 
 #endif // REGISTERS_H
