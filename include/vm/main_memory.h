@@ -187,4 +187,6 @@ class Memory {
   void printMemoryUsage() const;
 };
 
+extern bool GUI_DIRTY_BIT;
+
 #endif // MAIN_MEMORY_H

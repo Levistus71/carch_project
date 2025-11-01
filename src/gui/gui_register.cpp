@@ -1,4 +1,39 @@
 #include "../../include/gui/gui_register.h"
+#include <bit>
+
+int REGISTER_DISPLAY_IDX = 0;
+const char* DISPLAY_TYPES[] = {"uint64_t", "int64_t", "hex", "float", "double"};
+
+std::string conv_type(uint64_t val){
+    switch(REGISTER_DISPLAY_IDX){
+        case 0 : {
+            return std::to_string(val);
+        }
+        case 1 : {
+            int64_t val_ = static_cast<int64_t>(val);
+            return std::to_string(val_);
+        }
+        case 2 : {
+            std::stringstream ss;
+            ss << std::hex << std::setfill('0') << std::setw(16) << val;
+            std::string hex_string = "0x";
+            hex_string += ss.str();
+            return hex_string;
+        }
+        case 3 : {
+            float f;
+            std::memcpy(&f, &val, sizeof(f));
+            return std::to_string(f);
+        }
+        case 4 : {
+            double d;
+            std::memcpy(&d, &val, sizeof(d));
+            return std::to_string(d);
+        }
+    }
+
+    return "whoopsies";
+}
 
 
 void draw_gpr_register_file(){
@@ -44,7 +79,7 @@ void draw_gpr_register_file(){
             ImGui::TableNextColumn();
             ImGui::Text("%s",register_alias[i].c_str());
             ImGui::TableNextColumn();
-            ImGui::Text("%s", std::to_string(gpr_registers[i]).c_str());
+            ImGui::Text("%s", conv_type(gpr_registers[i]).c_str());
         }
 
         ImGui::EndTable();
@@ -95,7 +130,7 @@ void draw_fpr_register_file(){
             ImGui::TableNextColumn();
             ImGui::Text("%s",register_alias[i].c_str());
             ImGui::TableNextColumn();
-            ImGui::Text("%s", std::to_string(fpr_registers[i]).c_str());
+            ImGui::Text("%s", conv_type(fpr_registers[i]).c_str());
         }
 
         ImGui::EndTable();
@@ -153,6 +188,35 @@ void register_main(){
         }
     }
     ImGui::EndChild();
+
+
+    ImVec2 register_display_type_pos(WINDOW_POS.x + WINDOW_SIZE.x * 0.1f, WINDOW_POS.y + register_file_selection_size.y + register_file_size.y);
+    ImVec2 register_display_type_size(WINDOW_SIZE.x * 0.89f, WINDOW_SIZE.y - register_file_size.y - register_file_selection_size.y);
+    ImGui::SetNextWindowPos(register_display_type_pos);
+    ImGui::BeginChild("Register Display Type Selection", register_display_type_size);
+    {
+        // ImVec2 cursor_pos{register_display_type_pos.x + register_display_type_size.x/2.0f, register_display_type_pos.y + register_display_type_size.y/2.0f};
+        // ImGui::SetCursorPos(cursor_pos);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(100.0f/255.0f, 100.0f/255.0f, 100.0f/255.0f, 1.0f)); // Lighter background
+        if(ImGui::BeginCombo("Selection Combo", DISPLAY_TYPES[REGISTER_DISPLAY_IDX]))
+        {
+            for(int i=0;i<IM_ARRAYSIZE(DISPLAY_TYPES);i++){
+                const bool is_selected = (REGISTER_DISPLAY_IDX == i);
+
+                if(ImGui::Selectable(DISPLAY_TYPES[i], is_selected)){
+                    REGISTER_DISPLAY_IDX = i;
+                }
+
+                if(is_selected){
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::PopStyleColor();
+    }
+    ImGui::EndChild();
+
 }
 
 
@@ -209,4 +273,32 @@ void register_execute(){
     }
     ImGui::EndChild();
     ImGui::PopFont();
+
+
+    ImVec2 register_display_type_pos(WINDOW_POS.x + WINDOW_SIZE.x * 0.1f, WINDOW_POS.y + register_file_selection_size.y + register_file_size.y);
+    ImVec2 register_display_type_size(WINDOW_SIZE.x * 0.89f, WINDOW_SIZE.y - register_file_size.y - register_file_selection_size.y);
+    ImGui::SetNextWindowPos(register_display_type_pos);
+    ImGui::BeginChild("Register Display Type Selection", register_display_type_size);
+    {
+        // ImVec2 cursor_pos{register_display_type_pos.x + register_display_type_size.x/2.0f, register_display_type_pos.y + register_display_type_size.y/2.0f};
+        // ImGui::SetCursorPos(cursor_pos);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(100.0f/255.0f, 100.0f/255.0f, 100.0f/255.0f, 1.0f)); // Lighter background
+        if(ImGui::BeginCombo("Display Type", DISPLAY_TYPES[REGISTER_DISPLAY_IDX]))
+        {
+            for(int i=0;i<IM_ARRAYSIZE(DISPLAY_TYPES);i++){
+                const bool is_selected = (REGISTER_DISPLAY_IDX == i);
+
+                if(ImGui::Selectable(DISPLAY_TYPES[i], is_selected)){
+                    REGISTER_DISPLAY_IDX = i;
+                }
+
+                if(is_selected){
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::PopStyleColor();
+    }
+    ImGui::EndChild();
 }

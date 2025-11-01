@@ -341,7 +341,7 @@ int gui_main()
                 ImVec2 memory_vars_size{CENTER_SIZE.x, CENTER_SIZE.y - MEMORY_SHEATH_SIZE.y};
                 ImGui::BeginChild("Memory Window Variables", memory_vars_size);
                 {
-
+                    
                 }
                 ImGui::EndChild();
             }

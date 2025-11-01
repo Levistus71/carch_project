@@ -26,6 +26,8 @@ public:
 
     bool PipeliningEnabled();
 
+    uint64_t ReadMemDoubleWord(uint64_t address);
+
     const std::array<uint64_t, 32>& GetGprValues();
     const std::array<uint64_t, 32>& GetFprValues();
 

@@ -1,7 +1,40 @@
 #include "../../include/gui/gui_memory.h"
+#include "vm/main_memory.h"
+
+size_t NUM_ROWS = 21;
+uint64_t MEM_START_ADDRESS = 0;
+uint64_t MEM_END_ADDRESS = MEM_START_ADDRESS + NUM_ROWS;
+
+std::vector<uint64_t> MEMORY_VALUES;
+
+std::string conv_uint64_to_hex(uint64_t val){
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0') << std::setw(16) << val;
+    std::string hex_string = "0x";
+    hex_string += ss.str();
+    return hex_string;
+}
+
+std::string conv_byte_to_bin(uint8_t val){
+    std::bitset<8> binary(val);
+    return binary.to_string();
+}
+
+void update_memory(){
+    MEMORY_VALUES.clear();
+    for(int i=0;i<NUM_ROWS;i++){
+        MEMORY_VALUES.push_back(vm.ReadMemDoubleWord(MEM_START_ADDRESS + i*8));
+    }
+}
 
 
 void memory_main(){
+    static bool inited = false;
+    if(!inited || GUI_DIRTY_BIT){
+        update_memory();
+        GUI_DIRTY_BIT = false;
+    }
+
     ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
     ImVec2 WINDOW_POS = ImGui::GetWindowPos();
     ImVec2 TABLE_SIZE{WINDOW_SIZE.x * 0.99f, WINDOW_SIZE.y * 0.99f};
@@ -18,9 +51,6 @@ void memory_main(){
     ImGui::PushFont(header_font);
     float table_buffer_y = (header_size_y - ImGui::GetFontSize())/2.0f;
     ImGui::PopFont();
-
-    // size_t num_rows = static_cast<int>((TABLE_SIZE.y-header_size_y-table_buffer_y) / row_size_y);
-    size_t num_rows = 32;
 
     const char* name_header = "ADDRESS";
     const char* byte_headers[8] = {"BYTE 0", "BYTE 1", "BYTE 2", "BYTE 3", "BYTE 4", "BYTE 5", "BYTE 6", "BYTE 7"};
@@ -56,7 +86,7 @@ void memory_main(){
         ImU32 alternate_light_color = ImGui::ColorConvertFloat4ToU32({70.0f/255.0f, 70.0f/255.0f, 70.0f/255.0f, 1.0f});
         ImGui::PushFont(row_font);
         {
-            for(size_t i=0;i<num_rows;i++){
+            for(size_t i=0;i<NUM_ROWS;i++){
                 if(row_cursor.y + row_size_y <= header_start_y + header_size_y){
                     row_cursor.y += row_size_y;
                     continue;
@@ -81,27 +111,36 @@ void memory_main(){
                 
                 // address
                 row_cursor.x += address_block_size_x / 2.0f;
-                float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "0x8888888888888888").x;
+                std::string mem_address = conv_uint64_to_hex(MEM_START_ADDRESS + i*8);
+                float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, mem_address.c_str()).x;
                 row_cursor.x -= text_size/2.0f;
-                draw_list->AddText(row_cursor, row_color, "0x8888888888888888");
+                draw_list->AddText(row_cursor, row_color, mem_address.c_str());
                 row_cursor.x += text_size/2.0f;
                 
                 // bytes
+                uint64_t mask = 0xFF;
                 row_cursor.x += address_block_size_x / 2.0f;
-                for(int i=0;i<8;i++){
+
+                for(int j=0;j<8;j++){
+                    uint8_t byte_val = (MEMORY_VALUES[i] & mask) >> j*8;
+                    mask <<= 8;
+                    std::string byte_str = conv_byte_to_bin(byte_val);
+
                     row_cursor.x += byte_block_size_x / 2.0f;
-                    text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "88888888").x;
+                    text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, byte_str.c_str()).x;
                     row_cursor.x -= text_size/2.0f;
-                    draw_list->AddText(row_cursor, row_color, "88888888");
+                    draw_list->AddText(row_cursor, row_color, byte_str.c_str());
                     row_cursor.x += text_size/2.0f;
                     row_cursor.x += byte_block_size_x / 2.0f;
                 }
 
                 // value
+                std::string val = conv_uint64_to_hex(MEMORY_VALUES[i]);
+                
                 row_cursor.x += value_block_size_x / 2.0f;
-                text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "0x8888888888888888").x;
+                text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, val.c_str()).x;
                 row_cursor.x -= text_size/2.0f;
-                draw_list->AddText(row_cursor, row_color, "0x8888888888888888");
+                draw_list->AddText(row_cursor, row_color, val.c_str());
                 row_cursor.x += text_size/2.0f;
                 row_cursor.x += value_block_size_x / 2.0f;
                 
@@ -140,10 +179,10 @@ void memory_main(){
 
         ImGui::PopFont();
 
-        float total_height = num_rows * row_size_y + header_size_y + table_buffer_y;
+        float total_height = NUM_ROWS * row_size_y + header_size_y + table_buffer_y;
         ImGui::SetCursorPosY(total_height);
         ImGui::Dummy(ImVec2(0.0f, 0.0f));
 
         ImGui::EndChild();
-    }
+    }    
 }

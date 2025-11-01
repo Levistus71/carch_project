@@ -36,6 +36,10 @@ bool VM::PipeliningEnabled(){
     return vm_core_.pipelining_enabled_;
 }
 
+uint64_t VM::ReadMemDoubleWord(uint64_t address){
+    return vm_core_.memory_controller_.ReadDoubleWord(address);
+}
+
 const std::array<uint64_t, 32>& VM::GetGprValues(){
     return vm_core_.register_file_.GetGprValues();
 }
