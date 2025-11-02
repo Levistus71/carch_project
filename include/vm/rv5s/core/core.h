@@ -65,6 +65,7 @@ public:
     void Reset();
 
     void Load(AssembledProgram& program);
+    void Load();
 };
 
 } // namespace rv5s

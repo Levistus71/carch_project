@@ -12,4 +12,4 @@
 #include <algorithm>
 #include <vector>
 
-int processor_main();
+void processor_main();

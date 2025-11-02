@@ -8,11 +8,12 @@ namespace rv5s{
 
 class VM{
 public:
-    VM() = default;
+    VM();
 
     void Reset();
 
     void LoadVM(AssembledProgram program);
+    void LoadVM();
 
     void RequestStop();
 
@@ -25,6 +26,8 @@ public:
     void Undo();
 
     bool PipeliningEnabled();
+    bool HazardEnabled();
+    bool ForwardingEnabled();
 
     uint64_t ReadMemDoubleWord(uint64_t address);
 

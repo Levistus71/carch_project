@@ -2,6 +2,10 @@
 
 namespace rv5s{
 
+VM::VM(){
+    LoadVM();
+}
+
 void VM::Reset(){
     vm_core_.Reset();
     program_ = AssembledProgram{};
@@ -10,6 +14,10 @@ void VM::Reset(){
 void VM::LoadVM(AssembledProgram program){
     program_ = program;
     vm_core_.Load(program_);
+}
+
+void VM::LoadVM(){
+    vm_core_.Load();
 }
 
 void VM::RequestStop(){
@@ -34,6 +42,12 @@ void VM::Undo(){
 
 bool VM::PipeliningEnabled(){
     return vm_core_.pipelining_enabled_;
+}
+bool VM::HazardEnabled(){
+    return vm_core_.hazard_detection_enabled_;
+}
+bool VM::ForwardingEnabled(){
+    return vm_core_.data_forwarding_enabled_;
 }
 
 uint64_t VM::ReadMemDoubleWord(uint64_t address){

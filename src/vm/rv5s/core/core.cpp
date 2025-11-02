@@ -137,4 +137,21 @@ void Core::Load(AssembledProgram& program){
 	}
 }
 
+
+void Core::Load(){
+	Reset();
+
+    // updating core state
+	this->pipelining_enabled_ = vm_config::config.getPipeliningStatus();
+	if(this->pipelining_enabled_){
+		this->data_forwarding_enabled_ = vm_config::config.getDataFowardingStatus();
+		this->hazard_detection_enabled_ = vm_config::config.getHazardDetectionStatus();
+	}
+	this->max_undo_stack_size_ = vm_config::config.getMaxUndoStackSize();
+
+	std::vector<bool> t = vm_config::config.getBranchPredictionStatus();
+	this->branch_prediction_enabled_ = t[0];
+	this->branch_prediction_static_ = t[1];
+}
+
 } // namespace rv5s

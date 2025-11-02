@@ -5,8 +5,6 @@ namespace rv5s{
 
 void Stages::Execute(Core& vm_core) {
     InstrContext& ex_instruction = vm_core.GetExInstruction();
-	uint8_t& opcode = ex_instruction.opcode;
-	uint8_t& funct3 = ex_instruction.funct3;
 
 	if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
 		ExecuteFloat(vm_core);
@@ -124,9 +122,7 @@ void Stages::ExecuteBasic(Core& vm_core){
 
 void Stages::ExecuteFloat(Core& vm_core){
     InstrContext& ex_instruction = vm_core.GetExInstruction();
-	uint8_t& opcode = ex_instruction.opcode;
 	uint8_t& funct3 = ex_instruction.funct3;
-	uint8_t& funct7 = ex_instruction.funct7;
 	uint8_t rm = funct3;
 
 	uint8_t fcsr_status = 0;
