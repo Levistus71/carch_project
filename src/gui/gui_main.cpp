@@ -325,8 +325,9 @@ int gui_main()
             }
             // memory
             else if(in_memory){
-                ImVec2 MEMORY_SHEATH_SIZE{CENTER_SIZE.x * 0.9f, CENTER_SIZE.y * 0.8f};
-                ImVec2 MEMORY_SHEATH_POS{CENTER_POS.x + MEMORY_SHEATH_SIZE.x * 0.02f, CENTER_POS.y + MEMORY_SHEATH_SIZE.x * 0.02f};
+                float navigator_width = 50.0f;
+                ImVec2 MEMORY_SHEATH_SIZE{CENTER_SIZE.x - navigator_width, CENTER_SIZE.y * 0.90f};
+                ImVec2 MEMORY_SHEATH_POS{CENTER_POS.x, CENTER_POS.y};
                 ImGui::SetNextWindowPos(MEMORY_SHEATH_POS);
                 ImGui::SetNextWindowSize(MEMORY_SHEATH_SIZE);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
@@ -337,13 +338,30 @@ int gui_main()
                 ImGui::PopStyleColor();
                 ImGui::End();
 
-                ImVec2 memory_vars_pos{CENTER_POS.x, CENTER_POS.y + MEMORY_SHEATH_SIZE.y};
-                ImVec2 memory_vars_size{CENTER_SIZE.x, CENTER_SIZE.y - MEMORY_SHEATH_SIZE.y};
-                ImGui::BeginChild("Memory Window Variables", memory_vars_size);
+
+                ImVec2 MEMORY_NAVIGATOR_POS{CENTER_POS.x + MEMORY_SHEATH_SIZE.x, MEMORY_SHEATH_POS.y};
+                ImVec2 MEMORY_NAVIGATOR_SIZE{navigator_width, MEMORY_SHEATH_SIZE.y};
+                ImGui::SetNextWindowPos(MEMORY_NAVIGATOR_POS);
+                ImGui::SetNextWindowSize(MEMORY_NAVIGATOR_SIZE);
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
+                ImGui::Begin("Memory Navigator", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
                 {
-                    
+                    memory_navigator_main();
                 }
-                ImGui::EndChild();
+                ImGui::End();
+                ImGui::PopStyleColor();
+
+                ImVec2 MEMORY_VARS_POS{CENTER_POS.x, CENTER_POS.y + MEMORY_SHEATH_SIZE.y};
+                ImVec2 MEMORY_VARS_SIZE{CENTER_SIZE.x, CENTER_SIZE.y - MEMORY_SHEATH_SIZE.y};
+                ImGui::SetNextWindowPos(MEMORY_VARS_POS);
+                ImGui::SetNextWindowSize(MEMORY_VARS_SIZE);
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
+                ImGui::Begin("Memory Window Variables", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                {
+                    memory_vars_main();
+                }
+                ImGui::End();
+                ImGui::PopStyleColor();
             }
 
             ImGui::End();

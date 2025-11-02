@@ -112,6 +112,7 @@ class Memory {
    * @param address The memory address to write to.
    * @param value The byte value to write.
    */
+  // TODO: make the instruction memory and other relevant parts read-only
   void Write(uint64_t address, uint8_t value);
 
   /**
@@ -187,6 +188,6 @@ class Memory {
   void printMemoryUsage() const;
 };
 
-extern bool GUI_DIRTY_BIT;
+extern bool GUI_MEMORY_DIRTY_BIT;
 
 #endif // MAIN_MEMORY_H

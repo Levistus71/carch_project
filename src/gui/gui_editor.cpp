@@ -1614,15 +1614,16 @@ void TextEditor::DeleteSelection()
 
 
 void TextEditor::ReadFile(){
-	mLines.clear();
 
 	std::ifstream file(mFilePath);
-
+	
 	if(!file.is_open()){
 		globals::vm_cout_file << "Failed to open file :(" << std::endl;
 		return;
 	}
-
+	
+	mLines.clear();
+	
 	std::string line;
 
 	while(getline(file, line)){
@@ -1637,6 +1638,10 @@ void TextEditor::ReadFile(){
 
 	file.close();
 	mLastReadTime = std::filesystem::last_write_time(mFilePath);
+
+	if(mLines.size()==0){
+		mLines.push_back(Line{});
+	}
 }
 
 

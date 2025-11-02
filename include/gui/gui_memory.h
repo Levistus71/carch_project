@@ -16,3 +16,5 @@
 
 
 void memory_main();
+void memory_vars_main();
+void memory_navigator_main();

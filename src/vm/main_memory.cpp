@@ -37,7 +37,7 @@ void Memory::Write(uint64_t address, uint8_t value) {
   uint64_t block_index = GetBlockIndex(address);
   uint64_t offset = GetBlockOffset(address);
   EnsureBlockExists(block_index);
-  GUI_DIRTY_BIT = true;
+  GUI_MEMORY_DIRTY_BIT = true;
   blocks_[block_index].data[offset] = value;
 }
 
@@ -286,4 +286,4 @@ void Memory::printMemoryUsage() const {
 }
 
 
-bool GUI_DIRTY_BIT = false;
+bool GUI_MEMORY_DIRTY_BIT = false;
