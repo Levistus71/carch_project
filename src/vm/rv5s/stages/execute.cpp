@@ -102,11 +102,12 @@ void Stages::ResolveBranch(Core& vm_core){
 
 void Stages::ExecuteBasic(Core& vm_core){
     InstrContext& ex_instruction = vm_core.GetExInstruction();
-	uint64_t& reg1_value = ex_instruction.rs1_value;
-	uint64_t& reg2_value = ex_instruction.rs2_value;
+	// register values might change (if imm_to_alu is true etc), so not by reference
+	uint64_t reg1_value = ex_instruction.rs1_value;
+	uint64_t reg2_value = ex_instruction.rs2_value;
 	
 	if (ex_instruction.imm_to_alu) {
-		int32_t& imm = ex_instruction.immediate;
+		int32_t imm = ex_instruction.immediate;
     	reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
   	}
 
@@ -130,16 +131,16 @@ void Stages::ExecuteFloat(Core& vm_core){
 
 	uint8_t fcsr_status = 0;
 
-	int32_t& imm = ex_instruction.immediate;
+	int32_t imm = ex_instruction.immediate;
 
 	// FIXME?: what is this
 	if (rm==0b111) {
 		rm = vm_core.register_file_.ReadCsr(0x002);
 	}
 
-	uint64_t& reg1_value = (ex_instruction.rs1_from_fprf) ? ex_instruction.frs1_value : ex_instruction.rs1_value;
-	uint64_t& reg2_value = ex_instruction.frs2_value;
-	uint64_t& reg3_value = ex_instruction.frs3_value;
+	uint64_t reg1_value = (ex_instruction.rs1_from_fprf) ? ex_instruction.frs1_value : ex_instruction.rs1_value;
+	uint64_t reg2_value = ex_instruction.frs2_value;
+	uint64_t reg3_value = ex_instruction.frs3_value;
 
 
 	if (ex_instruction.imm_to_alu) {
@@ -171,8 +172,8 @@ void Stages::ExecuteDouble(Core& vm_core){
 	int32_t imm = ex_instruction.immediate;
 
 	uint64_t reg1_value = ex_instruction.frs1_value;
-	uint64_t reg2_value = ex_instruction.frs1_value;
-	uint64_t reg3_value = ex_instruction.frs1_value;
+	uint64_t reg2_value = ex_instruction.frs2_value;
+	uint64_t reg3_value = ex_instruction.frs3_value;
 
 	if (funct7==0b1101001 || funct7==0b1111001 || opcode==0b0000111 || opcode==0b0100111) {
 		reg1_value = ex_instruction.rs1_value;
