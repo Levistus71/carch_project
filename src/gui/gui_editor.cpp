@@ -1049,7 +1049,7 @@ void TextEditor::Render()
 						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
 						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
 
-						const char* stage_label = "IF  ";
+						static const char* stage_label = "IF-ID ";
 						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
 						ImVec2 offset{end.x - text_size, start.y};
 						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
@@ -1058,7 +1058,7 @@ void TextEditor::Render()
 						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
 						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
 
-						const char* stage_label = "ID  ";
+						static const char* stage_label = "ID-EX ";
 						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
 						ImVec2 offset{end.x - text_size, start.y};
 						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
@@ -1067,7 +1067,7 @@ void TextEditor::Render()
 						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
 						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
 
-						const char* stage_label = "EX  ";
+						static const char* stage_label = "EX-MEM ";
 						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
 						ImVec2 offset{end.x - text_size, start.y};
 						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
@@ -1076,7 +1076,7 @@ void TextEditor::Render()
 						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
 						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
 
-						const char* stage_label = "MEM  ";
+						static const char* stage_label = "MEM-WB ";
 						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
 						ImVec2 offset{end.x - text_size, start.y};
 						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);
@@ -1085,7 +1085,7 @@ void TextEditor::Render()
 						auto end = ImVec2(start.x + contentSize.x + scrollX, start.y + mCharAdvance.y);
 						drawList->AddRectFilled(start, end, mDebugLines.DebugLineColor);
 
-						const char* stage_label = "WB  ";
+						static const char* stage_label = "{done}  ";
 						float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, stage_label, nullptr, nullptr).x;
 						ImVec2 offset{end.x - text_size, start.y};
 						drawList->AddText(offset, mDebugLines.DebugTextColor, stage_label);

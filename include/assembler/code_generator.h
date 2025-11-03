@@ -99,6 +99,59 @@ struct ICUnit {
     return os;
   }
 
+  std::string to_string(){
+    std::string ret_string = "";
+    auto emit_if_filled = [&ret_string](const std::array<char, 6> &field,
+                                bool &first_operand) {
+      if (field[0] != '\0') {                  
+        ret_string += (first_operand ? " " : ", ");    
+        ret_string += field.data();
+        first_operand = false;
+      }
+    };
+
+    // 1. line number + opcode
+    ret_string 
+    // << std::hex 
+    //    << unit.instruction_index * 4
+    //    << std::setw(0) << std::dec 
+    //    << ": " 
+       += this->opcode.data();
+
+    // 2. operands
+    bool first = true;
+    emit_if_filled(this->rd,  first);
+    emit_if_filled(this->rs1, first);
+    emit_if_filled(this->rs2, first);
+    emit_if_filled(this->rs3, first);
+
+    // 3. immediates (33‑byte array so treat separately)
+    if (this->imm[0] != '\0') {
+      ret_string += (first ? " " : ", ");
+      ret_string += this->imm.data();
+      first = false;
+    }
+
+    // 4. CSR (print only if non‑zero)
+    // if (this->csr != 0) {
+    //   std::ios_base::fmtflags f(os.flags());           // save stream flags
+    //   os << " csr=0x" << std::hex << this->csr;         // hex looks nicer
+    //   os.flags(f);                                     // restore flags
+    // }
+
+    // 5. rounding mode (print only if non‑zero)
+    if (this->rm != 0) {
+      ret_string += " rm=" + std::to_string(static_cast<int>(this->rm));
+    }
+
+    // 6. label (if any) — put at the end in angle brackets
+    if (!this->label.empty()) {
+      ret_string += " <" + this->label + '>';
+    }
+
+    return ret_string;
+  }
+
 
   void setLineNumber(unsigned int value) {
     line_number = value;

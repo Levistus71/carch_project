@@ -125,6 +125,9 @@ struct WindowConfig{
     ImVec2 WINDOW_SIZE = ImGui::GetContentRegionAvail();
     ImVec2 WINDOW_POS = ImGui::GetWindowPos();
 
+    float processor_height;
+    float instr_text_height;
+
     float stage_height = WINDOW_SIZE.y;
     float thickness = 2.0f;
     ImU32 col = ImGui::GetColorU32(ImVec4(255,255,255,255));
@@ -678,8 +681,8 @@ void draw_hazard_detector(WindowConfig& window_config){
     float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
     float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
 
-    ImVec2 top_left{mem_stage_start - window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.data_forwarding_unit_height};
-    ImVec2 bottom_right{mem_stage_start + window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer};
+    ImVec2 top_left{mem_stage_start - window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.hazard_detector_height - window_config.instr_text_height};
+    ImVec2 bottom_right{mem_stage_start + window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.instr_text_height};
     window_config.hazard_detector = Rectangle{top_left, bottom_right};
 
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
@@ -722,15 +725,57 @@ void draw_hazard_detector(WindowConfig& window_config){
 }
 
 
+void draw_instructions(WindowConfig& window_config){
+    float if_stage_start = window_config.WINDOW_POS.x;
+    float id_stage_start = if_stage_start + window_config.IF_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+    float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+    float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+    float wb_stage_start = mem_stage_start + window_config.MEM_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+
+    float offset_arr[6] = {if_stage_start, id_stage_start, ex_stage_start, mem_stage_start, wb_stage_start, window_config.WINDOW_SIZE.x + window_config.WINDOW_POS.x};
+
+    std::vector<std::reference_wrapper<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+
+    float offset = id_stage_start;
+    for(size_t i=0;i<instructions.size();i++){
+        std::string instr_dissassembled;
+        const rv5s::InstrContext& instruction = instructions[i].get();
+        uint64_t instr_pc = instruction.pc;
+        if(vm.program_.intermediate_code.size()>instr_pc/4){
+            ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;
+            instr_dissassembled += t.to_string();
+        }
+        else
+            continue;
+
+        float avail_height = window_config.instr_text_height;
+        float font_size = ImGui::GetFontSize();
+        float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr_dissassembled.c_str(), nullptr, nullptr).x;
+
+        offset = (offset_arr[i+1]+offset_arr[i])/2.0f;
+        ImVec2 text_start{offset - text_size/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - (avail_height - font_size)/2.0f};
+
+        ImDrawList* drawlist = ImGui::GetWindowDrawList();
+        drawlist->AddText(text_start, window_config.col, instr_dissassembled.c_str());
+    }
+}
+
+
 // Processor Main
 void processor_main() {
-    ImVec2 PROCESSOR_SIZE{950.0f, 500.0f};
+    static float PROCESSOR_HEIGHT = 500.0f;
+    ImVec2 PROCESSOR_SIZE{1000.0f, PROCESSOR_HEIGHT};
+    
     ImGui::BeginChild("Processor window", PROCESSOR_SIZE, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_HorizontalScrollbar);
     {
+        WindowConfig window_config;
+        window_config.processor_height = PROCESSOR_HEIGHT;
+        window_config.instr_text_height = 50.0f;
+        window_config.stage_height -= window_config.instr_text_height;
+
         // remove spacing between stages
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));      
         
-        WindowConfig window_config;
 
         // Pipelining:
         if(vm.PipeliningEnabled()){
@@ -780,6 +825,8 @@ void processor_main() {
             }
             draw_pipeline_registers(window_config);
         }
+
+        draw_instructions(window_config);
 
         ImGui::PopStyleVar(); // restore spacing
     }
