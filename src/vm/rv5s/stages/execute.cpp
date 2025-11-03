@@ -40,14 +40,12 @@ void Stages::ResolveBranch(Core& vm_core){
 		// storing the current value of pc for returning (storing it in rd)
 		ex_instruction.alu_out = vm_core.program_counter_;
 
-		// subtracting 4 from pc (updated in Fetch())
-		vm_core.AddToProgramCounter(-4);
 		
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
 			vm_core.SetProgramCounter(ex_instruction.alu_out);
 		}
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
-			vm_core.AddToProgramCounter(ex_instruction.immediate);
+			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
 		return;
 	}
@@ -90,9 +88,11 @@ void Stages::ResolveBranch(Core& vm_core){
 			// Updating branch_taken status
 			ex_instruction.branch_taken = true;
 
-			// Subtracting 4 from pc (updated in Fetch())
-			vm_core.AddToProgramCounter(-4);
-			vm_core.AddToProgramCounter(ex_instruction.immediate);
+			// // Subtracting 4 from pc (updated in Fetch())
+			// vm_core.AddToProgramCounter(-4);
+			// vm_core.AddToProgramCounter(ex_instruction.immediate);
+
+			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
 	}
 }

@@ -68,4 +68,9 @@ std::vector<uint64_t> VM::GetInstructionPCs(){
         return {vm_core_.program_counter_};
 }
 
+
+std::vector<std::reference_wrapper<const InstrContext>> VM::GetInstructions(){
+    return {vm_core_.GetIfInstruction(), vm_core_.GetIdInstruction(), vm_core_.GetExInstruction(), vm_core_.GetMemInstruction(), vm_core_.GetWbInstruction()};
+}
+
 } // namespace rv5s

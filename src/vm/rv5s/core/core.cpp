@@ -1,8 +1,9 @@
 #include "vm/rv5s/core/core.h"
+#include <cassert>
 
 namespace rv5s{
 
-Core::Core() : instruction_deque_{5} {
+Core::Core() {
     Reset();
 }
 
@@ -42,12 +43,15 @@ void Core::Reset(){
     this->program_counter_ = 0;
 	this->register_file_.Reset();
 	this->memory_controller_.Reset();
+	// assert(instruction_deque_.size()==5);
+	instruction_deque_.clear();
 
     for(int i=0;i<5;i++){
-        instruction_deque_.pop_back();
+        // instruction_deque_.pop_back();
         
         InstrContext nop{};
         nop.nopify();
+		nop.bubbled = true;
 
         instruction_deque_.push_front(nop);
     }

@@ -677,7 +677,6 @@ void draw_hazard_detector(WindowConfig& window_config){
     float id_stage_start = if_stage_start + window_config.IF_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
     float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
     float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
-    float wb_stage_start = mem_stage_start + window_config.MEM_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
 
     ImVec2 top_left{mem_stage_start - window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.data_forwarding_unit_height};
     ImVec2 bottom_right{mem_stage_start + window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer};

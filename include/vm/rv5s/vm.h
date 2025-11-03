@@ -35,6 +35,7 @@ public:
     const std::array<uint64_t, 32>& GetFprValues();
 
     std::vector<uint64_t> GetInstructionPCs();
+    std::vector<std::reference_wrapper<const InstrContext>> GetInstructions();
 
     AssembledProgram program_;
 

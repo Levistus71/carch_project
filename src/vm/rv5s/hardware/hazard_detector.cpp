@@ -162,13 +162,29 @@ void HazardDetector::HandleDataHazard(Core& vm_core){
 bool HazardDetector::DetectControlHazard(Core& vm_core){
     InstrContext& ex_instruction = vm_core.GetExInstruction();
 
+    /*
+        we don't care if the ex_instruction.immediate is 4 or not.
+
+        take this for eg:
+            jal x0,Label
+            Label:
+                addi x3,x0,1
+                addi x4,x0,1
+        
+        when jal reaches ex stage and if the btb predicts not taken but immediate was 4, the "addi x4,x0,1" would be in id and "addi x3,x0,1" would be in if (because the value was updated in Stages::Execute())
+    */
+    // return ex_instruction.branch && (ex_instruction.branch_predicted_taken != ex_instruction.branch_taken) && (ex_instruction.immediate != 4);
+
     return ex_instruction.branch && (ex_instruction.branch_predicted_taken != ex_instruction.branch_taken);
 }
 
 
 void HazardDetector::HandleControlHazard(Core& vm_core){
     InstrContext& ex_instruction = vm_core.GetExInstruction();
-    vm_core.branch_predictor_.update_btb(ex_instruction.pc, ex_instruction.branch_taken, vm_core.program_counter_);
+
+    if(vm_core.branch_prediction_enabled_){
+        vm_core.branch_predictor_.update_btb(ex_instruction.pc, ex_instruction.branch_taken, vm_core.program_counter_);
+    }
     
     InstrContext& if_instruction = vm_core.GetIfInstruction();
     if_instruction.nopify();

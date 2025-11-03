@@ -6,6 +6,20 @@ namespace {
 /**
  * Common functions
  */
+void InsertIfInstruction(rv5s::Core& vm_core){
+    // Pushing a new instruction infront of the instruction deque
+    if(vm_core.program_counter_ < vm_core.program_size_)
+        vm_core.instruction_deque_.push_front(rv5s::InstrContext{vm_core.program_counter_});
+    else{
+        vm_core.AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs in fetch
+        rv5s::InstrContext nop;
+        nop.nopify();
+        nop.bubbled = true;
+        vm_core.instruction_deque_.push_front(nop);
+    }
+}
+
+
 void PopWbInstruction(rv5s::Core& vm_core){
     if(vm_core.debug_mode_){
         rv5s::InstrContext retired_instruction = vm_core.instruction_deque_.back();
@@ -21,16 +35,6 @@ void PopWbInstruction(rv5s::Core& vm_core){
 }
 
 void DrivePipeline(rv5s::Core& vm_core){
-    // Pushing a new instruction infront of the instruction deque
-    if(vm_core.program_counter_ < vm_core.program_size_)
-        vm_core.instruction_deque_.push_front(rv5s::InstrContext{vm_core.program_counter_});
-    else{
-        vm_core.AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs in fetch
-        rv5s::InstrContext nop;
-        nop.nopify();
-        vm_core.instruction_deque_.push_front(nop);
-    }
-
     // Fetch
     rv5s::Stages::Fetch(vm_core);
 
@@ -57,6 +61,7 @@ void DrivePipeline(rv5s::Core& vm_core){
  */
 void StepPipelinedNoHazard(rv5s::Core& vm_core){
     // FIXME: stop when the program is over
+    InsertIfInstruction(vm_core);
 
     PopWbInstruction(vm_core);
 
@@ -100,7 +105,10 @@ void StepPipelinedWithHazard(rv5s::Core& vm_core){
     if(data_hazard_detected){
         vm_core.hazard_detector_.HandleDataHazard(vm_core);
     }
-    PopWbInstruction(vm_core);
+    else{
+        InsertIfInstruction(vm_core);
+        PopWbInstruction(vm_core);
+    }
 
     DrivePipeline(vm_core);
 

@@ -22,7 +22,7 @@ std::string conv_byte_to_bin(uint8_t val){
 
 void update_memory(){
     MEMORY_VALUES.clear();
-    for(int i=0;i<NUM_ROWS;i++){
+    for(size_t i=0;i<NUM_ROWS;i++){
         MEMORY_VALUES.push_back(vm.ReadMemDoubleWord(MEM_START_ADDRESS + i*8));
     }
 }
@@ -229,7 +229,6 @@ void parse_address(std::string address){
 
 
 void memory_vars_main(){
-    ImVec2 WINDOW_POS = ImGui::GetWindowPos();
     ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
 
     float input_text_height = WINDOW_SIZE.y * 0.5f;
@@ -248,7 +247,6 @@ void memory_vars_main(){
 
 
 void memory_navigator_main(){
-    ImVec2 WINDOW_POS = ImGui::GetWindowPos();
     ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
 
     ImVec2 button_size{WINDOW_SIZE.x * 0.2f, WINDOW_SIZE.x * 0.2f};
