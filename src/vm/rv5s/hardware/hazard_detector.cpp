@@ -1,5 +1,6 @@
 #include "vm/rv5s/hardware/hazard_detector.h"
 #include "vm/rv5s/core/core.h"
+#include "sim_state.h"
 
 /*
 Data hazards:
@@ -54,6 +55,8 @@ bool HazardDetector::DetectDataHazardWithoutForwarding(Core& vm_core){
         bool id_rs3__ex_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == ex_instruction.rd) && (ex_instruction.reg_write_to_fpr);
 
         if(id_rs1__ex_rd_clash || id_rs2__ex_rd_clash || id_rs3__ex_rd_clash){
+            SimState_.HAZARD_DETECTED = true;
+            SimState_.HZ_PATH = SimState::HazardPaths::EXEC_MEM;
             return true;
         }
     }
@@ -64,6 +67,8 @@ bool HazardDetector::DetectDataHazardWithoutForwarding(Core& vm_core){
         bool id_rs3__mem_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == mem_instruction.rd) && (mem_instruction.reg_write_to_fpr);
 
         if(id_rs1__mem_rd_clash || id_rs2__mem_rd_clash || id_rs3__mem_rd_clash){
+            SimState_.HAZARD_DETECTED = true;
+            SimState_.HZ_PATH = SimState::HazardPaths::MEM_WB;
             return true;
         }
     }
@@ -93,24 +98,40 @@ bool HazardDetector::DetectDataHazardWithForwarding(Core& vm_core){
         bool clash = id_rs1__ex_rd_clash || id_rs2__ex_rd_clash || id_rs3__ex_rd_clash;
 
         if(clash && ex_instruction.mem_read) // data hazard
+        {
+            SimState_.HAZARD_DETECTED = true;
+            SimState_.HZ_PATH = SimState::HazardPaths::EXEC_MEM;
             return true;
+        }
 
         if(id_rs1__ex_rd_clash){            
+            SimState_.DATA_FORWARD = true;
+            SimState_.DF_PATH = SimState::DataForwardPaths::EXEC_MEM_RS1;
+
             if(id_instruction.rs1_from_fprf)
                 id_instruction.frs1_value = ex_instruction.alu_out;
             else
                 id_instruction.rs1_value = ex_instruction.alu_out;
+            
+            return false; // returning early inorder to bypass mem
         }
 
         if(id_rs2__ex_rd_clash){
+            SimState_.DATA_FORWARD = true;
+            SimState_.DF_PATH = SimState::DataForwardPaths::EXEC_MEM_RS2;
+
             if(id_instruction.rs2_from_fprf)
                 id_instruction.frs2_value = ex_instruction.alu_out;
             else
                 id_instruction.rs2_value = ex_instruction.alu_out;
+
+            return false; // returning early inorder to bypass mem
         }
 
         if(id_rs3__ex_rd_clash){
             id_instruction.frs3_value = ex_instruction.alu_out;
+
+            return false; // returning early inorder to bypass mem
         }
     }
 
@@ -120,6 +141,9 @@ bool HazardDetector::DetectDataHazardWithForwarding(Core& vm_core){
         bool id_rs3__mem_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == mem_instruction.rd) && (mem_instruction.reg_write_to_fpr);
 
         if(id_rs1__mem_rd_clash){
+            SimState_.DATA_FORWARD = true;
+            SimState_.DF_PATH = SimState::DataForwardPaths::MEM_WB_RS1;
+
             if(id_instruction.rs1_from_fprf)
                 id_instruction.frs1_value = mem_instruction.mem_to_reg ? mem_instruction.mem_out : mem_instruction.alu_out;
             else
@@ -127,6 +151,9 @@ bool HazardDetector::DetectDataHazardWithForwarding(Core& vm_core){
         }
 
         if(id_rs2__mem_rd_clash){
+            SimState_.DATA_FORWARD = true;
+            SimState_.DF_PATH = SimState::DataForwardPaths::EXEC_MEM_RS2;
+
             if(id_instruction.rs1_from_fprf)
                 id_instruction.frs1_value = mem_instruction.mem_to_reg ? mem_instruction.mem_out : mem_instruction.alu_out;
             else

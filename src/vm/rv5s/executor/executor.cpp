@@ -1,4 +1,5 @@
 #include "vm/rv5s/executor/executor.h"
+#include "sim_state.h"
 
 namespace rv5s
 {
@@ -19,6 +20,7 @@ void Executor::Run(Core& vm_core){
 void Executor::Step(Core& vm_core){
     vm_core.debug_mode_ = true;
     vm_core.stop_requested_ = false;
+    SimState_.LIT_UP = true;
 
     if(vm_core.pipelining_enabled_){
         StepPipelined(vm_core);
@@ -32,6 +34,7 @@ void Executor::Step(Core& vm_core){
 void Executor::DebugRun(Core& vm_core){
     vm_core.debug_mode_ = true;
     vm_core.stop_requested_ = false;
+    SimState_.LIT_UP = true;
 
     if(vm_core.pipelining_enabled_){
         DebugRunPipelined(vm_core);

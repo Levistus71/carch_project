@@ -16,7 +16,9 @@
 #include "vm/rv5s/vm.h"
 
 extern ImFont* STANDARD_SMALL_FONT;
+extern ImFont* STANDARD_BOLD_SMALL_FONT;
 extern ImFont* STANDARD_MEDIUM_FONT;
+extern ImFont* STANDARD_BOLD_MEDIUM_FONT;
 extern ImFont* EDITOR_SMALL_FONT;
 extern ImFont* EDITOR_MEDIUM_FONT;
 extern ImFont* EDITOR_LARGE_FONT;

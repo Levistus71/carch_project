@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <sstream>
+#include "sim_state.h"
 
 uint8_t Memory::Read(uint64_t address) {
   if (address >= memory_size_) {
@@ -37,7 +38,7 @@ void Memory::Write(uint64_t address, uint8_t value) {
   uint64_t block_index = GetBlockIndex(address);
   uint64_t offset = GetBlockOffset(address);
   EnsureBlockExists(block_index);
-  GUI_MEMORY_DIRTY_BIT = true;
+  SimState_.MEMORY_DIRTY = true;
   blocks_[block_index].data[offset] = value;
 }
 
@@ -284,6 +285,3 @@ void Memory::printMemoryUsage() const {
   }
 
 }
-
-
-bool GUI_MEMORY_DIRTY_BIT = false;

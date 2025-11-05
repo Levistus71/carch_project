@@ -1,5 +1,6 @@
 #include "../include/gui/gui_processor_window.h"
 #include "gui/gui_common.h"
+#include "sim_state.h"
 
 // alu struct, stores the top_left_coords of the alu and the height of the alu.
 struct AluStruct{
@@ -170,6 +171,12 @@ struct WindowConfig{
     Rectangle data_forwarding_unit;
     Rectangle hazard_detector;
     Rectangle alu_mux_forward;
+
+
+    ImU32 red_col = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 40.0f/255.0f, 25.0f/255.0f, 1.0f});
+    ImU32 white_col = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+    ImU32 yellow_col = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 40.0f/255.0f, 1.0f});
+    ImU32 green_col = ImGui::ColorConvertFloat4ToU32({40.0f/255.0f, 220.0f/255.0f, 55.0f/255.0f, 1.0f});
 };
 
 
@@ -631,8 +638,46 @@ void draw_data_forwarding_unit(WindowConfig& window_config){
     {
         float ex_stage_width = window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
         
+        static int frame_count = 0;
+        static bool lit_up_rs1 = false;
+        static bool lit_up_rs2 = false;
+        static bool lit_up_ex_mem = false;
+        static bool lit_up_mem_wb = false;
+
+        if(SimState_.DATA_FORWARD){
+            frame_count = 120;
+            SimState_.DATA_FORWARD = false;
+
+            lit_up_rs1 = false;
+            lit_up_rs2 = false;
+            lit_up_ex_mem = false;
+            lit_up_mem_wb = false;
+
+            if(SimState_.DF_PATH == SimState::DataForwardPaths::EXEC_MEM_RS1){
+                lit_up_rs1 = true;
+                lit_up_ex_mem = true;
+            }
+            else if(SimState_.DF_PATH == SimState::DataForwardPaths::EXEC_MEM_RS2){
+                lit_up_rs2 = true;
+                lit_up_ex_mem = true;
+            }
+            else if(SimState_.DF_PATH == SimState::DataForwardPaths::MEM_WB_RS1){
+                lit_up_rs1 = true;
+                lit_up_mem_wb = true;
+            }
+            else if(SimState_.DF_PATH == SimState::DataForwardPaths::EXEC_MEM_RS2){
+                lit_up_rs2 = true;
+                lit_up_mem_wb = true;
+            }
+        }
+        
         // alu_mux_forward to data forwarding unit
         {
+            if(frame_count>0 && lit_up_rs1){
+                window_config.col = window_config.green_col;
+                frame_count--;
+            }
+
             ImVec2 mux_connector{(window_config.alu_mux_forward.top_left.x + window_config.alu_mux_forward.bottom_right.x) / 2.0f, window_config.alu_mux_forward.bottom_right.y};
             ImVec2 p1{mux_connector.x, mux_connector.y + window_config.stage_height * 0.02f};
             ImVec2 p2{p1.x + ex_stage_width*0.10f, p1.y};
@@ -641,10 +686,17 @@ void draw_data_forwarding_unit(WindowConfig& window_config){
 
             std::vector<ImVec2> points{mux_connector, p1, p2, p3, p4};
             draw_line_connecting_points(points, window_config.col, window_config.thickness);
+
+            window_config.col = window_config.white_col;
         }
 
         // alu_mux to data forwarding unit
         {
+            if(frame_count>0 && lit_up_rs2){
+                window_config.col = window_config.green_col;
+                frame_count--;
+            }
+
             ImVec2 mux_connector{(window_config.alu_mux.top_left.x + window_config.alu_mux.bottom_right.x) / 2.0f, window_config.alu_mux.bottom_right.y};
             ImVec2 p1{mux_connector.x, mux_connector.y + window_config.stage_height * 0.02f};
             ImVec2 p2{p1.x, window_config.data_forwarding_unit.top_left.y + window_config.data_forwarding_unit_height/3.0f * 2.0f};
@@ -652,24 +704,38 @@ void draw_data_forwarding_unit(WindowConfig& window_config){
 
             std::vector<ImVec2> points{mux_connector, p1, p2, p3};
             draw_line_connecting_points(points, window_config.col, window_config.thickness);
+
+            window_config.col = window_config.white_col;
         }
 
         // exec-mem register to data forwarding unit
         {
+            if(frame_count>0 && lit_up_ex_mem){
+                window_config.col = window_config.green_col;
+            }
+
             ImVec2 p1{mem_stage_start, window_config.WINDOW_POS.y + window_config.stage_height};
             ImVec2 p2{p1.x, window_config.data_forwarding_unit.top_left.y};
 
             drawlist->AddLine(p1, p2, window_config.col, window_config.thickness);
+
+            window_config.col = window_config.white_col;
         }
 
         // mem-wb register to data forwarding unit
         {
+            if(frame_count>0 && lit_up_mem_wb){
+                window_config.col = window_config.green_col;
+            }
+
             ImVec2 p1{wb_stage_start, window_config.WINDOW_POS.y + window_config.stage_height};
             ImVec2 p2{p1.x, (window_config.data_forwarding_unit.top_left.y + window_config.data_forwarding_unit.bottom_right.y)/2.0f};
             ImVec2 p3{window_config.data_forwarding_unit.bottom_right.x, p2.y};
 
             drawlist->AddLine(p1, p2, window_config.col, window_config.thickness);
             drawlist->AddLine(p2, p3, window_config.col, window_config.thickness);
+
+            window_config.col = window_config.white_col;
         }
     }
 }
@@ -680,6 +746,7 @@ void draw_hazard_detector(WindowConfig& window_config){
     float id_stage_start = if_stage_start + window_config.IF_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
     float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
     float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+    float wb_stage_start = mem_stage_start + window_config.MEM_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
 
     ImVec2 top_left{mem_stage_start - window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.hazard_detector_height - window_config.instr_text_height};
     ImVec2 bottom_right{mem_stage_start + window_config.data_forwarding_unit_width/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - window_config.hardware_buffer - window_config.instr_text_height};
@@ -689,10 +756,22 @@ void draw_hazard_detector(WindowConfig& window_config){
 
     drawlist->AddRect(top_left, bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
 
+    static int frame_count = 0;
+
     // buses
     {
         // bus from {ex-mem register, detector}
         {
+            if(SimState_.HAZARD_DETECTED && SimState_.HZ_PATH == SimState::HazardPaths::EXEC_MEM){
+                frame_count = 120;
+                SimState_.HAZARD_DETECTED = false;
+            }
+
+            if(frame_count>0){
+                frame_count--;
+                window_config.col = window_config.red_col;
+            }
+            
             // bypass data forwarding unit
             if(vm.ForwardingEnabled()){
                 ImVec2 p1{mem_stage_start, window_config.WINDOW_POS.y + window_config.stage_height};
@@ -710,49 +789,118 @@ void draw_hazard_detector(WindowConfig& window_config){
 
                 drawlist->AddLine(p1, p2, window_config.col, window_config.thickness);
             }
+
+            window_config.col = window_config.white_col;
+        }
+
+        // bus from {mem-wb register, detector}
+        {
+            if(SimState_.HAZARD_DETECTED && SimState_.HZ_PATH == SimState::HazardPaths::MEM_WB){
+                frame_count = 120;
+                SimState_.HAZARD_DETECTED = false;
+            }
+
+            if(frame_count>0){
+                frame_count--;
+                window_config.col = window_config.red_col;
+            }
+
+            if(!vm.ForwardingEnabled()){
+                ImVec2 p1{wb_stage_start, window_config.WINDOW_POS.y + window_config.stage_height};
+                ImVec2 p2{p1.x, (window_config.hazard_detector.top_left.y + window_config.hazard_detector.bottom_right.y) / 2.0f};
+                ImVec2 p3{window_config.hazard_detector.bottom_right.x, p2.y};
+                
+                std::vector<ImVec2> points{p1,p2,p3};
+                draw_line_connecting_points(points, window_config.col, window_config.thickness);
+            }
+
+            window_config.col = window_config.white_col;
         }
 
         // bus from {id-ex register, detector}
         {
+            if(frame_count>0){
+                window_config.col = window_config.red_col;
+            }
+
             ImVec2 p1{ex_stage_start, window_config.WINDOW_POS.y + window_config.stage_height};
             ImVec2 p2{p1.x, window_config.hazard_detector.top_left.y + window_config.hazard_detector.get_height()/2.0f};
             ImVec2 p3{window_config.hazard_detector.top_left.x, p2.y};
 
             drawlist->AddLine(p1, p2, window_config.col, window_config.thickness);
             drawlist->AddLine(p2, p3, window_config.col, window_config.thickness);
+            
+            window_config.col = window_config.white_col;
         }
     }
 }
 
 
 void draw_instructions(WindowConfig& window_config){
-    float if_stage_start = window_config.WINDOW_POS.x;
-    float id_stage_start = if_stage_start + window_config.IF_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
-    float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
-    float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
-    float wb_stage_start = mem_stage_start + window_config.MEM_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
-
-    float offset_arr[6] = {if_stage_start, id_stage_start, ex_stage_start, mem_stage_start, wb_stage_start, window_config.WINDOW_SIZE.x + window_config.WINDOW_POS.x};
-
     std::vector<std::reference_wrapper<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+    
+    if(vm.PipeliningEnabled()){
+        float if_stage_start = window_config.WINDOW_POS.x;
+        float id_stage_start = if_stage_start + window_config.IF_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+        float ex_stage_start = id_stage_start + window_config.ID_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+        float mem_stage_start = ex_stage_start + window_config.EX_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+        float wb_stage_start = mem_stage_start + window_config.MEM_STAGE_WIDTH_FRAC * window_config.WINDOW_SIZE.x;
+    
+        float offset_arr[6] = {if_stage_start, id_stage_start, ex_stage_start, mem_stage_start, wb_stage_start, window_config.WINDOW_SIZE.x + window_config.WINDOW_POS.x};
+        float offset = id_stage_start;
 
-    float offset = id_stage_start;
-    for(size_t i=0;i<instructions.size();i++){
+        for(size_t i=0;i<instructions.size();i++){
+            std::string instr_dissassembled;
+            const rv5s::InstrContext& instruction = instructions[i].get();
+            uint64_t instr_pc = instruction.pc;
+            if(vm.program_.intermediate_code.size()>instr_pc/4){
+                ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;
+                instr_dissassembled += t.to_string();
+            }
+            else if(!instruction.bubbled)
+                continue;
+
+            if(instruction.bubbled){
+                instr_dissassembled = "BUBBLE";
+            }
+
+            if(instruction.nopped || instruction.bubbled){
+                window_config.col = window_config.red_col;
+            }
+    
+            float avail_height = window_config.instr_text_height;
+            float font_size = ImGui::GetFontSize();
+            float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr_dissassembled.c_str(), nullptr, nullptr).x;
+    
+            offset = (offset_arr[i+1]+offset_arr[i])/2.0f;
+            ImVec2 text_start{offset - text_size/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - (avail_height - font_size)/2.0f};
+    
+            ImDrawList* drawlist = ImGui::GetWindowDrawList();
+            drawlist->AddText(text_start, window_config.col, instr_dissassembled.c_str());
+
+            if(instruction.nopped || instruction.bubbled){
+                window_config.col = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            }
+        }
+    }
+    else{
         std::string instr_dissassembled;
-        const rv5s::InstrContext& instruction = instructions[i].get();
+        const rv5s::InstrContext& instruction = instructions[0].get();
         uint64_t instr_pc = instruction.pc;
         if(vm.program_.intermediate_code.size()>instr_pc/4){
             ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;
             instr_dissassembled += t.to_string();
         }
         else
-            continue;
+            return;
+
+        instr_dissassembled += " {done}";
 
         float avail_height = window_config.instr_text_height;
         float font_size = ImGui::GetFontSize();
         float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr_dissassembled.c_str(), nullptr, nullptr).x;
 
-        offset = (offset_arr[i+1]+offset_arr[i])/2.0f;
+        float offset = window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x / 2.0f;
         ImVec2 text_start{offset - text_size/2.0f, window_config.WINDOW_POS.y + window_config.WINDOW_SIZE.y - (avail_height - font_size)/2.0f};
 
         ImDrawList* drawlist = ImGui::GetWindowDrawList();
@@ -807,6 +955,19 @@ void processor_main() {
         ImGui::SameLine();
         draw_wb_stage(window_config);
 
+
+        // change color to yellow for 60 frames
+        static int frame_count = 0;
+        if(SimState_.LIT_UP){
+            frame_count = 30;
+            SimState_.LIT_UP = false;
+        }
+
+        if(frame_count>0){
+            window_config.col = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 40.0f/255.0f, 1.0f});
+            frame_count--;
+        }
+
         // Buses
         draw_if_buses(window_config);
         draw_id_buses(window_config);
@@ -814,6 +975,7 @@ void processor_main() {
         draw_mem_buses(window_config);
         draw_wb_buses(window_config);
 
+        window_config.col = window_config.white_col;
 
         // Pipelining:
         if(vm.PipeliningEnabled()){
@@ -826,7 +988,9 @@ void processor_main() {
             draw_pipeline_registers(window_config);
         }
 
+        ImGui::PushFont(STANDARD_BOLD_MEDIUM_FONT);
         draw_instructions(window_config);
+        ImGui::PopFont();
 
         ImGui::PopStyleVar(); // restore spacing
     }

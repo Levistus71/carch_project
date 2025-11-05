@@ -70,7 +70,10 @@ std::vector<uint64_t> VM::GetInstructionPCs(){
 
 
 std::vector<std::reference_wrapper<const InstrContext>> VM::GetInstructions(){
-    return {vm_core_.GetIfInstruction(), vm_core_.GetIdInstruction(), vm_core_.GetExInstruction(), vm_core_.GetMemInstruction(), vm_core_.GetWbInstruction()};
+    if(vm_core_.pipelining_enabled_)
+        return {vm_core_.GetIfInstruction(), vm_core_.GetIdInstruction(), vm_core_.GetExInstruction(), vm_core_.GetMemInstruction(), vm_core_.GetWbInstruction()};
+    else
+        return {vm_core_.GetWbInstruction()};
 }
 
 } // namespace rv5s

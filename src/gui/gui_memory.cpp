@@ -1,5 +1,5 @@
 #include "../../include/gui/gui_memory.h"
-#include "vm/main_memory.h"
+#include "sim_state.h"
 
 size_t NUM_ROWS = 32;
 uint64_t MEM_START_ADDRESS = 0;
@@ -30,9 +30,9 @@ void update_memory(){
 
 void memory_main(){
     static bool inited = false;
-    if(!inited || GUI_MEMORY_DIRTY_BIT){
+    if(!inited || SimState_.MEMORY_DIRTY){
         update_memory();
-        GUI_MEMORY_DIRTY_BIT = false;
+        SimState_.MEMORY_DIRTY = false;
     }
 
     ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
@@ -224,7 +224,7 @@ void parse_address(std::string address){
     }
 
     MEM_END_ADDRESS = MEM_START_ADDRESS + NUM_ROWS;
-    GUI_MEMORY_DIRTY_BIT = true;
+    SimState_.MEMORY_DIRTY = true;
 }
 
 
@@ -257,11 +257,11 @@ void memory_navigator_main(){
     if(ImGui::Button("UP", {button_size.x, button_size.y})){
         if(MEM_START_ADDRESS<NUM_ROWS){
             MEM_START_ADDRESS = 0;
-            GUI_MEMORY_DIRTY_BIT = true;
+            SimState_.MEMORY_DIRTY = true;
         }
         else{
             MEM_START_ADDRESS -= NUM_ROWS;
-            GUI_MEMORY_DIRTY_BIT = true;
+            SimState_.MEMORY_DIRTY = true;
         }
     }
 
@@ -270,11 +270,11 @@ void memory_navigator_main(){
     if(ImGui::Button("DOWN", {button_size.x, button_size.y})){
         if(vm_config::config.getMemorySize() - NUM_ROWS < MEM_START_ADDRESS){
             MEM_START_ADDRESS = vm_config::config.getMemorySize() - NUM_ROWS * 8;
-            GUI_MEMORY_DIRTY_BIT = true;
+            SimState_.MEMORY_DIRTY = true;
         }
         else{
             MEM_START_ADDRESS += NUM_ROWS;
-            GUI_MEMORY_DIRTY_BIT = true;
+            SimState_.MEMORY_DIRTY = true;
         }
     }
 }
