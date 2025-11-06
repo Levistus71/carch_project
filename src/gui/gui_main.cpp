@@ -8,6 +8,7 @@
 // - Introduction, links and more at the top of imgui.cpp
 
 #include "../../include/gui/gui_main.h"
+#include "../../include/gui/gui_set_processor_type.h"
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -195,8 +196,31 @@ int gui_main()
                 if(ImGui::Button("Run (no interaction)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
                     vm.Run();
                 }
+                offset+=5*left_panel_width;
+                ImGui::SameLine(offset, 1.0f);
+                if(ImGui::Button("Processor", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
+                    ImGui::OpenPopup("Processor Selection Modal");
+                }
             }
-            ImGui::End();
+
+            // Processor selection modal
+            {
+                ImGui::SetNextWindowSize(ImVec2(500.0f, 300.0f), ImGuiCond_Appearing);
+    
+                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    
+                const ImGuiWindowFlags modal_flags = ImGuiWindowFlags_NoCollapse;
+                if(ImGui::BeginPopupModal("Processor Selection Modal", NULL, modal_flags)){
+                    set_processor_type();
+    
+                    if (ImGui::Button("Close"))
+                        ImGui::CloseCurrentPopup();
+    
+                    ImGui::EndPopup();
+                }
+                ImGui::End();
+            }
         }
 
         // Central panel

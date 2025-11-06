@@ -32,6 +32,7 @@ set(GUI_SRC_FILES
     ${SRC_DIR}/gui/gui_console.cpp
     ${SRC_DIR}/gui/gui_execute.cpp
     ${SRC_DIR}/gui/gui_memory.cpp
+    ${SRC_DIR}/gui/gui_set_processor_type.cpp
 )
 
 file(GLOB IMGUI_CORE_SOURCES
