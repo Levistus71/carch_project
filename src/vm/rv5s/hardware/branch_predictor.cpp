@@ -46,4 +46,10 @@ void BranchPredictor::update_btb(uint64_t branch_instruction_address, bool branc
     btb_value.target_address = target_address;
 }
 
+void BranchPredictor::reset(){
+    for(size_t i=0;i<btb_size;i++){
+        branch_target_buffer[i].valid = false;
+    }
+}
+
 } // namespace rv5s

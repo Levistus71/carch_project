@@ -46,6 +46,8 @@ void Core::Reset(){
 	// assert(instruction_deque_.size()==5);
 	instruction_deque_.clear();
 
+	branch_predictor_.reset();
+
     for(int i=0;i<5;i++){
         // instruction_deque_.pop_back();
         

@@ -104,6 +104,12 @@ void Stages::ResolveBranch(Core& vm_core){
 
 			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
+		else{
+			// branch was incorrectly predicted, need to set the pc to pc+4
+			if(ex_instruction.branch_predicted_taken){
+				vm_core.SetProgramCounter(ex_instruction.pc + 4);
+			}
+		}
 	}
 }
 

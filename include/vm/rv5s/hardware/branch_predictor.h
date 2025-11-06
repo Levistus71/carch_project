@@ -30,6 +30,8 @@ public:
     std::pair<bool, uint64_t> dynamic_predict(uint64_t branch_instruction_address);
 
     void update_btb(uint64_t branch_instruction_address, bool branch_taken, uint64_t target_address);
+
+    void reset();
 };
 
 } // namespace rv5s
