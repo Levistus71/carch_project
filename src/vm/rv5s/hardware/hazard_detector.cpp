@@ -21,6 +21,16 @@ Data hazards:
         we bring the id_instruction again for inspection
         that's it.
 
+
+Control Hazards:
+    
+    If the ex_instruction prediction doesn't match with the actual value, we nopify the if and id instructions.
+
+    Special case and why it doesn't affect the logic:
+        Say the if_instruction is also a branch and the branch was predicted to be taken. The pc gets updated.
+        Now if the ex_instruction's prediction is not correct, as we are updating the pc AFTER fetch stage, the pc value is correct.
+        And as we are nopifying the if and id instructions, the branch in the if_instruction doesn't matter.
+
 */
 
 namespace rv5s{
