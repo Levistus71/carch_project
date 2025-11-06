@@ -665,8 +665,15 @@ void draw_data_forwarding_unit(WindowConfig& window_config){
                 lit_up_rs1 = true;
                 lit_up_mem_wb = true;
             }
-            else if(SimState_.DF_PATH == SimState::DataForwardPaths::EXEC_MEM_RS2){
+            else if(SimState_.DF_PATH == SimState::DataForwardPaths::MEM_WB_RS2){
                 lit_up_rs2 = true;
+                lit_up_mem_wb = true;
+            }
+
+            if(SimState_.DF_ALL){
+                lit_up_rs1 = true;
+                lit_up_rs2 = true;
+                lit_up_ex_mem = true;
                 lit_up_mem_wb = true;
             }
         }

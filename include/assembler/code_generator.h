@@ -145,9 +145,9 @@ struct ICUnit {
     }
 
     // 6. label (if any) — put at the end in angle brackets
-    if (!this->label.empty()) {
-      ret_string += " <" + this->label + '>';
-    }
+    // if (!this->label.empty()) {
+    //   ret_string += " <" + this->label + '>';
+    // }
 
     return ret_string;
   }

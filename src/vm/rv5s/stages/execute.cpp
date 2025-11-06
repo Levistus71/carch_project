@@ -5,6 +5,8 @@ namespace rv5s{
 
 void Stages::Execute(Core& vm_core) {
     InstrContext& ex_instruction = vm_core.GetExInstruction();
+	if(ex_instruction.nopped)
+		return;
 
 	if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
 		ExecuteFloat(vm_core);
@@ -37,9 +39,9 @@ void Stages::ResolveBranch(Core& vm_core){
 		// updating branch_taken status
 		ex_instruction.branch_taken = true;
 		
-		// storing the current value of pc for returning (storing it in rd)
-		ex_instruction.alu_out = vm_core.program_counter_;
-
+		// if branch was already taken, we skip updating the pc
+		if(ex_instruction.branch_predicted_taken)
+			return;
 		
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
 			vm_core.SetProgramCounter(ex_instruction.alu_out);
@@ -47,6 +49,10 @@ void Stages::ResolveBranch(Core& vm_core){
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
 			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
+
+		// storing the current value of pc for returning (storing it in rd)
+		ex_instruction.alu_out = ex_instruction.pc + 4;
+
 		return;
 	}
 	else if (opcode==get_instr_encoding(Instruction::kbeq).opcode ||
@@ -87,6 +93,10 @@ void Stages::ResolveBranch(Core& vm_core){
 		if (branch_flag) {
 			// Updating branch_taken status
 			ex_instruction.branch_taken = true;
+
+			// if branch was predicted taken, we skip updating pc
+			if(ex_instruction.branch_predicted_taken)
+				return;
 
 			// // Subtracting 4 from pc (updated in Fetch())
 			// vm_core.AddToProgramCounter(-4);

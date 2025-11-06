@@ -4,6 +4,8 @@ namespace rv5s {
 
 void Stages::Fetch(Core& vm_core){
     InstrContext& if_instruction = vm_core.GetIfInstruction();
+	if(if_instruction.nopped)
+		return;
 	if_instruction.pc = vm_core.program_counter_;
   	if_instruction.instruction = vm_core.memory_controller_.ReadWord(vm_core.program_counter_);
 	if_instruction.branch_predicted_taken = false;
@@ -13,14 +15,14 @@ void Stages::Fetch(Core& vm_core){
 			auto [take_branch, new_pc] = vm_core.branch_predictor_.static_predict(vm_core.program_counter_);
 			vm_core.SetProgramCounter(new_pc);
 			if(take_branch){
-				if_instruction.branch_taken = true;
+				if_instruction.branch_predicted_taken = true;
 			}
 		}
 		else{
 			auto [take_branch, new_pc] = vm_core.branch_predictor_.dynamic_predict(vm_core.program_counter_);
 			vm_core.SetProgramCounter(new_pc);
 			if(take_branch){
-				if_instruction.branch_taken = true;
+				if_instruction.branch_predicted_taken = true;
 			}
 		}
 	}

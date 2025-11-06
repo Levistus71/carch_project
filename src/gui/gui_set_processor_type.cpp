@@ -25,7 +25,7 @@ void set_processor_type(){
     }
     ImGui::PopStyleColor();
 
-    static const char* BRANCH_TYPES[] = {"Static Prediction", "Dynamic Prediction (1-bit)"};
+    static const char* BRANCH_TYPES[] = {"No Prediction", "Static Prediction", "Dynamic Prediction (1-bit)"};
     static int BRANCH_IDX = 0;
 
     if(PROCESSOR_IDX != 0){
@@ -80,11 +80,14 @@ void set_processor_type(){
 
         switch(BRANCH_IDX){
             case 0 : {
+                break;
+            }
+            case 1 : {
                 vm_config::config.branch_prediction_enabled = true;
                 vm_config::config.branch_prediction_static = true;
                 break;
             }
-            case 1 : {
+            case 2 : {
                 vm_config::config.branch_prediction_enabled = true;
                 vm_config::config.branch_prediction_static = false;
                 break;

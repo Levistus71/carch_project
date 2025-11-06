@@ -4,6 +4,9 @@ namespace rv5s{
 
 void Stages::MemoryAccess(Core& vm_core){
     InstrContext& mem_instruction = vm_core.GetMemInstruction();
+	if(mem_instruction.nopped)
+		return;
+
 	if(!mem_instruction.mem_read && !mem_instruction.mem_write) return;
 
 	auto sign_extend = [](uint64_t value, unsigned int bits) -> uint64_t {

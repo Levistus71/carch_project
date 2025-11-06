@@ -5,6 +5,9 @@ namespace rv5s{
 
 void Stages::WriteBack(Core& vm_core){
     InstrContext& wb_instruction = vm_core.GetWbInstruction();
+	if(wb_instruction.nopped)
+		return;
+
 	if (wb_instruction.opcode==0b1110011) { // CSR opcode
 		WriteBackCsr(vm_core);
 		return;

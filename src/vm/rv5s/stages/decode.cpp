@@ -8,6 +8,9 @@ using instruction_set::get_instr_encoding;
 
 void Stages::Decode(Core& vm_core){
 	InstrContext& id_instruction = vm_core.GetIdInstruction();
+	if(id_instruction.nopped)
+		return;
+	
 	vm_core.decode_unit_.DecodeInstruction(id_instruction, vm_core.register_file_);
 
 	if (id_instruction.opcode == get_instr_encoding(Instruction::kecall).opcode && 

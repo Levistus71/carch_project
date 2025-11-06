@@ -13,6 +13,7 @@ struct SimState{
         EXEC_MEM_RS2
     };
     DataForwardPaths DF_PATH;
+    bool DF_ALL;
 
     enum class HazardPaths{
         MEM_WB,
