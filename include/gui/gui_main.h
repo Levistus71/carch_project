@@ -20,7 +20,7 @@
 #include "../../include/gui/gui_execute.h"
 #include "../../include/gui/gui_memory.h"
 
-#include "../../include/vm/rv5s/vm.h"
+#include "../../include/vm/vm_main.h"
 #include "../../include/assembler/assembler.h"
 
 #include "globals.h"

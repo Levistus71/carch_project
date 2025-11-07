@@ -1,5 +1,7 @@
 #include "../../include/gui/gui_execute.h"
-#include "vm/rv5s/core/core.h"
+#include "vm/rv5s/instruction_context.h"
+#include "vm/rv5s/pipelined/core/instruction_context/instruction_context.h"
+#include "vm/rv5s/single_cycle/core/instruction_context/instruction_context.h"
 
 void editor_execute(){
 	ImVec2 window_size = ImGui::GetWindowSize();
@@ -33,17 +35,23 @@ void editor_execute(){
             // text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
             // text_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
 
-            std::vector<std::reference_wrapper<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+            std::vector<std::unique_ptr<const rv5s::InstrContext>> instructions = vm.GetInstructions();
             std::vector<uint64_t> line_numbers(5);
 
             for(int i=0;i<5;i++){
-                const rv5s::InstrContext& instruction = instructions[i].get();
-                if(instruction.bubbled || instruction.nopped){
-                    line_numbers[i] = -1;
+                const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
+                if(instruction){
+                    if(instruction->bubbled || instruction->nopped){
+                        line_numbers[i] = -1;
+                    }
+                    else{
+                        uint64_t instr_pc = instruction->pc;
+                        line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
+                    }
                 }
                 else{
-                    uint64_t instr_pc = instruction.pc;
-                    line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
+                    std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
+                    line_numbers[i] = -1;
                 }
             }
 
@@ -106,17 +114,23 @@ void assembled_editor_main(){
             // assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
             // assembled_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
             
-            std::vector<std::reference_wrapper<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+            std::vector<std::unique_ptr<const rv5s::InstrContext>> instructions = vm.GetInstructions();
             std::vector<uint64_t> line_numbers(5);
 
             for(int i=0;i<5;i++){
-                const rv5s::InstrContext& instruction = instructions[i].get();
-                if(instruction.bubbled || instruction.nopped){
-                    line_numbers[i] = -1;
+                const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
+                if(instruction){
+                    if(instruction->bubbled || instruction->nopped){
+                        line_numbers[i] = -1;
+                    }
+                    else{
+                        uint64_t instr_pc = instruction->pc;
+                        line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
+                    }
                 }
                 else{
-                    uint64_t instr_pc = instruction.pc;
-                    line_numbers[i] = vm.program_.instruction_number_disassembly_mapping[instr_pc/4] - 1;
+                    std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
+                    line_numbers[i] = -1;
                 }
             }
 

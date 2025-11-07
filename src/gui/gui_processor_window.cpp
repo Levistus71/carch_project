@@ -1,6 +1,7 @@
 #include "../include/gui/gui_processor_window.h"
 #include "gui/gui_common.h"
 #include "sim_state.h"
+#include "vm/rv5s/pipelined/core/instruction_context/instruction_context.h"
 
 // alu struct, stores the top_left_coords of the alu and the height of the alu.
 struct AluStruct{
@@ -844,7 +845,7 @@ void draw_hazard_detector(WindowConfig& window_config){
 
 
 void draw_instructions(WindowConfig& window_config){
-    std::vector<std::reference_wrapper<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+    std::vector<std::unique_ptr<const rv5s::InstrContext>> instructions = vm.GetInstructions();
     
     if(vm.PipeliningEnabled()){
         float if_stage_start = window_config.WINDOW_POS.x;
@@ -858,20 +859,24 @@ void draw_instructions(WindowConfig& window_config){
 
         for(size_t i=0;i<instructions.size();i++){
             std::string instr_dissassembled;
-            const rv5s::InstrContext& instruction = instructions[i].get();
-            uint64_t instr_pc = instruction.pc;
+            const rv5s::PipelinedInstrContext* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
+            if(!instruction){
+                std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
+                continue;
+            }
+            uint64_t instr_pc = instruction->pc;
             if(vm.program_.intermediate_code.size()>instr_pc/4){
                 ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;
                 instr_dissassembled += t.to_string();
             }
-            else if(!instruction.bubbled)
+            else if(!instruction->bubbled)
                 continue;
 
-            if(instruction.bubbled){
+            if(instruction->bubbled){
                 instr_dissassembled = "BUBBLE";
             }
 
-            if(instruction.nopped || instruction.bubbled){
+            if(instruction->nopped || instruction->bubbled){
                 window_config.col = window_config.red_col;
             }
     
@@ -885,14 +890,14 @@ void draw_instructions(WindowConfig& window_config){
             ImDrawList* drawlist = ImGui::GetWindowDrawList();
             drawlist->AddText(text_start, window_config.col, instr_dissassembled.c_str());
 
-            if(instruction.nopped || instruction.bubbled){
+            if(instruction->nopped || instruction->bubbled){
                 window_config.col = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
             }
         }
     }
     else{
         std::string instr_dissassembled;
-        const rv5s::InstrContext& instruction = instructions[0].get();
+        const rv5s::InstrContext& instruction = *instructions[0].get();
         uint64_t instr_pc = instruction.pc;
         if(vm.program_.intermediate_code.size()>instr_pc/4){
             ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;

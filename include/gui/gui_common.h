@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "globals.h"
-#include "vm/rv5s/vm.h"
+#include "vm/vm_main.h"
 
 extern ImFont* STANDARD_SMALL_FONT;
 extern ImFont* STANDARD_BOLD_SMALL_FONT;
@@ -31,6 +31,6 @@ extern bool in_memory;
 extern bool show_gpr;
 extern bool show_fpr;
 
-extern rv5s::VM vm;
+extern VM vm;
 
 void LoadFonts(ImGuiIO& io);
