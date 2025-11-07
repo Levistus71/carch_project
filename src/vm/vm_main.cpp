@@ -62,7 +62,7 @@ std::vector<uint64_t> VM::GetInstructionPCs(){
     return vm_->GetInstructionPCs();
 }
 
-std::vector<std::unique_ptr<const rv5s::InstrContext>> VM::GetInstructions(){
+std::vector<std::unique_ptr<const InstrContext>> VM::GetInstructions(){
     return vm_->GetInstructions();
 }
 

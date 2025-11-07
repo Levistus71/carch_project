@@ -3,7 +3,7 @@
 #include "memory_controller.h"
 #include "alu.h"
 
-#include "./rv5s/instruction_context.h"
+#include "./instruction_context.h"
 
 #include "vm_asm_mw.h"
 
@@ -48,5 +48,5 @@ public:
     virtual const std::array<uint64_t, 32>& GetFprValues() = 0;
 
     virtual std::vector<uint64_t> GetInstructionPCs() = 0;
-    virtual std::vector<std::unique_ptr<const rv5s::InstrContext>> GetInstructions() = 0;
+    virtual std::vector<std::unique_ptr<const InstrContext>> GetInstructions() = 0;
 };

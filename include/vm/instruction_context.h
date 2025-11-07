@@ -2,8 +2,6 @@
 
 #include "vm/alu.h"
 
-namespace rv5s {
-
 struct InstrContext{
 
     // instruction:
@@ -96,5 +94,3 @@ struct InstrContext{
 
     virtual void reset_id_vars(){};
 };
-
-} // namespace rv5s

@@ -845,7 +845,7 @@ void draw_hazard_detector(WindowConfig& window_config){
 
 
 void draw_instructions(WindowConfig& window_config){
-    std::vector<std::unique_ptr<const rv5s::InstrContext>> instructions = vm.GetInstructions();
+    std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions();
     
     if(vm.PipeliningEnabled()){
         float if_stage_start = window_config.WINDOW_POS.x;
@@ -897,7 +897,7 @@ void draw_instructions(WindowConfig& window_config){
     }
     else{
         std::string instr_dissassembled;
-        const rv5s::InstrContext& instruction = *instructions[0].get();
+        const InstrContext& instruction = *instructions[0].get();
         uint64_t instr_pc = instruction.pc;
         if(vm.program_.intermediate_code.size()>instr_pc/4){
             ICUnit& t = vm.program_.intermediate_code[instr_pc/4].first;

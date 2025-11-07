@@ -26,7 +26,7 @@ public:
 
     std::vector<uint64_t> GetInstructionPCs();
 
-    std::vector<std::unique_ptr<const rv5s::InstrContext>> GetInstructions();
+    std::vector<std::unique_ptr<const InstrContext>> GetInstructions();
 
     bool PipeliningEnabled();
     bool ForwardingEnabled();

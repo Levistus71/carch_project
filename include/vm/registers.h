@@ -21,7 +21,7 @@ namespace register_file{
  * @brief Represents a register file containing integer, floating-point, and vector registers.
  */
 class RegisterFile {
-private:
+protected:
   static constexpr size_t NUM_GPR = 32; ///< Number of General-Purpose Registers (GPR).
   static constexpr size_t NUM_FPR = 32; ///< Number of Floating-Point Registers (FPR).
 
@@ -40,13 +40,12 @@ public:
     INVALID,         ///< Invalid register type.
     INTEGER,         ///< General-purpose integer register.
     FLOATING_POINT,  ///< Floating-point register.
-    VECTOR,          ///< Vector register.
     CSR              ///< Control and Status Register (CSR).
   };
 
   RegisterFile();
 
-  void Reset();
+  virtual void Reset();
 
   /**
    * @brief Reads the value of a General-Purpose Register (GPR).

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vm/alu.h"
-#include "vm/rv5s/instruction_context.h"
+#include "vm/instruction_context.h"
 
 namespace rv5s {
 struct SingleCycleInstrContext : InstrContext{   
