@@ -1,24 +1,40 @@
 #pragma once
 #include "./instruction_context/instruction_context.h"
 #include "../hardware/reservation_station.h"
+#include "vm/rv5s/pipelined/hardware/branch_predictor.h"
+#include "../hardware/decode_unit.h"
 #include "vm/registers.h"
 #include "vm/memory_controller.h"
 
 
 namespace dual_issue{
 
-class RegisterStatusFile;
-class CommitBuffer;
-class CommonDataBus;
-
 class DualIssueCore{
 public:
-    std::deque<DualIssueInstrContext> instruction_deque_;
+    struct PipelineRegInstrs{
+        DualIssueInstrContext if_id_1;
+        DualIssueInstrContext if_id_2;
+
+        DualIssueInstrContext id_issue_1;
+        DualIssueInstrContext id_issue_2;
+
+        DualIssueInstrContext rsrvstn_alu;
+        DualIssueInstrContext rsrvstn_lsu;
+
+        DualIssueInstrContext alu_commit;
+        DualIssueInstrContext lsu_commit;
+    };
+
+    PipelineRegInstrs pipeline_reg_instrs_;
     uint64_t pc = 0;
 
     uint64_t to_commit_tag_ = 0; // if a branch is predicted incorrectly, we need to nuke all instructions "younger" than the new instruction (after branch) 
 
     bool is_stop_requested_ = false;
+
+    // brach prediction
+    bool branch_prediction_enabled_ = false;
+	bool branch_prediction_static_ = false;
 
     // Debug vars
     bool debug_mode_{true};
@@ -31,11 +47,13 @@ public:
     alu::Alu alu_;
     register_file::RegisterFile register_file_;
     memory_controller::MemoryController memory_controller_;
+    DualIssueDecodeUnit decode_unit_;
     ReservationStation alu_que_;
     ReservationStation lsu_que_;
     CommonDataBus broadcast_bus_;
-    CommitBuffer commit_buffer_;
+    ReorderBuffer commit_buffer_;
     RegisterStatusFile reg_status_file_;
+    rv5s::BranchPredictor branch_predictor_;
 
     // for input handling in syscalls:
 	std::mutex input_mutex_;
@@ -43,6 +61,11 @@ public:
 	std::queue<std::string> input_queue_;
 
     uint64_t program_size_ = 0;
+
+
+    uint64_t GetProgramCounter() const;
+    void AddToProgramCounter(int64_t value);
+    void SetProgramCounter(uint64_t value);
 
 };
 

@@ -17,9 +17,13 @@ struct DualIssueInstrContext : InstrContext {
     uint64_t rs1_tag;
     uint64_t rs2_tag;
     uint64_t rs3_tag;
+    size_t rob_idx;
     bool wait_for_rs1;
     bool wait_for_rs2;
     bool wait_for_rs3;
+
+    // is illegal instruction (pc was greater than program_size_)
+    bool illegal = false;
 
     // forwarding vars
     bool uses_rs1;
@@ -31,7 +35,6 @@ struct DualIssueInstrContext : InstrContext {
 
     void reset_id_vars();
 
-private:
     static uint64_t tag_counter;
 };
 

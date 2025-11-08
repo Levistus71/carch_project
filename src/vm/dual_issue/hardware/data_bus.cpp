@@ -7,8 +7,8 @@ void CommonDataBus::Reset(){
     broadcast_msgs.clear();
 }
 
-void CommonDataBus::BroadCast(uint64_t tag, uint64_t val){
-    broadcast_msgs.push_back(BroadCastMessage(tag, val));
+void CommonDataBus::BroadCast(uint64_t rob_idx, uint64_t val){
+    broadcast_msgs.push_back(BroadCastMessage(rob_idx, val));
 }
 
 } // namespace dual_issue

@@ -4,107 +4,72 @@ namespace dual_issue
 {
 
 TagFile::TagFile() {
-    gpr_tags.fill(0);
-    fpr_tags.fill(0);
+    gpr_idxs.fill(0);
+    fpr_idxs.fill(0);
 
     gpr_valid.fill(false);
     fpr_valid.fill(false);
-
-    gpr_ready.fill(false);
-    fpr_ready.fill(false);
-
-    gpr_values.fill(0);
-    fpr_values.fill(0);
 }
 
 void TagFile::Reset() {
-    gpr_tags.fill(0);
-    fpr_tags.fill(0);
+    gpr_idxs.fill(0);
+    fpr_idxs.fill(0);
 
     gpr_valid.fill(false);
     fpr_valid.fill(false);
-
-    gpr_ready.fill(false);
-    fpr_ready.fill(false);
-
-    gpr_values.fill(0);
-    fpr_values.fill(0);
 }
 
-std::pair<bool, uint64_t> TagFile::GetTagGpr(uint64_t reg) const {
+std::pair<bool, uint64_t> TagFile::GetRobIdxGpr(uint64_t reg) const {
     if (reg >= NUM_GPR) throw std::out_of_range("Invalid GPR index");
 
-    if(gpr_valid[reg]){
-        return {true, gpr_tags[reg]};
-    }
-    return {false, gpr_tags[reg]};
+    // no dependency with 0
+    if(reg==0)
+        return {false, gpr_idxs[0]};
+    
+    return {gpr_valid[reg], gpr_idxs[reg]};
 }
 
-std::pair<bool, uint64_t> TagFile::GetTagFpr(uint64_t reg) const {
+std::pair<bool, uint64_t> TagFile::GetRobIdxFpr(uint64_t reg) const {
     if (reg >= NUM_FPR) throw std::out_of_range("Invalid FPR index");
 
-    if(fpr_valid[reg]){
-        return {true, fpr_tags[reg]};
-    }
-    return {false, fpr_tags[reg]};
+    return {fpr_valid[reg], fpr_idxs[reg]};
 }
 
-std::pair<bool, uint64_t> TagFile::GetValueGpr(uint64_t reg) const {
-    if (reg >= NUM_GPR) throw std::out_of_range("Invalid GPR index");
-
-    if(gpr_ready[reg]){
-        return {true, gpr_values[reg]};
-    }
-    return {false, gpr_values[reg]};
-}
-
-std::pair<bool, uint64_t> TagFile::GetValueFpr(uint64_t reg) const {
-    if (reg >= NUM_FPR) throw std::out_of_range("Invalid FPR index");
-
-    if(fpr_ready[reg]){
-        return {true, fpr_values[reg]};
-    }
-    return {false, fpr_values[reg]};
-}
-
-void TagFile::WriteGprTag(uint64_t reg, uint64_t tag){
+void TagFile::WriteGprRobIdx(uint64_t reg, uint64_t rob_idx){
     if (reg >= NUM_FPR) throw std::out_of_range("Invalid GPR index");
 
     gpr_valid[reg] = true;
-    gpr_ready[reg] = false;
-    gpr_tags[reg] = tag;
+    gpr_idxs[reg] = rob_idx;
 }
 
-void TagFile::WriteFprTag(uint64_t reg, uint64_t tag){
+void TagFile::WriteFprRobIdx(uint64_t reg, uint64_t rob_idx){
     if (reg >= NUM_FPR) throw std::out_of_range("Invalid FPR index");
 
     fpr_valid[reg] = true;
-    fpr_ready[reg] = false;
-    fpr_tags[reg] = tag;
+    fpr_idxs[reg] = rob_idx;
 }
 
-void TagFile::WriteGprValue(uint64_t reg, uint64_t val){
-    if (reg >= NUM_FPR) throw std::out_of_range("Invalid GPR index");
+void TagFile::EndDependencyGpr(uint64_t rd_reg, uint64_t rob_idx){
+    if (rd_reg >= NUM_GPR) throw std::out_of_range("Invalid GPR index");
 
-    gpr_ready[reg] = true;
-    gpr_values[reg] = val;
+    if(gpr_idxs[rd_reg]==rob_idx)
+        gpr_valid[rd_reg] = false;
+}
+void TagFile::EndDependencyFpr(uint64_t rd_reg, uint64_t rob_idx){
+    if (rd_reg >= NUM_FPR) throw std::out_of_range("Invalid FPR index");
+
+    if(fpr_idxs[rd_reg]==rob_idx)
+        fpr_valid[rd_reg] = false;
 }
 
-void TagFile::WriteFprValue(uint64_t reg, uint64_t val){
-    if (reg >= NUM_FPR) throw std::out_of_range("Invalid FPR index");
 
-    fpr_ready[reg] = true;
-    fpr_values[reg] = val;
-}
-
-
-void RegisterStatusFile::UpdateTableTag(uint8_t reg_num, bool gpr_register, uint64_t tag){
+void RegisterStatusFile::UpdateTableRobIdx(uint8_t reg_num, bool gpr_register, uint64_t rob_idx){
     try{
         if(gpr_register){
-            tag_file_.WriteGprTag(reg_num, tag);
+            tag_file_.WriteGprRobIdx(reg_num, rob_idx);
         }
         else{
-            tag_file_.WriteFprTag(reg_num, tag);
+            tag_file_.WriteFprRobIdx(reg_num, rob_idx);
         }
     }
     catch(const std::out_of_range& e){
@@ -112,13 +77,13 @@ void RegisterStatusFile::UpdateTableTag(uint8_t reg_num, bool gpr_register, uint
     }
 }
 
-void RegisterStatusFile::UpdateTableValue(uint8_t reg_num, bool gpr_register, uint64_t val){
+void RegisterStatusFile::EndDependency(size_t rd_reg_num, size_t rob_idx, bool gpr_register){
     try{
         if(gpr_register){
-            tag_file_.WriteGprValue(reg_num, val);
+            tag_file_.EndDependencyGpr(rd_reg_num, rob_idx);
         }
         else{
-            tag_file_.WriteFprValue(reg_num, val);
+            tag_file_.EndDependencyFpr(rd_reg_num, rob_idx);
         }
     }
     catch(const std::out_of_range& e){
@@ -126,28 +91,13 @@ void RegisterStatusFile::UpdateTableValue(uint8_t reg_num, bool gpr_register, ui
     }
 }
 
-std::pair<bool, uint64_t> RegisterStatusFile::QueryTableTag(uint8_t reg_num, bool gpr_register){
+std::pair<bool, uint64_t> RegisterStatusFile::QueryTableRobIdx(uint8_t reg_num, bool gpr_register){
     try{
         if(gpr_register){
-            tag_file_.GetTagGpr(reg_num);
+            return tag_file_.GetRobIdxGpr(reg_num);
         }
         else{
-            tag_file_.GetTagFpr(reg_num);
-        }
-    }
-    catch(const std::out_of_range& e){
-        throw e;
-    }
-}
-
-
-std::pair<bool, uint64_t> RegisterStatusFile::QueryTableValue(uint8_t reg_num, bool gpr_register){
-    try{
-        if(gpr_register){
-            tag_file_.GetValueGpr(reg_num);
-        }
-        else{
-            tag_file_.GetValueFpr(reg_num);
+            return tag_file_.GetRobIdxFpr(reg_num);
         }
     }
     catch(const std::out_of_range& e){

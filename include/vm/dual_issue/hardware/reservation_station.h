@@ -8,12 +8,13 @@ namespace dual_issue{
 
 class ReservationStation{
 public:
-    bool IsFull();
-    bool IsEmpty();
+    size_t EmptySlots();
 
     void ListenToBroadCast(CommonDataBus& data_bus);
 
     void Push(DualIssueInstrContext instr, DualIssueCore& vm_core);
+
+    DualIssueInstrContext GetReadyInstr(DualIssueCore& vm_core);
     
 private:
     static const size_t max_size_ = 4;

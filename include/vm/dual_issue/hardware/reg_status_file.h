@@ -10,44 +10,35 @@ public:
 
     void Reset();
 
-    std::pair<bool, uint64_t> GetTagGpr(uint64_t reg) const;
-    std::pair<bool, uint64_t> GetTagFpr(uint64_t reg) const;
+    std::pair<bool, uint64_t> GetRobIdxGpr(uint64_t reg) const;
+    std::pair<bool, uint64_t> GetRobIdxFpr(uint64_t reg) const;
 
-    std::pair<bool, uint64_t> GetValueGpr(uint64_t reg) const;
-    std::pair<bool, uint64_t> GetValueFpr(uint64_t reg) const;
+    void WriteGprRobIdx(uint64_t reg, uint64_t tag);
+    void WriteFprRobIdx(uint64_t reg, uint64_t tag);
 
-    void WriteGprTag(uint64_t reg, uint64_t tag);
-    void WriteFprTag(uint64_t reg, uint64_t tag);
-
-    void WriteGprValue(uint64_t reg, uint64_t val);
-    void WriteFprValue(uint64_t reg, uint64_t val);
+    void EndDependencyGpr(uint64_t rd_reg, uint64_t rob_idx);
+    void EndDependencyFpr(uint64_t rd_reg, uint64_t rob_idx);
 
 
 private:
     static constexpr size_t NUM_GPR = 32;
     static constexpr size_t NUM_FPR = 32;
 
-    std::array<uint64_t, NUM_GPR> gpr_tags{0};
-    std::array<uint64_t, NUM_GPR> fpr_tags{0};
-
-    std::array<uint64_t, NUM_GPR> gpr_values{0};
-    std::array<uint64_t, NUM_GPR> fpr_values{0};
+    std::array<uint64_t, NUM_GPR> gpr_idxs{0};
+    std::array<uint64_t, NUM_GPR> fpr_idxs{0};
 
     std::array<bool, NUM_GPR> gpr_valid{false};
     std::array<bool, NUM_FPR> fpr_valid{false};
-
-    std::array<bool, NUM_GPR> gpr_ready{false};
-    std::array<bool, NUM_GPR> fpr_ready{false};
 };
 
 
 class RegisterStatusFile{
 public:
-    std::pair<bool, uint64_t> QueryTableTag(uint8_t reg_num, bool gpr_register);
-    std::pair<bool, uint64_t> QueryTableValue(uint8_t reg_num, bool gpr_register);
+    std::pair<bool, uint64_t> QueryTableRobIdx(uint8_t reg_num, bool gpr_register);
 
-    void UpdateTableTag(uint8_t reg_num, bool gpr_register, uint64_t tag);
-    void UpdateTableValue(uint8_t reg_num, bool gpr_register, uint64_t val);
+    void UpdateTableRobIdx(uint8_t reg_num, bool gpr_register, uint64_t rob_idx);
+
+    void EndDependency(size_t rd_reg_num, size_t rob_idx, bool gpr_register);
 
 private:
     TagFile tag_file_;
