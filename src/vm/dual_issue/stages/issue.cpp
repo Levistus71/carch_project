@@ -121,6 +121,7 @@ int DualIssueStages::Issue(DualIssueCore& vm_core){
     if(can_issue_1){
         if(!instr1.illegal){
             reserve_push(instr1, vm_core);
+            vm_core.pipeline_reg_instrs_.id_issue_1 = instr2;
         }
         return 1;
     }
@@ -128,7 +129,6 @@ int DualIssueStages::Issue(DualIssueCore& vm_core){
         if(!instr2.illegal){
             reserve_push(instr2, vm_core);
         }
-        vm_core.pipeline_reg_instrs_.id_issue_2 = instr1;
         return 1;
     }
 }

@@ -62,10 +62,10 @@ VmBase::InstrView DualIssueVM::GetInstructions(){
     pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.if_id_2));
     pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_1));
     pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_2));
-    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.alu_commit));
-    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.lsu_commit));
     pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_alu));
     pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_lsu));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.alu_commit));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.lsu_commit));
 
     InstrView ret;
     ret.pipeline = std::move(pipeline);

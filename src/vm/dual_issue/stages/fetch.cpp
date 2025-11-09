@@ -114,7 +114,7 @@ void fetch1(DualIssueCore& vm_core){
         }
     }
 
-    vm_core.pipeline_reg_instrs_.if_id_1 = instr;
+    vm_core.pipeline_reg_instrs_.if_id_2 = instr;
 }
 
 

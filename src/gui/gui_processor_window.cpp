@@ -1111,7 +1111,7 @@ void dual_draw_headings(DualIssueWindowVars& window_config){
     dual_draw_heading(window_config, window_config.issue_fu_pipeline, issue_fu_pipeline_heading);
 
     // fu commit pipline heading
-    static const char* fu_commit_pipeline_heading = "Issue Functional-Unit Pipeline";
+    static const char* fu_commit_pipeline_heading = "Functional-Unit Commit Pipeline";
     dual_draw_heading(window_config, window_config.fu_commit_pipeline, fu_commit_pipeline_heading);
 
     // reorder buffer heading
@@ -1164,7 +1164,7 @@ void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::
         if(ImGui::BeginTable("Queue", 1, ImGuiTableFlags_Borders)){
 
             
-            for(size_t i=0;i<que.size();i++){
+            for(int i=static_cast<int>(que.size()-1);i>=0;i--){
                 const dual_issue::DualIssueInstrContext* instr = dynamic_cast<const dual_issue::DualIssueInstrContext*>(que[i].get());
                 if(!instr){
                     std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
@@ -1273,7 +1273,6 @@ void dual_issue_main(){
         dual_init_vars(window_config);
 
         dual_draw_headings(window_config);
-        
         
         VmBase::InstrView instrs = vm.GetInstructions();
         dual_draw_instrs(window_config, instrs);
