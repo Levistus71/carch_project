@@ -4,6 +4,7 @@
 
 namespace dual_issue{
 
+class DualIssueCore;
 
 class ROBBuffer{
 public:
@@ -23,6 +24,10 @@ public:
     void Pop();
 
     std::pair<bool, uint64_t> QueryVal(uint64_t rob_idx);
+
+    void Reset();
+
+    std::vector<std::unique_ptr<const InstrContext>> GetInstrs();
 
 private:
     static constexpr size_t max_size = 8;
@@ -46,6 +51,10 @@ public:
     size_t Reserve();
 
     std::pair<bool, uint64_t> QueryVal(uint64_t rob_idx);
+
+    void Reset();
+
+    std::vector<std::unique_ptr<const InstrContext>> GetInstrs();
     
 private:
     ROBBuffer buffer;

@@ -30,10 +30,7 @@ public:
     const std::array<uint64_t, 32>& GetFprValues() override;
 
     std::vector<uint64_t> GetInstructionPCs() override;
-    std::vector<std::unique_ptr<const InstrContext>> GetInstructions() override;
-
-    bool ForwardingEnabled();
-    bool HazardEnabled();
+    InstrView GetInstructions() override;
 
     AssembledProgram program_;
 

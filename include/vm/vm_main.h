@@ -4,6 +4,13 @@
 
 class VM{
 public:
+    enum class Which{
+        SingleCycle,
+        Pipelined,
+        DualIssue
+    };
+
+
     VM();
 
     void Reset();
@@ -26,14 +33,17 @@ public:
 
     std::vector<uint64_t> GetInstructionPCs();
 
-    std::vector<std::unique_ptr<const InstrContext>> GetInstructions();
+    VmBase::InstrView GetInstructions();
 
     bool PipeliningEnabled();
     bool ForwardingEnabled();
     bool HazardEnabled();
 
+    Which GetType();
+
     AssembledProgram program_;
 
 private:
     std::unique_ptr<VmBase> vm_;
+    Which type_;
 };

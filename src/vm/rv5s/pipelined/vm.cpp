@@ -64,14 +64,17 @@ std::vector<uint64_t> PipelinedVM::GetInstructionPCs(){
 }
 
 
-std::vector<std::unique_ptr<const InstrContext>> PipelinedVM::GetInstructions() {
+VmBase::InstrView PipelinedVM::GetInstructions() {
     std::vector<std::unique_ptr<const InstrContext>> result;
     result.push_back(std::make_unique<const PipelinedInstrContext>(vm_core_.GetIfInstruction()));
     result.push_back(std::make_unique<const PipelinedInstrContext>(vm_core_.GetIdInstruction()));
     result.push_back(std::make_unique<const PipelinedInstrContext>(vm_core_.GetExInstruction()));
     result.push_back(std::make_unique<const PipelinedInstrContext>(vm_core_.GetMemInstruction()));
     result.push_back(std::make_unique<const PipelinedInstrContext>(vm_core_.GetWbInstruction()));
-    return result;
+
+    InstrView ret;
+    ret.pipeline = std::move(result);
+    return ret;
 }
 
 bool PipelinedVM::ForwardingEnabled(){

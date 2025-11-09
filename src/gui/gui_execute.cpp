@@ -35,7 +35,7 @@ void editor_execute(){
             // text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
             // text_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
 
-            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions();
+            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
             std::vector<uint64_t> line_numbers(5);
 
             for(int i=0;i<5;i++){
@@ -114,7 +114,7 @@ void assembled_editor_main(){
             // assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
             // assembled_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
             
-            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions();
+            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
             std::vector<uint64_t> line_numbers(5);
 
             for(int i=0;i<5;i++){

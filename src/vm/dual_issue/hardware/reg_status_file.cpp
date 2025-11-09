@@ -105,4 +105,8 @@ std::pair<bool, uint64_t> RegisterStatusFile::QueryTableRobIdx(uint8_t reg_num, 
     }
 }
 
+void RegisterStatusFile::Reset(){
+    tag_file_.Reset();
+}
+
 } // namespace dual_issue

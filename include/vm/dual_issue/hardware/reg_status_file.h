@@ -40,6 +40,8 @@ public:
 
     void EndDependency(size_t rd_reg_num, size_t rob_idx, bool gpr_register);
 
+    void Reset();
+
 private:
     TagFile tag_file_;
 };

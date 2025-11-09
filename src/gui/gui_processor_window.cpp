@@ -845,7 +845,7 @@ void draw_hazard_detector(WindowConfig& window_config){
 
 
 void draw_instructions(WindowConfig& window_config){
-    std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions();
+    std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
     
     if(vm.PipeliningEnabled()){
         float if_stage_start = window_config.WINDOW_POS.x;

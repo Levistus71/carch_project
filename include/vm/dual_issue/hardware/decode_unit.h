@@ -4,12 +4,12 @@
 
 #include "common/instructions.h"
 #include "vm/alu.h"
-#include "../core/instruction_context/instruction_context.h"
 #include "vm/registers.h"
 
 
 namespace dual_issue
 {
+struct DualIssueInstrContext;
 
 /**
  * @brief The DecodeUnit class is the decode unit of the CPU. Responsible for setting the control signals and getting the alu signal

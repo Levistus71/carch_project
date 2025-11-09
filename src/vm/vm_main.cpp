@@ -2,13 +2,16 @@
 #include "vm/rv5s/pipelined/vm.h"
 #include "vm/rv5s/single_cycle/vm.h"
 #include "vm_asm_mw.h"
+#include "sim_state.h"
 
 VM::VM(){
     if(vm_config::config.pipelining_enabled){
         vm_ = std::make_unique<rv5s::PipelinedVM>();
+        type_ = VM::Which::Pipelined;
     }
     else{
         vm_ = std::make_unique<rv5s::SingleCycleVM>();
+        type_ = VM::Which::SingleCycle;
     }
 }
 
@@ -19,9 +22,11 @@ void VM::Reset(){
 
 void VM::LoadVM(){
     if(vm_config::config.pipelining_enabled){
+        type_ = VM::Which::Pipelined;
         vm_ = std::make_unique<rv5s::PipelinedVM>();
     }
     else{
+        type_ = VM::Which::SingleCycle;
         vm_ = std::make_unique<rv5s::SingleCycleVM>();
     }
 }
@@ -39,6 +44,7 @@ void VM::DebugRun(){
 }
 
 void VM::Step(){
+    SimState_.LIT_UP = true;
     vm_->Step();
 }
 
@@ -62,7 +68,7 @@ std::vector<uint64_t> VM::GetInstructionPCs(){
     return vm_->GetInstructionPCs();
 }
 
-std::vector<std::unique_ptr<const InstrContext>> VM::GetInstructions(){
+VmBase::InstrView VM::GetInstructions(){
     return vm_->GetInstructions();
 }
 
@@ -93,4 +99,9 @@ bool VM::HazardEnabled(){
     else{
         return test->HazardEnabled();
     }
+}
+
+
+VM::Which VM::GetType(){
+    return type_;
 }

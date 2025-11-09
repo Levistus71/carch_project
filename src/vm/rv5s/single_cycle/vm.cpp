@@ -63,10 +63,13 @@ std::vector<uint64_t> SingleCycleVM::GetInstructionPCs(){
     return {vm_core_.program_counter_};
 }
 
-std::vector<std::unique_ptr<const InstrContext>> SingleCycleVM::GetInstructions(){
+VmBase::InstrView SingleCycleVM::GetInstructions(){
     std::vector<std::unique_ptr<const InstrContext>> result;
     result.push_back(std::make_unique<const SingleCycleInstrContext>(vm_core_.instr));
-    return result;
+
+    InstrView ret;
+    ret.pipeline = std::move(result);
+    return ret;
 }
 
 } // namespace rv5s

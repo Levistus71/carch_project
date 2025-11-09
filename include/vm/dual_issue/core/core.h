@@ -5,6 +5,7 @@
 #include "../hardware/decode_unit.h"
 #include "vm/registers.h"
 #include "vm/memory_controller.h"
+#include "vm_asm_mw.h"
 
 
 namespace dual_issue{
@@ -23,6 +24,9 @@ public:
 
         DualIssueInstrContext alu_commit;
         DualIssueInstrContext lsu_commit;
+
+
+        void Reset();
     };
 
     PipelineRegInstrs pipeline_reg_instrs_;
@@ -66,6 +70,11 @@ public:
     uint64_t GetProgramCounter() const;
     void AddToProgramCounter(int64_t value);
     void SetProgramCounter(uint64_t value);
+
+    void Reset();
+
+    void Load();
+    void Load(AssembledProgram& program);
 
 };
 

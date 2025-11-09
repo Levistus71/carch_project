@@ -1,7 +1,12 @@
 #include "vm/dual_issue/hardware/reservation_station.h"
+#include "vm/dual_issue/core/core.h"
 
 namespace dual_issue
 {
+
+ReservationStation::ReservationStation() : que_{max_size_}{
+    Reset();
+}
 
 size_t ReservationStation::EmptySlots(){
     return max_size_-que_.size();
@@ -123,9 +128,12 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
 }
 
 
-DualIssueInstrContext ReservationStation::GetReadyInstr(DualIssueCore& vm_core){
-    if(que_.empty())
-        return;
+DualIssueInstrContext ReservationStation::GetReadyInstr(){
+    if(que_.empty()){
+        DualIssueInstrContext t;
+        t.illegal = true;
+        return t;
+    }
 
     if(que_.front().ready_to_exec){
         DualIssueInstrContext instr = que_.front();
@@ -138,6 +146,22 @@ DualIssueInstrContext ReservationStation::GetReadyInstr(DualIssueCore& vm_core){
     return t;
 }
 
+
+void ReservationStation::Reset(){
+    for(auto& p : que_){
+        p.illegal = true;
+    }
+}
+
+std::vector<std::unique_ptr<const InstrContext>> ReservationStation::GetQue(){
+    std::vector<std::unique_ptr<const InstrContext>> ret;
+
+    for(auto& p : que_){
+        ret.push_back(std::make_unique<const InstrContext>(p));
+    }
+
+    return ret;
+}
 
 
 } // namespace dual_issue

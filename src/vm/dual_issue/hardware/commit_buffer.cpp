@@ -5,7 +5,9 @@
 
 namespace dual_issue{
 
-ROBBuffer::ROBBuffer() : buffer(8){}
+ROBBuffer::ROBBuffer() : buffer(8){
+    Reset();
+}
 
 size_t ROBBuffer::EmptySlots(){
     if(tail > head){
@@ -46,6 +48,25 @@ std::pair<bool, uint64_t> ROBBuffer::QueryVal(uint64_t idx){
         : buffer[idx].instr.alu_out;
 
     return {buffer[idx].ready_to_commit, write_val};
+}
+
+void ROBBuffer::Reset(){
+    tail = 0;
+    head = 0;
+
+    for(size_t i=0;i<max_size;i++){
+        buffer[i].ready_to_commit = false;
+        buffer[i].instr.illegal = true;
+    }
+}
+
+std::vector<std::unique_ptr<const InstrContext>> ROBBuffer::GetInstrs(){
+    std::vector<std::unique_ptr<const InstrContext>> ret;
+    for(auto& p : buffer){
+        ret.push_back(std::make_unique<const InstrContext>(p.instr));
+    }
+
+    return ret;
 }
 
 } // namespace dual_issue
@@ -116,7 +137,15 @@ void ReorderBuffer::Commit(DualIssueCore& vm_core){
         }
         // else wait for previous instructions to complete
     }
+}
 
+
+void ReorderBuffer::Reset(){
+    buffer.Reset();
+}
+
+std::vector<std::unique_ptr<const InstrContext>> ReorderBuffer::GetInstrs(){
+    return buffer.GetInstrs();    
 }
 
 } // namespace dual_issue

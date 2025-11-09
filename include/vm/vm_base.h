@@ -29,6 +29,14 @@ enum SyscallCode {
 
 class VmBase {
 public:
+    struct InstrView{
+        std::vector<std::unique_ptr<const InstrContext>> pipeline;
+        std::vector<std::unique_ptr<const InstrContext>> reservation_station_alu;
+        std::vector<std::unique_ptr<const InstrContext>> reservation_station_lsu;
+        std::vector<std::unique_ptr<const InstrContext>> reorder_buffer;
+    };
+
+
     VmBase() = default;
     virtual ~VmBase() = default;
 
@@ -48,5 +56,5 @@ public:
     virtual const std::array<uint64_t, 32>& GetFprValues() = 0;
 
     virtual std::vector<uint64_t> GetInstructionPCs() = 0;
-    virtual std::vector<std::unique_ptr<const InstrContext>> GetInstructions() = 0;
+    virtual InstrView GetInstructions() = 0;
 };

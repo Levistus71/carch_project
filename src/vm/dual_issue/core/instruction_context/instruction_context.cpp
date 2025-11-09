@@ -69,7 +69,6 @@ void DualIssueInstrContext::reset_id_vars(){
     fcsr_update = false;
 
     // bools for status
-    bool result_ready = false;
-    bool ready_to_exec = false;
+    ready_to_exec = false;
 }
 }
