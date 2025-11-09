@@ -32,8 +32,6 @@ public:
     PipelineRegInstrs pipeline_reg_instrs_;
     uint64_t pc = 0;
 
-    uint64_t to_commit_tag_ = 0; // if a branch is predicted incorrectly, we need to nuke all instructions "younger" than the new instruction (after branch) 
-
     bool is_stop_requested_ = false;
 
     // brach prediction

@@ -12,8 +12,6 @@ struct DualIssueInstrContext : InstrContext {
     bool branch_predicted_taken = false; // job of the 'FETCH' stage to update this. (For branch prediction)
     bool branch_taken = false; // job of the 'EXEC' stage to update this. (For branch prediction), checked by the DetectControlHazard() in hazard_detector_
 
-    // tag for identifying unit
-    uint64_t tag;
     uint64_t rs1_tag;
     uint64_t rs2_tag;
     uint64_t rs3_tag;
@@ -34,8 +32,6 @@ struct DualIssueInstrContext : InstrContext {
     bool ready_to_exec = false;
 
     void reset_id_vars();
-
-    static uint64_t tag_counter;
 };
 
 

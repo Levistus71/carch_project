@@ -31,6 +31,8 @@ public:
     std::vector<bool> GetStatus();
     std::pair<size_t, size_t> GetHeadTail();
 
+    void SkipHeadToIdx(size_t new_head);
+
 private:
     // most optimal is 16 (4 + 4 from reservation stations, 8 in 4 pipeline registers (each register has 2))
     static constexpr size_t max_size = 16;
@@ -60,6 +62,8 @@ public:
     std::vector<std::unique_ptr<const InstrContext>> GetInstrs();
     std::vector<bool> GetStatus();
     std::pair<size_t, size_t> GetHeadTail();
+
+    void SkipHeadToIdx(size_t new_head);
     
 private:
     ROBBuffer buffer;

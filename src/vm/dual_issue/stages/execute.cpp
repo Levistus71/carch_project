@@ -48,7 +48,7 @@ void DualIssueStages::ResolveBranch(DualIssueCore& vm_core){
 		if(ex_instruction.branch_predicted_taken)
 			return;
 		
-        vm_core.to_commit_tag_ = ex_instruction.tag;
+        vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
 			vm_core.SetProgramCounter(ex_instruction.alu_out);
 		}
@@ -107,13 +107,13 @@ void DualIssueStages::ResolveBranch(DualIssueCore& vm_core){
 			// // Subtracting 4 from pc (updated in Fetch())
 			// vm_core.AddToProgramCounter(-4);
 			// vm_core.AddToProgramCounter(ex_instruction.immediate);
-            vm_core.to_commit_tag_ = ex_instruction.tag;
+            vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
 			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
 		else{
 			// branch was incorrectly predicted, need to set the pc to pc+4
 			if(ex_instruction.branch_predicted_taken){
-                vm_core.to_commit_tag_ = ex_instruction.tag;
+                vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
 				vm_core.SetProgramCounter(ex_instruction.pc + 4);
 			}
 		}

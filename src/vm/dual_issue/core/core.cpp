@@ -35,8 +35,6 @@ void DualIssueCore::Reset(){
 
     pc = 0;
 
-    to_commit_tag_ = 0;
-
     branch_prediction_enabled_ = false;
 	branch_prediction_static_ = false;
 

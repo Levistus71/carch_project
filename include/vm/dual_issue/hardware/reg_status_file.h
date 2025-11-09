@@ -13,8 +13,8 @@ public:
     std::pair<bool, uint64_t> GetRobIdxGpr(uint64_t reg) const;
     std::pair<bool, uint64_t> GetRobIdxFpr(uint64_t reg) const;
 
-    void WriteGprRobIdx(uint64_t reg, uint64_t tag);
-    void WriteFprRobIdx(uint64_t reg, uint64_t tag);
+    void WriteGprRobIdx(uint64_t reg, uint64_t rob_idx);
+    void WriteFprRobIdx(uint64_t reg, uint64_t rob_idx);
 
     void EndDependencyGpr(uint64_t rd_reg, uint64_t rob_idx);
     void EndDependencyFpr(uint64_t rd_reg, uint64_t rob_idx);

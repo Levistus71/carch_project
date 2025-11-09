@@ -2,17 +2,9 @@
 
 namespace dual_issue{
 
-// initializing the tag_counter to 0;
-uint64_t dual_issue::DualIssueInstrContext::tag_counter = 0;
+DualIssueInstrContext::DualIssueInstrContext() : InstrContext() {}
 
-
-DualIssueInstrContext::DualIssueInstrContext() : InstrContext(), tag{tag_counter} {
-    tag_counter++;
-}
-
-DualIssueInstrContext::DualIssueInstrContext(uint64_t pc) : InstrContext(pc), tag{tag_counter} {
-    tag_counter++;
-}
+DualIssueInstrContext::DualIssueInstrContext(uint64_t pc) : InstrContext(pc){}
 
 void DualIssueInstrContext::reset_id_vars(){
     alu_op = alu::AluOp::kNone;

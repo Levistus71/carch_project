@@ -9,7 +9,6 @@ void fetch2(DualIssueCore& vm_core){
 
     if(vm_core.pc>=vm_core.program_size_){
         instr1.illegal = true;
-        DualIssueInstrContext::tag_counter--;
     }
 
     instr1.pc = vm_core.pc;
@@ -18,7 +17,6 @@ void fetch2(DualIssueCore& vm_core){
 
     if(vm_core.pc>=vm_core.program_size_){
         instr2.illegal = true;
-        DualIssueInstrContext::tag_counter--;
     }
 
     instr2.pc = vm_core.pc;
@@ -112,6 +110,9 @@ void fetch1(DualIssueCore& vm_core){
                 instr.branch_predicted_taken = true;
             }
         }
+    }
+    else{
+        vm_core.AddToProgramCounter(4);
     }
 
     vm_core.pipeline_reg_instrs_.if_id_2 = instr;

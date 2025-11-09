@@ -81,6 +81,22 @@ std::pair<size_t, size_t> ROBBuffer::GetHeadTail(){
     return {head, tail};
 }
 
+
+void ROBBuffer::SkipHeadToIdx(size_t new_head){
+    if(new_head<head){
+        for(int i=head;i<static_cast<int>(max_size);i++){
+            buffer[head].ready_to_commit = false;
+            buffer[head].instr.illegal = true;
+        }
+        head = 0;
+    }
+
+    for(int i=head;i<static_cast<int>(new_head);i++){
+        buffer[head].ready_to_commit = false;
+        buffer[head].instr.illegal = true;
+    }
+}
+
 } // namespace dual_issue
 
 
@@ -137,17 +153,9 @@ void ReorderBuffer::Commit(DualIssueCore& vm_core){
         
         DualIssueInstrContext top_instr = buffer.Top();
         
-        if(top_instr.tag == vm_core.to_commit_tag_){
-            buffer.Pop();
-            DualIssueStages::WriteBack(top_instr, vm_core);
-            vm_core.reg_status_file_.EndDependency(top_instr.rd, top_instr.rob_idx, !top_instr.reg_write_to_fpr);
-            vm_core.to_commit_tag_++;
-        }
-        // to_commit_tag_ is updated if the branch was predicted incorrectly. we nuke it here
-        else if(top_instr.tag < vm_core.to_commit_tag_){
-            buffer.Pop();
-        }
-        // else wait for previous instructions to complete
+        buffer.Pop();
+        DualIssueStages::WriteBack(top_instr, vm_core);
+        vm_core.reg_status_file_.EndDependency(top_instr.rd, top_instr.rob_idx, !top_instr.reg_write_to_fpr);
     }
 }
 
@@ -165,6 +173,11 @@ std::vector<bool> ReorderBuffer::GetStatus(){
 
 std::pair<size_t, size_t> ReorderBuffer::GetHeadTail(){
     return buffer.GetHeadTail();
+}
+
+
+void ReorderBuffer::SkipHeadToIdx(size_t new_head){
+    buffer.SkipHeadToIdx(new_head);
 }
 
 } // namespace dual_issue
