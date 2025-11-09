@@ -25,9 +25,11 @@ public:
         DualIssueInstrContext alu_commit;
         DualIssueInstrContext lsu_commit;
 
-
+        void FlushPreIssueRegs();
         void Reset();
     };
+
+    void FlushPreIssueRegs();
 
     PipelineRegInstrs pipeline_reg_instrs_;
     uint64_t pc = 0;

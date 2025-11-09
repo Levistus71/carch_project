@@ -31,7 +31,6 @@ void DualIssueInstrContext::reset_id_vars(){
     
     branch = false;
     branch_predicted_taken = false;
-    branch_taken = false;
     
     rs1 = 0;
     rs2 = 0;

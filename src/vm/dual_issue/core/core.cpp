@@ -3,6 +3,14 @@
 namespace dual_issue
 {
 
+void DualIssueCore::PipelineRegInstrs::FlushPreIssueRegs(){
+	if_id_1.illegal = true;
+	if_id_2.illegal = true;
+
+	id_issue_1.illegal = true;
+	id_issue_2.illegal = true;
+}
+
 void DualIssueCore::PipelineRegInstrs::Reset(){
     if_id_1.illegal = true;
     if_id_2.illegal = true;
@@ -15,6 +23,11 @@ void DualIssueCore::PipelineRegInstrs::Reset(){
 
     alu_commit.illegal = true;
     lsu_commit.illegal = true;
+}
+
+
+void DualIssueCore::FlushPreIssueRegs(){
+	pipeline_reg_instrs_.FlushPreIssueRegs();
 }
 
 

@@ -40,15 +40,13 @@ void DualIssueStages::ResolveBranch(DualIssueCore& vm_core){
 
 	if (opcode==get_instr_encoding(Instruction::kjalr).opcode || 
 			opcode==get_instr_encoding(Instruction::kjal).opcode) {
-
-		// updating branch_taken status
-		ex_instruction.branch_taken = true;
 		
 		// if branch was already taken, we skip updating the pc
 		if(ex_instruction.branch_predicted_taken)
 			return;
 		
-        vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
+        vm_core.commit_buffer_.ResetTailTillIdx(ex_instruction.rob_idx);
+		vm_core.FlushPreIssueRegs();
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
 			vm_core.SetProgramCounter(ex_instruction.alu_out);
 		}
@@ -97,8 +95,6 @@ void DualIssueStages::ResolveBranch(DualIssueCore& vm_core){
 		}
 
 		if (branch_flag) {
-			// Updating branch_taken status
-			ex_instruction.branch_taken = true;
 
 			// if branch was predicted taken, we skip updating pc
 			if(ex_instruction.branch_predicted_taken)
@@ -107,13 +103,15 @@ void DualIssueStages::ResolveBranch(DualIssueCore& vm_core){
 			// // Subtracting 4 from pc (updated in Fetch())
 			// vm_core.AddToProgramCounter(-4);
 			// vm_core.AddToProgramCounter(ex_instruction.immediate);
-            vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
+            vm_core.commit_buffer_.ResetTailTillIdx(ex_instruction.rob_idx);
+			vm_core.FlushPreIssueRegs();
 			vm_core.SetProgramCounter(ex_instruction.pc + ex_instruction.immediate);
 		}
 		else{
 			// branch was incorrectly predicted, need to set the pc to pc+4
 			if(ex_instruction.branch_predicted_taken){
-                vm_core.commit_buffer_.SkipHeadToIdx(ex_instruction.rob_idx);
+                vm_core.commit_buffer_.ResetTailTillIdx(ex_instruction.rob_idx);
+				vm_core.FlushPreIssueRegs();
 				vm_core.SetProgramCounter(ex_instruction.pc + 4);
 			}
 		}

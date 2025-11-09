@@ -10,7 +10,6 @@ struct DualIssueInstrContext : InstrContext {
     
     // branch signals:
     bool branch_predicted_taken = false; // job of the 'FETCH' stage to update this. (For branch prediction)
-    bool branch_taken = false; // job of the 'EXEC' stage to update this. (For branch prediction), checked by the DetectControlHazard() in hazard_detector_
 
     uint64_t rs1_tag;
     uint64_t rs2_tag;
@@ -22,6 +21,7 @@ struct DualIssueInstrContext : InstrContext {
 
     // is illegal instruction (pc was greater than program_size_)
     bool illegal = false;
+    size_t epoch;
 
     // forwarding vars
     bool uses_rs1;

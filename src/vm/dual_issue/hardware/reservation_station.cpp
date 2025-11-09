@@ -69,6 +69,9 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
                 else
                     instr.rs1_value = value;
             }
+            else{
+                instr.rs1_tag = dependent_idx;
+            }
         }
     }
     else{
@@ -92,6 +95,9 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
                 else
                     instr.rs2_value = value;
             }
+            else{
+                instr.rs2_tag = dependent_idx;
+            }
         }
     }
     else{
@@ -110,6 +116,9 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
             if(value_ready){
                 instr.wait_for_rs3 = false;
                 instr.frs3_value = val;
+            }
+            else{
+                instr.rs3_tag = dependent_idx;
             }
         }
     }

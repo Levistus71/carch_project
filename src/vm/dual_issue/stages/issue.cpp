@@ -89,8 +89,11 @@ void reserve_push(DualIssueInstrContext& instr, DualIssueCore& vm_core){
     if(instr.illegal){
         return;
     }
+    
+    auto [rob_idx, epoch] = vm_core.commit_buffer_.Reserve();
+    instr.rob_idx = rob_idx;
+    instr.epoch = epoch;
 
-    instr.rob_idx = vm_core.commit_buffer_.Reserve();
     if(instr.mem_read || instr.mem_write){
         vm_core.lsu_que_.Push(instr, vm_core);
     }

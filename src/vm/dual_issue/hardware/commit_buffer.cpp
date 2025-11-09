@@ -22,7 +22,28 @@ bool ROBBuffer::HeadReady(){
     return buffer[head].ready_to_commit;
 }
 
+bool ROBBuffer::InLimits(size_t idx){
+    if(tail>head){
+        if(idx>=head && idx<tail)
+            return true;
+        return false;
+    }
+    else if(tail<head){
+        if((idx>=head || idx<tail) && idx<max_size-1 && idx>=0)
+            return true;
+        return false;
+    }
+    else
+        return false;
+}
+
 void ROBBuffer::Push(DualIssueInstrContext instr){
+    if(!InLimits(instr.rob_idx))
+        return;
+
+    if(buffer[instr.rob_idx].epoch_number!=instr.epoch)
+        return;
+
     buffer[instr.rob_idx].ready_to_commit = true;
     buffer[instr.rob_idx].instr = instr;
 }
@@ -37,10 +58,12 @@ void ROBBuffer::Pop(){
     head = (head+1) % max_size;
 }
 
-size_t ROBBuffer::Reserve(){
+std::pair<size_t, size_t> ROBBuffer::Reserve(){
+    epoch_counter++;
     size_t ret = tail;
+    buffer[tail].epoch_number = epoch_counter;
     tail = (tail+1) % max_size;
-    return ret;
+    return {ret, epoch_counter};
 }
 
 std::pair<bool, uint64_t> ROBBuffer::QueryVal(uint64_t idx){
@@ -82,18 +105,17 @@ std::pair<size_t, size_t> ROBBuffer::GetHeadTail(){
 }
 
 
-void ROBBuffer::SkipHeadToIdx(size_t new_head){
-    if(new_head<head){
-        for(int i=head;i<static_cast<int>(max_size);i++){
-            buffer[head].ready_to_commit = false;
-            buffer[head].instr.illegal = true;
+void ROBBuffer::ResetTailTillIdx(size_t till_head){
+    if(tail<till_head){
+        for(;tail>=0;tail--){
+            buffer[tail].ready_to_commit = false;
+            buffer[tail].instr.illegal = true;
         }
-        head = 0;
+        tail = max_size-1;
     }
-
-    for(int i=head;i<static_cast<int>(new_head);i++){
-        buffer[head].ready_to_commit = false;
-        buffer[head].instr.illegal = true;
+    for(;tail>till_head;tail--){
+        buffer[tail].ready_to_commit = false;
+        buffer[tail].instr.illegal = true;
     }
 }
 
@@ -135,7 +157,7 @@ void ReorderBuffer::BroadCastMsgs(DualIssueInstrContext& instr, CommonDataBus& d
 }
 
 
-size_t ReorderBuffer::Reserve(){
+std::pair<size_t, size_t> ReorderBuffer::Reserve(){
     return buffer.Reserve();
 }
 
@@ -176,8 +198,8 @@ std::pair<size_t, size_t> ReorderBuffer::GetHeadTail(){
 }
 
 
-void ReorderBuffer::SkipHeadToIdx(size_t new_head){
-    buffer.SkipHeadToIdx(new_head);
+void ReorderBuffer::ResetTailTillIdx(size_t till_head){
+    buffer.ResetTailTillIdx(till_head);
 }
 
 } // namespace dual_issue
