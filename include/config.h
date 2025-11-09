@@ -41,6 +41,8 @@ struct VmConfig {
 
   size_t max_undo_stack_size = 256; // Default number of undos allowed
 
+  bool dual_issue = false;
+
   bool pipelining_enabled = false;
   bool data_forwarding_enabled = false;
   bool hazard_detection_enabled = false;
@@ -127,6 +129,10 @@ struct VmConfig {
 
   bool getDExtensionEnabled() const {
     return d_extension_enabled;
+  }
+
+  bool getDualIssueStatus(){
+    return dual_issue;
   }
 
   bool getPipeliningStatus(){

@@ -28,9 +28,12 @@ public:
     void Reset();
 
     std::vector<std::unique_ptr<const InstrContext>> GetInstrs();
+    std::vector<bool> GetStatus();
+    std::pair<size_t, size_t> GetHeadTail();
 
 private:
-    static constexpr size_t max_size = 8;
+    // most optimal is 16 (4 + 4 from reservation stations, 8 in 4 pipeline registers (each register has 2))
+    static constexpr size_t max_size = 16;
 
     size_t head = 0;
     size_t tail = 0;
@@ -55,6 +58,8 @@ public:
     void Reset();
 
     std::vector<std::unique_ptr<const InstrContext>> GetInstrs();
+    std::vector<bool> GetStatus();
+    std::pair<size_t, size_t> GetHeadTail();
     
 private:
     ROBBuffer buffer;

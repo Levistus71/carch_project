@@ -23,7 +23,7 @@ public:
     std::vector<std::unique_ptr<const InstrContext>> GetQue();
     
 private:
-    static const size_t max_size_ = 4;
+    static constexpr size_t max_size_ = 4;
     std::deque<DualIssueInstrContext> que_;
 };
 

@@ -2,12 +2,35 @@
 
 namespace dual_issue{
 
+void exec_mini_alu(DualIssueInstrContext& mem_instruction, DualIssueCore& vm_core){
+	uint64_t reg1_value = mem_instruction.rs1_value;
+	uint64_t reg2_value = mem_instruction.rs2_value;
+	
+	if (mem_instruction.imm_to_alu) {
+		int32_t imm = mem_instruction.immediate;
+    	reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
+  	}
+
+	if(mem_instruction.auipc){
+		reg1_value = mem_instruction.pc;
+	}
+
+  	// std::tie(mem_instruction.alu_out, mem_instruction.alu_overflow) = alu_.execute(mem_instruction.alu_op, reg1_value, reg2_value);
+	auto [alu_out_temp, alu_overflow_temp] = vm_core.alu_.execute(mem_instruction.alu_op, reg1_value, reg2_value);
+	mem_instruction.alu_out = alu_out_temp;
+	mem_instruction.alu_overflow = alu_overflow_temp;
+}
+
+
 void DualIssueStages::MemoryAccess(DualIssueCore& vm_core){
     DualIssueInstrContext& mem_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_lsu;
 	if(mem_instruction.illegal)
 		return;
 
 	if(!mem_instruction.mem_read && !mem_instruction.mem_write) return;
+
+
+	exec_mini_alu(mem_instruction, vm_core);
 
 	auto sign_extend = [](uint64_t value, unsigned int bits) -> uint64_t {
 		if (bits >= 64) {

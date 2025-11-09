@@ -5,7 +5,7 @@
 
 namespace dual_issue{
 
-ROBBuffer::ROBBuffer() : buffer(8){
+ROBBuffer::ROBBuffer() : buffer(max_size){
     Reset();
 }
 
@@ -33,6 +33,7 @@ DualIssueInstrContext ROBBuffer::Top(){
 
 void ROBBuffer::Pop(){
     buffer[head].ready_to_commit = false;
+    buffer[head].instr.illegal = true;
     head = (head+1) % max_size;
 }
 
@@ -63,10 +64,21 @@ void ROBBuffer::Reset(){
 std::vector<std::unique_ptr<const InstrContext>> ROBBuffer::GetInstrs(){
     std::vector<std::unique_ptr<const InstrContext>> ret;
     for(auto& p : buffer){
-        ret.push_back(std::make_unique<const InstrContext>(p.instr));
+        ret.push_back(std::make_unique<const DualIssueInstrContext>(p.instr));
     }
 
     return ret;
+}
+std::vector<bool> ROBBuffer::GetStatus(){
+    std::vector<bool> ret;
+    for(auto& p : buffer){
+        ret.push_back(p.ready_to_commit);
+    }
+
+    return ret;
+}
+std::pair<size_t, size_t> ROBBuffer::GetHeadTail(){
+    return {head, tail};
 }
 
 } // namespace dual_issue
@@ -146,6 +158,13 @@ void ReorderBuffer::Reset(){
 
 std::vector<std::unique_ptr<const InstrContext>> ReorderBuffer::GetInstrs(){
     return buffer.GetInstrs();    
+}
+std::vector<bool> ReorderBuffer::GetStatus(){
+    return buffer.GetStatus();
+}
+
+std::pair<size_t, size_t> ReorderBuffer::GetHeadTail(){
+    return buffer.GetHeadTail();
 }
 
 } // namespace dual_issue

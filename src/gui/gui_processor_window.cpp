@@ -2,6 +2,8 @@
 #include "gui/gui_common.h"
 #include "sim_state.h"
 #include "vm/rv5s/pipelined/core/instruction_context/instruction_context.h"
+#include "vm/dual_issue/core/instruction_context/instruction_context.h"
+#include "vm/instruction_context.h"
 
 // alu struct, stores the top_left_coords of the alu and the height of the alu.
 struct AluStruct{
@@ -921,8 +923,8 @@ void draw_instructions(WindowConfig& window_config){
 }
 
 
-// Processor Main
-void processor_main() {
+// Pipelined / Single Cycle Processor Main
+void pipelined_single_cycle_main() {
     static float PROCESSOR_HEIGHT = 500.0f;
     ImVec2 PROCESSOR_SIZE{1000.0f, PROCESSOR_HEIGHT};
     
@@ -1007,4 +1009,284 @@ void processor_main() {
         ImGui::PopStyleVar(); // restore spacing
     }
     ImGui::EndChild();
+}
+
+
+struct DualIssueWindowVars{
+    ImVec2 WINDOW_SIZE = ImGui::GetWindowSize();
+    ImVec2 WINDOW_POS = ImGui::GetWindowPos();
+    ImU32 col = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+    float thickness = 2.0f;
+
+    float stage_buffer = 20.0f;
+
+    ImVec2 pipeline_size = ImVec2(WINDOW_SIZE.x * 0.5f, 30.0f);
+    ImVec2 rsrvstn_size = ImVec2(WINDOW_SIZE.x * 0.25f, 120.0f);
+    ImVec2 reorder_buffer_size = ImVec2(WINDOW_SIZE.x * 0.25f, 480.0f);
+    float gap_btwn_stations = 50.0f;
+
+    Rectangle if_id_pipeline;
+    
+    Rectangle id_issue_pipeline;
+
+    Rectangle rsrvstn_alu;
+    Rectangle rsrvstn_lsu;
+    Rectangle issue_fu_pipeline;
+
+    Rectangle fu_commit_pipeline;
+
+    Rectangle reorder_buffer;
+};
+
+void dual_init_vars(DualIssueWindowVars& window_config){
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+
+    ImVec2 if_id_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.WINDOW_POS.y + 2*window_config.stage_buffer);
+    ImVec2 if_id_pipeline_bottom_right = ImVec2(if_id_pipeline_top_left.x + window_config.pipeline_size.x, if_id_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.if_id_pipeline = Rectangle(if_id_pipeline_top_left, if_id_pipeline_bottom_right);
+    drawlist->AddRect(if_id_pipeline_top_left, if_id_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 id_issue_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.if_id_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 id_issue_pipeline_bottom_right = ImVec2(id_issue_pipeline_top_left.x + window_config.pipeline_size.x, id_issue_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.id_issue_pipeline = Rectangle(id_issue_pipeline_top_left, id_issue_pipeline_bottom_right);
+    drawlist->AddRect(id_issue_pipeline_top_left, id_issue_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+    
+    ImVec2 rsrv_alu_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.rsrvstn_size.x - window_config.gap_btwn_stations*0.5f, window_config.id_issue_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_alu_bottom_right = ImVec2(rsrv_alu_top_left.x + window_config.rsrvstn_size.x, rsrv_alu_top_left.y + window_config.rsrvstn_size.y);
+    window_config.rsrvstn_alu = Rectangle(rsrv_alu_top_left, rsrv_alu_bottom_right);
+    drawlist->AddRect(rsrv_alu_top_left, rsrv_alu_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 rsrv_lsu_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f + window_config.gap_btwn_stations*0.5f, window_config.id_issue_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_lsu_bottom_right = ImVec2(rsrv_lsu_top_left.x + window_config.rsrvstn_size.x, rsrv_lsu_top_left.y + window_config.rsrvstn_size.y);
+    window_config.rsrvstn_lsu = Rectangle(rsrv_lsu_top_left, rsrv_lsu_bottom_right);
+    drawlist->AddRect(rsrv_lsu_top_left, rsrv_lsu_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 rsrv_fu_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.rsrvstn_alu.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_fu_pipeline_bottom_right = ImVec2(rsrv_fu_pipeline_top_left.x + window_config.pipeline_size.x, rsrv_fu_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.issue_fu_pipeline = Rectangle(rsrv_fu_pipeline_top_left, rsrv_fu_pipeline_bottom_right);
+    drawlist->AddRect(rsrv_fu_pipeline_top_left, rsrv_fu_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 fu_commit_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.issue_fu_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 fu_commit_pipeline_bottom_right = ImVec2(fu_commit_pipeline_top_left.x + window_config.pipeline_size.x, fu_commit_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.fu_commit_pipeline = Rectangle(fu_commit_pipeline_top_left, fu_commit_pipeline_bottom_right);
+    drawlist->AddRect(fu_commit_pipeline_top_left, fu_commit_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 reorder_buffer_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.reorder_buffer_size.x*0.5f, window_config.fu_commit_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 reorder_buffer_bottom_right = ImVec2(reorder_buffer_top_left.x + window_config.reorder_buffer_size.x, reorder_buffer_top_left.y + window_config.reorder_buffer_size.y);
+    window_config.reorder_buffer = Rectangle(reorder_buffer_top_left, reorder_buffer_bottom_right);
+    drawlist->AddRect(reorder_buffer_top_left, reorder_buffer_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+}
+
+
+void dual_draw_heading(DualIssueWindowVars& window_config, Rectangle& rect, const char* heading){
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+    float text_top_left_y = rect.top_left.y - ImGui::GetFontSize() - 5.0f;
+    float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, heading, nullptr, nullptr).x;
+    float text_top_left_x = (rect.bottom_right.x + rect.top_left.x)/2.0f - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, heading, NULL);
+}
+
+
+void dual_draw_headings(DualIssueWindowVars& window_config){
+
+    // if id pipeline heading
+    static const char* if_id_pipeline_heading = "IF-ID Pipeline Register";
+    dual_draw_heading(window_config, window_config.if_id_pipeline, if_id_pipeline_heading);
+    
+    // id issue pipeline heading
+    static const char* id_issue_pipeline_heading = "ID-ISSUE Pipeline Register";
+    dual_draw_heading(window_config, window_config.id_issue_pipeline, id_issue_pipeline_heading);
+
+    // alu_que_ heading
+    static const char* alu_que_heading = "Execution Queue";
+    dual_draw_heading(window_config, window_config.rsrvstn_alu, alu_que_heading);
+
+    // lsu_que_ heading
+    static const char* lsu_que_heading = "LSU Queue";
+    dual_draw_heading(window_config, window_config.rsrvstn_lsu, lsu_que_heading);
+
+
+    // issue fu pipline heading
+    static const char* issue_fu_pipeline_heading = "Issue Functional-Unit Pipeline";
+    dual_draw_heading(window_config, window_config.issue_fu_pipeline, issue_fu_pipeline_heading);
+
+    // fu commit pipline heading
+    static const char* fu_commit_pipeline_heading = "Issue Functional-Unit Pipeline";
+    dual_draw_heading(window_config, window_config.fu_commit_pipeline, fu_commit_pipeline_heading);
+
+    // reorder buffer heading
+    static const char* rob_heading = "Reorder Buffer (Commit Buffer)";
+    dual_draw_heading(window_config, window_config.reorder_buffer, rob_heading);
+}
+
+
+void dual_draw_in_pipeline(DualIssueWindowVars& window_config, const InstrContext& instr1__, const InstrContext& instr2__, Rectangle& pipeline){
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+
+    const dual_issue::DualIssueInstrContext* instr1_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr1__);
+    const dual_issue::DualIssueInstrContext* instr2_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr2__);
+    if(!instr1_ || !instr2_){
+        std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
+        return;
+    }
+
+    std::string instr1;
+    if(vm.program_.intermediate_code.size()>instr1_->pc/4 && !instr1_->illegal){
+        instr1 = vm.program_.intermediate_code[instr1_->pc/4].first.to_string();
+    }
+    else{
+        instr1 = "Illegal Instr";
+    }
+
+    std::string instr2;
+    if(vm.program_.intermediate_code.size()>instr2_->pc/4 && !instr2_->illegal){
+        instr2 = vm.program_.intermediate_code[instr2_->pc/4].first.to_string();
+    }
+    else{
+        instr2 = "Illegal Instr";
+    }
+
+    float text_top_left_y = pipeline.top_left.y + 6.0f;
+    float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr1.c_str(), nullptr, nullptr).x;
+    float text_top_left_x = (pipeline.bottom_right.x + 2.0f*pipeline.top_left.x)/3.0f - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr1.c_str(), NULL);
+
+    text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr2.c_str(), nullptr, nullptr).x;
+    text_top_left_x = (2.0f*pipeline.bottom_right.x + pipeline.top_left.x)/3.0f - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr2.c_str(), NULL);
+}
+
+
+void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& que, Rectangle& station){
+    ImGui::SetNextWindowPos(station.top_left);
+    ImGui::BeginChild(("Queue window" + std::to_string(station.top_left.x)).c_str(), window_config.rsrvstn_size);
+    {
+        if(ImGui::BeginTable("Queue", 1, ImGuiTableFlags_Borders)){
+
+            
+            for(size_t i=0;i<que.size();i++){
+                const dual_issue::DualIssueInstrContext* instr = dynamic_cast<const dual_issue::DualIssueInstrContext*>(que[i].get());
+                if(!instr){
+                    std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
+                    return;
+                }
+
+                std::string dissassembled_instr;
+                if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
+                    dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
+                }
+                else{
+                    dissassembled_instr = "Illegal Instr";
+                }
+
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.rsrvstn_size.y/que.size());
+                ImGui::TableNextColumn();
+
+                float text_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, dissassembled_instr.c_str(), nullptr, nullptr).x;
+                float column_width = ImGui::GetColumnWidth();
+                float offset = (column_width - text_width) * 0.5f;
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+                ImGui::Text("%s", dissassembled_instr.c_str());
+            }
+    
+            ImGui::EndTable();
+        }
+    }
+    ImGui::EndChild();
+}
+
+
+void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob){
+    ImGui::SetNextWindowPos(rob.top_left);
+    ImGui::BeginChild("Reorder buffer window", window_config.reorder_buffer_size);
+    {
+        if(ImGui::BeginTable("Queue", 1, ImGuiTableFlags_Borders)){
+    
+            for(size_t i=0;i<buffer.size();i++){
+                const dual_issue::DualIssueInstrContext* instr = dynamic_cast<const dual_issue::DualIssueInstrContext*>(buffer[i].get());
+                if(!instr){
+                    std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
+                    return;
+                }
+
+                std::string dissassembled_instr;
+                if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
+                    dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
+                }
+                else{
+                    dissassembled_instr = "Illegal Instr";
+                }
+
+
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.reorder_buffer_size.y/buffer.size());
+                ImGui::TableNextColumn();
+
+                float text_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, dissassembled_instr.c_str(), nullptr, nullptr).x;
+                float column_width = ImGui::GetColumnWidth();
+                float offset = (column_width - text_width) * 0.5f;
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+                ImGui::Text("%s", dissassembled_instr.c_str());
+            }
+    
+            ImGui::EndTable();
+        }
+    }
+    ImGui::EndChild();
+}
+
+
+void dual_draw_instrs(DualIssueWindowVars& window_config, VmBase::InstrView& instrs){
+    // if id pipeline
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[0], *instrs.pipeline[1], window_config.if_id_pipeline);
+
+    // id issue pipeline
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[2], *instrs.pipeline[3], window_config.id_issue_pipeline);
+
+    // issue fu pipeline
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[4], *instrs.pipeline[5], window_config.issue_fu_pipeline);
+
+    // fu commit pipeline
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[6], *instrs.pipeline[7], window_config.fu_commit_pipeline);
+
+    // alu_que_
+    dual_draw_rsrvstn_que(window_config, instrs.reservation_station_alu, window_config.rsrvstn_alu);
+
+    // lsu_que_
+    dual_draw_rsrvstn_que(window_config, instrs.reservation_station_lsu, window_config.rsrvstn_lsu);
+
+    // reorder buffer
+    dual_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer);
+}
+
+
+void dual_issue_main(){
+    
+    static float PROCESSOR_HEIGHT = 1000.0f;
+    ImVec2 PROCESSOR_SIZE{1000.0f, PROCESSOR_HEIGHT};
+    
+    ImGui::BeginChild("Processor window", PROCESSOR_SIZE, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_HorizontalScrollbar);
+    {
+        DualIssueWindowVars window_config;
+
+        dual_init_vars(window_config);
+
+        dual_draw_headings(window_config);
+        
+        
+        VmBase::InstrView instrs = vm.GetInstructions();
+        dual_draw_instrs(window_config, instrs);
+    }
+    ImGui::EndChild();
+}
+
+
+void processor_main(){
+    if(vm.GetType() == VM::Which::DualIssue){
+        dual_issue_main();
+    }
+    else{
+        pipelined_single_cycle_main();
+    }
 }

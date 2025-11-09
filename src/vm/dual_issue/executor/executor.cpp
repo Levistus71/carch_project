@@ -31,12 +31,16 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
     vm_core.pipeline_reg_instrs_.lsu_commit = vm_core.pipeline_reg_instrs_.rsrvstn_lsu;
 
     // Issue
-    int num_fetch = DualIssueStages::Issue(vm_core);
+    int num_issued = DualIssueStages::Issue(vm_core);
 
     // Decode
     DualIssueStages::Decode(vm_core);
 
-    if(num_fetch==1){
+    if(num_issued==2){
+        vm_core.pipeline_reg_instrs_.id_issue_1 = vm_core.pipeline_reg_instrs_.if_id_1;
+        vm_core.pipeline_reg_instrs_.id_issue_2 = vm_core.pipeline_reg_instrs_.if_id_2;
+    }
+    else if(num_issued==1){
         DualIssueInstrContext if_id_1 = vm_core.pipeline_reg_instrs_.if_id_1;
         DualIssueInstrContext if_id_2 = vm_core.pipeline_reg_instrs_.if_id_2;
 
@@ -45,7 +49,7 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
     }
     
     // Fetch
-    DualIssueStages::Fetch(vm_core, num_fetch);
+    DualIssueStages::Fetch(vm_core, num_issued);
 }
 
 void DualIssueExecutor::UndoDualIssue(DualIssueCore& vm_core){

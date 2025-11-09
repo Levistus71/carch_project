@@ -1,6 +1,7 @@
 #include "vm/vm_main.h"
 #include "vm/rv5s/pipelined/vm.h"
 #include "vm/rv5s/single_cycle/vm.h"
+#include "vm/dual_issue/vm.h"
 #include "vm_asm_mw.h"
 #include "sim_state.h"
 
@@ -21,13 +22,19 @@ void VM::Reset(){
 }
 
 void VM::LoadVM(){
-    if(vm_config::config.pipelining_enabled){
-        type_ = VM::Which::Pipelined;
-        vm_ = std::make_unique<rv5s::PipelinedVM>();
+    if(vm_config::config.getDualIssueStatus()){
+        type_ = VM::Which::DualIssue;
+        vm_ = std::make_unique<dual_issue::DualIssueVM>();
     }
     else{
-        type_ = VM::Which::SingleCycle;
-        vm_ = std::make_unique<rv5s::SingleCycleVM>();
+        if(vm_config::config.pipelining_enabled){
+            type_ = VM::Which::Pipelined;
+            vm_ = std::make_unique<rv5s::PipelinedVM>();
+        }
+        else{
+            type_ = VM::Which::SingleCycle;
+            vm_ = std::make_unique<rv5s::SingleCycleVM>();
+        }
     }
 }
 void VM::LoadVM(AssembledProgram program){

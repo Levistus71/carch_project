@@ -4,7 +4,7 @@
 namespace dual_issue
 {
 
-ReservationStation::ReservationStation() : que_{max_size_}{
+ReservationStation::ReservationStation() : que_(max_size_){
     Reset();
 }
 
@@ -135,7 +135,7 @@ DualIssueInstrContext ReservationStation::GetReadyInstr(){
         return t;
     }
 
-    if(que_.front().ready_to_exec){
+    if(que_.front().ready_to_exec || que_.front().illegal){
         DualIssueInstrContext instr = que_.front();
         que_.pop_front();
         return instr;
@@ -157,7 +157,7 @@ std::vector<std::unique_ptr<const InstrContext>> ReservationStation::GetQue(){
     std::vector<std::unique_ptr<const InstrContext>> ret;
 
     for(auto& p : que_){
-        ret.push_back(std::make_unique<const InstrContext>(p));
+        ret.push_back(std::make_unique<const DualIssueInstrContext>(p));
     }
 
     return ret;

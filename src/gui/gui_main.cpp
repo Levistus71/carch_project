@@ -149,7 +149,7 @@ int gui_main()
             ImGui::End();
         }
 
-
+        static bool SHOW_CONSOLE_IN_PROCESSOR = true;
         // Top panel
         {
             ImVec2 top_size = ImVec2(main_viewport_size.x, top_panel_height);
@@ -196,6 +196,14 @@ int gui_main()
                 if(ImGui::Button("Run (no interaction)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
                     vm.Run();
                 }
+                if(in_processor){
+                    offset+=left_panel_width;
+                    ImGui::SameLine(offset, 1.0f);
+                    if(ImGui::Button("Toggle Console", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
+                        SHOW_CONSOLE_IN_PROCESSOR = !SHOW_CONSOLE_IN_PROCESSOR;
+                    }
+                }
+
                 offset+=5*left_panel_width;
                 ImGui::SameLine(offset, 1.0f);
                 if(ImGui::Button("Processor", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
@@ -238,7 +246,7 @@ int gui_main()
             {
                 // processor
                 ImVec2 PROCESSOR_WINDOW_POS{CENTER_POS.x, CENTER_POS.y};
-                ImVec2 PROCESSOR_SHEATH_SIZE{CENTER_SIZE.x * 0.75f, CENTER_SIZE.y * 0.65f};
+                ImVec2 PROCESSOR_SHEATH_SIZE = (SHOW_CONSOLE_IN_PROCESSOR) ? ImVec2(CENTER_SIZE.x * 0.75f, CENTER_SIZE.y * 0.65f) : ImVec2(CENTER_SIZE.x * 0.75f, CENTER_SIZE.y);
                 ImGui::SetNextWindowPos(PROCESSOR_WINDOW_POS);
                 ImGui::SetNextWindowSize(PROCESSOR_SHEATH_SIZE);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f)); // loading gray color bg
@@ -251,7 +259,7 @@ int gui_main()
 
                 // registers
                 ImVec2 REGISTER_WINDOW_POS{CENTER_POS.x + PROCESSOR_SHEATH_SIZE.x, CENTER_POS.y};
-                ImVec2 REGISTER_WINDOW_SIZE{CENTER_SIZE.x - PROCESSOR_SHEATH_SIZE.x, PROCESSOR_SHEATH_SIZE.y};
+                ImVec2 REGISTER_WINDOW_SIZE{CENTER_SIZE.x - PROCESSOR_SHEATH_SIZE.x, CENTER_SIZE.y * 0.65f};
                 ImGui::SetNextWindowPos(REGISTER_WINDOW_POS);
                 ImGui::SetNextWindowSize(REGISTER_WINDOW_SIZE);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(31.0f/255.0f, 31.0f/255.0f, 31.0f/255.0f, 1.00f)); // loading gray color bg
@@ -263,20 +271,22 @@ int gui_main()
                 ImGui::PopStyleColor();
 
                 // console
-                ImVec2 CONSOLE_WINDOW_POS{CENTER_POS.x, CENTER_POS.y + PROCESSOR_SHEATH_SIZE.y};
-                ImVec2 CONSOLE_WINDOW_SIZE{PROCESSOR_SHEATH_SIZE.x, CENTER_SIZE.y - PROCESSOR_SHEATH_SIZE.y};
-                ImGui::SetNextWindowPos(CONSOLE_WINDOW_POS);
-                ImGui::SetNextWindowSize(CONSOLE_WINDOW_SIZE);
-                ImGui::Begin("Console Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-                {
-                    console_main();
+                if(SHOW_CONSOLE_IN_PROCESSOR){
+                    ImVec2 CONSOLE_WINDOW_POS{CENTER_POS.x, CENTER_POS.y + PROCESSOR_SHEATH_SIZE.y};
+                    ImVec2 CONSOLE_WINDOW_SIZE{PROCESSOR_SHEATH_SIZE.x, CENTER_SIZE.y - PROCESSOR_SHEATH_SIZE.y};
+                    ImGui::SetNextWindowPos(CONSOLE_WINDOW_POS);
+                    ImGui::SetNextWindowSize(CONSOLE_WINDOW_SIZE);
+                    ImGui::Begin("Console Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                    {
+                        console_main();
+                    }
+                    ImGui::End();
                 }
-                ImGui::End();
 
 
                 // stats (or) instructions {like in ripes}, not decided yet
-                ImVec2 STATS_WINDOW_POS{CENTER_POS.x + CONSOLE_WINDOW_SIZE.x, CONSOLE_WINDOW_POS.y};
-                ImVec2 STATS_WINDOW_SIZE{CENTER_SIZE.x - CONSOLE_WINDOW_SIZE.x, CONSOLE_WINDOW_SIZE.y};
+                ImVec2 STATS_WINDOW_POS{CENTER_POS.x + PROCESSOR_SHEATH_SIZE.x, CENTER_POS.y + REGISTER_WINDOW_SIZE.y};
+                ImVec2 STATS_WINDOW_SIZE{CENTER_SIZE.x - PROCESSOR_SHEATH_SIZE.x, CENTER_SIZE.y - REGISTER_WINDOW_SIZE.y};
                 ImGui::SetNextWindowPos(STATS_WINDOW_POS);
                 ImGui::SetNextWindowSize(STATS_WINDOW_SIZE);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.00f));

@@ -21,47 +21,53 @@ void editor_execute(){
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1211f, 0.1211f, 0.1211f, 1.00f));
 
         text_editor.SetDebugMode(true);
-        if(!vm.PipeliningEnabled()){
-            text_editor.SetDebugModeTypeSingleCycle(true);
-            size_t text_line_number = vm.program_.instruction_number_line_number_mapping[vm.GetInstructionPCs()[0] / 4];
-            text_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
-            text_editor.SetCursorPosition({static_cast<int>(text_line_number),0});
-        }
-        else{
-            text_editor.SetDebugModeTypeSingleCycle(false);
-            // std::vector<uint64_t> pcs = vm.GetInstructionPCs();
-            // for(int i=0;i<5;i++)
-            //     pcs[i] = vm.program_.instruction_number_line_number_mapping[pcs[i] / 4];
-            // text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
-            // text_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
 
-            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
-            std::vector<uint64_t> line_numbers(5);
-
-            for(int i=0;i<5;i++){
-                const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
-                if(instruction){
-                    if(instruction->bubbled || instruction->nopped){
-                        line_numbers[i] = -1;
-                    }
-                    else{
-                        uint64_t instr_pc = instruction->pc;
-                        line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
-                    }
-                }
-                else{
-                    std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
-                    line_numbers[i] = -1;
-                }
-            }
-
-            text_editor.SetDebugLines(line_numbers[0], line_numbers[1], line_numbers[2], line_numbers[3], line_numbers[4]);
-            if(static_cast<int>(line_numbers[2])>=0){
-                text_editor.SetCursorPosition({static_cast<int>(line_numbers[2]),0});
+        if(vm.GetType() != VM::Which::DualIssue){
+            if(!vm.PipeliningEnabled()){
+                text_editor.SetDebugModeTypeSingleCycle(true);
+                size_t text_line_number = vm.program_.instruction_number_line_number_mapping[vm.GetInstructionPCs()[0] / 4];
+                text_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+                text_editor.SetCursorPosition({static_cast<int>(text_line_number),0});
             }
             else{
-                text_editor.SetCursorPosition({0,0});
+                text_editor.SetDebugModeTypeSingleCycle(false);
+                // std::vector<uint64_t> pcs = vm.GetInstructionPCs();
+                // for(int i=0;i<5;i++)
+                //     pcs[i] = vm.program_.instruction_number_line_number_mapping[pcs[i] / 4];
+                // text_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+                // text_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
+
+                std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
+                std::vector<uint64_t> line_numbers(5);
+
+                for(int i=0;i<5;i++){
+                    const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
+                    if(instruction){
+                        if(instruction->bubbled || instruction->nopped){
+                            line_numbers[i] = -1;
+                        }
+                        else{
+                            uint64_t instr_pc = instruction->pc;
+                            line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
+                        }
+                    }
+                    else{
+                        std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
+                        line_numbers[i] = -1;
+                    }
+                }
+
+                text_editor.SetDebugLines(line_numbers[0], line_numbers[1], line_numbers[2], line_numbers[3], line_numbers[4]);
+                if(static_cast<int>(line_numbers[2])>=0){
+                    text_editor.SetCursorPosition({static_cast<int>(line_numbers[2]),0});
+                }
+                else{
+                    text_editor.SetCursorPosition({0,0});
+                }
             }
+        }
+        else{
+            text_editor.SetDebugLines(-1, -1, -1, -1, -1);
         }
         
 
@@ -100,47 +106,52 @@ void assembled_editor_main(){
 
 
         assembled_editor.SetDebugMode(true);
-        if(!vm.PipeliningEnabled()){
-            assembled_editor.SetDebugModeTypeSingleCycle(true);
-            size_t text_line_number = vm.program_.instruction_number_disassembly_mapping[vm.GetInstructionPCs()[0] / 4];
-            assembled_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
-            assembled_editor.SetCursorPosition({static_cast<int>(text_line_number), 0});
-        }
-        else{
-            assembled_editor.SetDebugModeTypeSingleCycle(false);
-            // std::vector<uint64_t> pcs = vm.GetInstructionPCs();
-            // for(int i=0;i<5;i++)
-            //     pcs[i] = vm.program_.instruction_number_disassembly_mapping[pcs[i] / 4];
-            // assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
-            // assembled_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
-            
-            std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
-            std::vector<uint64_t> line_numbers(5);
-
-            for(int i=0;i<5;i++){
-                const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
-                if(instruction){
-                    if(instruction->bubbled || instruction->nopped){
-                        line_numbers[i] = -1;
-                    }
-                    else{
-                        uint64_t instr_pc = instruction->pc;
-                        line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
-                    }
-                }
-                else{
-                    std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
-                    line_numbers[i] = -1;
-                }
-            }
-
-            assembled_editor.SetDebugLines(line_numbers[0], line_numbers[1], line_numbers[2], line_numbers[3], line_numbers[4]);
-            if(static_cast<int>(line_numbers[2])>=0){
-                assembled_editor.SetCursorPosition({static_cast<int>(line_numbers[2]),0});
+        if(vm.GetType() != VM::Which::DualIssue){
+            if(!vm.PipeliningEnabled()){
+                assembled_editor.SetDebugModeTypeSingleCycle(true);
+                size_t text_line_number = vm.program_.instruction_number_disassembly_mapping[vm.GetInstructionPCs()[0] / 4];
+                assembled_editor.SetDebugLines(text_line_number-1, -1, -1, -1, -1);
+                assembled_editor.SetCursorPosition({static_cast<int>(text_line_number), 0});
             }
             else{
-                assembled_editor.SetCursorPosition({0,0});
+                assembled_editor.SetDebugModeTypeSingleCycle(false);
+                // std::vector<uint64_t> pcs = vm.GetInstructionPCs();
+                // for(int i=0;i<5;i++)
+                //     pcs[i] = vm.program_.instruction_number_disassembly_mapping[pcs[i] / 4];
+                // assembled_editor.SetDebugLines(pcs[0]-1, pcs[1]-1, pcs[2]-1, pcs[3]-1, pcs[4]-1);
+                // assembled_editor.SetCursorPosition({static_cast<int>(pcs[3]),0});
+                
+                std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
+                std::vector<uint64_t> line_numbers(5);
+
+                for(int i=0;i<5;i++){
+                    const auto* instruction = dynamic_cast<const rv5s::PipelinedInstrContext*>(instructions[i].get());
+                    if(instruction){
+                        if(instruction->bubbled || instruction->nopped){
+                            line_numbers[i] = -1;
+                        }
+                        else{
+                            uint64_t instr_pc = instruction->pc;
+                            line_numbers[i] = vm.program_.instruction_number_line_number_mapping[instr_pc/4] - 1;
+                        }
+                    }
+                    else{
+                        std::cerr << "Tried to downcast InstrContext to PipelinedInstrContext while setting debug lines" << std::endl;
+                        line_numbers[i] = -1;
+                    }
+                }
+
+                assembled_editor.SetDebugLines(line_numbers[0], line_numbers[1], line_numbers[2], line_numbers[3], line_numbers[4]);
+                if(static_cast<int>(line_numbers[2])>=0){
+                    assembled_editor.SetCursorPosition({static_cast<int>(line_numbers[2]),0});
+                }
+                else{
+                    assembled_editor.SetCursorPosition({0,0});
+                }
             }
+        }
+        else{
+            assembled_editor.SetDebugLines(-1, -1, -1, -1, -1);
         }
 
         assembled_editor.Render("Assembled Editor Read Only", text_area_size, true);

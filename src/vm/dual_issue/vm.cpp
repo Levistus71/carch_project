@@ -58,21 +58,23 @@ std::vector<uint64_t> DualIssueVM::GetInstructionPCs(){
 }
 VmBase::InstrView DualIssueVM::GetInstructions(){
     std::vector<std::unique_ptr<const InstrContext>> pipeline;
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.if_id_1));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.if_id_2));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_1));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_2));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.alu_commit));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.lsu_commit));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_alu));
-    pipeline.push_back(std::make_unique<const InstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_lsu));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.if_id_1));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.if_id_2));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_1));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.id_issue_2));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.alu_commit));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.lsu_commit));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_alu));
+    pipeline.push_back(std::make_unique<const DualIssueInstrContext>(vm_core_.pipeline_reg_instrs_.rsrvstn_lsu));
 
     InstrView ret;
     ret.pipeline = std::move(pipeline);
-    ret.reservation_station_alu = std::move(vm_core_.alu_que_.GetQue());
-    ret.reservation_station_lsu = std::move(vm_core_.lsu_que_.GetQue());
-    ret.reorder_buffer = std::move(vm_core_.commit_buffer_.GetInstrs());
-
+    ret.reservation_station_alu = vm_core_.alu_que_.GetQue();
+    ret.reservation_station_lsu = vm_core_.lsu_que_.GetQue();
+    ret.reorder_buffer = vm_core_.commit_buffer_.GetInstrs();
+    ret.rob_status = vm_core_.commit_buffer_.GetStatus();
+    ret.rob_head_tail = vm_core_.commit_buffer_.GetHeadTail();
+    
     return ret;
 }
     
