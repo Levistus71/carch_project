@@ -22,7 +22,25 @@ bool ROBBuffer::HeadReady(){
     return buffer[head].ready_to_commit;
 }
 
+bool ROBBuffer::InLimits(size_t idx){
+    if(tail>head){
+        if(idx>=head && idx<tail)
+            return true;
+        return false;
+    }
+    else if(tail<head){
+        if((idx>=head || idx<tail) && idx<=max_size-1 && idx>=0)
+            return true;
+        return false;
+    }
+    else
+        return false;
+}
+
 bool ROBBuffer::Push(DualIssueInstrContext instr){
+    if(!InLimits(instr.rob_idx))
+        return false;
+
     if(buffer[instr.rob_idx].epoch_number!=instr.epoch)
         return false;
 
@@ -93,14 +111,12 @@ void ROBBuffer::ResetTailTillIdx(size_t till_head){
         for(int i = static_cast<int>(tail);i>=0;i--){
             buffer[i].ready_to_commit = false;
             buffer[i].instr.illegal = true;
-            buffer[i].epoch_number = -1;
         }
         tail = max_size-1;
     }
     for(;tail>till_head;tail--){
         buffer[tail].ready_to_commit = false;
         buffer[tail].instr.illegal = true;
-        buffer[tail].epoch_number = -1;
     }
     tail = (till_head+1)%max_size;
 }

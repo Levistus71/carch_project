@@ -45,6 +45,8 @@ private:
 
     size_t epoch_counter = 0;
 
+    bool InLimits(size_t idx);
+
 };
 
 class ReorderBuffer{
