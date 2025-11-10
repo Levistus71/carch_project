@@ -9,7 +9,14 @@ ReservationStation::ReservationStation() : que_(max_size_){
 }
 
 size_t ReservationStation::EmptySlots(){
-    return max_size_-que_.size();
+    size_t empty_slots = max_size_-que_.size();
+
+    for(size_t i=0;i<que_.size();i++){
+        if(que_[i].illegal){
+            empty_slots++;
+        }
+    }
+    return empty_slots;
 }
 
 void ReservationStation::ListenToBroadCast(CommonDataBus& data_bus){
@@ -133,7 +140,13 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
         vm_core.reg_status_file_.UpdateTableRobIdx(instr.rd, !instr.reg_write_to_fpr, instr.rob_idx);
     }
 
-    que_.push_back(instr);
+    // pushing into the first illegal entry
+    for(size_t i=0;i<que_.size();i++){
+        if(que_[i].illegal){
+            que_[i] = instr;
+            break;
+        }
+    }
 }
 
 
@@ -144,9 +157,12 @@ DualIssueInstrContext ReservationStation::GetReadyInstr(){
         return t;
     }
 
-    if(que_.front().ready_to_exec || que_.front().illegal){
+    if(que_.front().ready_to_exec && !que_.front().illegal){
         DualIssueInstrContext instr = que_.front();
         que_.pop_front();
+        DualIssueInstrContext t;
+        t.illegal = true;
+        que_.push_back(t);
         return instr;
     }
 
