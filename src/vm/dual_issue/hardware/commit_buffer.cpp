@@ -22,30 +22,13 @@ bool ROBBuffer::HeadReady(){
     return buffer[head].ready_to_commit;
 }
 
-bool ROBBuffer::InLimits(size_t idx){
-    if(tail>head){
-        if(idx>=head && idx<tail)
-            return true;
-        return false;
-    }
-    else if(tail<head){
-        if((idx>=head || idx<tail) && idx<max_size-1 && idx>=0)
-            return true;
-        return false;
-    }
-    else
-        return false;
-}
-
-void ROBBuffer::Push(DualIssueInstrContext instr){
-    if(!InLimits(instr.rob_idx))
-        return;
-
+bool ROBBuffer::Push(DualIssueInstrContext instr){
     if(buffer[instr.rob_idx].epoch_number!=instr.epoch)
-        return;
+        return false;
 
     buffer[instr.rob_idx].ready_to_commit = true;
     buffer[instr.rob_idx].instr = instr;
+    return true;
 }
 
 DualIssueInstrContext ROBBuffer::Top(){
@@ -66,12 +49,12 @@ std::pair<size_t, size_t> ROBBuffer::Reserve(){
     return {ret, epoch_counter};
 }
 
-std::pair<bool, uint64_t> ROBBuffer::QueryVal(uint64_t idx){
+std::tuple<bool, uint64_t, uint64_t> ROBBuffer::QueryVal(uint64_t idx){
     uint64_t write_val = buffer[idx].instr.mem_to_reg 
         ? buffer[idx].instr.mem_out 
         : buffer[idx].instr.alu_out;
 
-    return {buffer[idx].ready_to_commit, write_val};
+    return {buffer[idx].ready_to_commit, write_val, buffer[idx].epoch_number};
 }
 
 void ROBBuffer::Reset(){
@@ -107,16 +90,19 @@ std::pair<size_t, size_t> ROBBuffer::GetHeadTail(){
 
 void ROBBuffer::ResetTailTillIdx(size_t till_head){
     if(tail<till_head){
-        for(;tail>=0;tail--){
-            buffer[tail].ready_to_commit = false;
-            buffer[tail].instr.illegal = true;
+        for(int i = static_cast<int>(tail);i>=0;i--){
+            buffer[i].ready_to_commit = false;
+            buffer[i].instr.illegal = true;
+            buffer[i].epoch_number = -1;
         }
         tail = max_size-1;
     }
     for(;tail>till_head;tail--){
         buffer[tail].ready_to_commit = false;
         buffer[tail].instr.illegal = true;
+        buffer[tail].epoch_number = -1;
     }
+    tail = (till_head+1)%max_size;
 }
 
 } // namespace dual_issue
@@ -143,16 +129,19 @@ void ReorderBuffer::Pull(DualIssueCore& vm_core){
 }
 
 void ReorderBuffer::Push(DualIssueInstrContext& instr, DualIssueCore& vm_core){
-    buffer.Push(instr);
-
-    BroadCastMsgs(instr, vm_core.broadcast_bus_);
+    if(buffer.Push(instr)){
+        BroadCastMsgs(instr, vm_core.broadcast_bus_, false);
+    }
+    else{
+        BroadCastMsgs(instr, vm_core.broadcast_bus_, true);
+    }
 }
 
 
-void ReorderBuffer::BroadCastMsgs(DualIssueInstrContext& instr, CommonDataBus& data_bus){
+void ReorderBuffer::BroadCastMsgs(DualIssueInstrContext& instr, CommonDataBus& data_bus, bool clear_dependency){
     if(instr.reg_write){
         uint64_t broadcast_val = instr.mem_to_reg ? instr.mem_out : instr.alu_out;
-        data_bus.BroadCast(instr.rob_idx, broadcast_val);
+        data_bus.BroadCast(instr.rob_idx, broadcast_val, clear_dependency, instr.epoch);
     }
 }
 
@@ -161,7 +150,7 @@ std::pair<size_t, size_t> ReorderBuffer::Reserve(){
     return buffer.Reserve();
 }
 
-std::pair<bool, uint64_t> ReorderBuffer::QueryVal(uint64_t idx){
+std::tuple<bool, uint64_t, uint64_t> ReorderBuffer::QueryVal(uint64_t idx){
     return buffer.QueryVal(idx);
 }
 

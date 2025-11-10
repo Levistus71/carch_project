@@ -68,6 +68,11 @@ void DualIssueCore::Reset(){
     branch_predictor_.reset();
 
     program_size_ = 0;
+
+	core_stats_.cycles = 0;
+	core_stats_.instrs_retired = 0;
+	core_stats_.branch_instrs = 0;
+	core_stats_.branch_mispredicts = 0;
 }
 
 

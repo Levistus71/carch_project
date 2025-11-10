@@ -29,6 +29,8 @@ void PipelinedStages::ResolveBranch(PipelinedCore& vm_core){
     using instruction_set::Instruction;
     using instruction_set::get_instr_encoding;
 
+	vm_core.core_stats_.branch_instrs++;
+
 	PipelinedInstrContext& ex_instruction = vm_core.GetExInstruction();
 	uint8_t& opcode = ex_instruction.opcode;
 	uint8_t& funct3 = ex_instruction.funct3;
@@ -42,6 +44,8 @@ void PipelinedStages::ResolveBranch(PipelinedCore& vm_core){
 		// if branch was already taken, we skip updating the pc
 		if(ex_instruction.branch_predicted_taken)
 			return;
+
+		vm_core.core_stats_.branch_mispredicts++;
 		
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
 			vm_core.SetProgramCounter(ex_instruction.alu_out);
@@ -97,6 +101,8 @@ void PipelinedStages::ResolveBranch(PipelinedCore& vm_core){
 			// if branch was predicted taken, we skip updating pc
 			if(ex_instruction.branch_predicted_taken)
 				return;
+			
+			vm_core.core_stats_.branch_mispredicts++;
 
 			// // Subtracting 4 from pc (updated in Fetch())
 			// vm_core.AddToProgramCounter(-4);
@@ -107,6 +113,7 @@ void PipelinedStages::ResolveBranch(PipelinedCore& vm_core){
 		else{
 			// branch was incorrectly predicted, need to set the pc to pc+4
 			if(ex_instruction.branch_predicted_taken){
+				vm_core.core_stats_.branch_mispredicts++;
 				vm_core.SetProgramCounter(ex_instruction.pc + 4);
 			}
 		}

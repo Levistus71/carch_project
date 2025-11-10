@@ -6,6 +6,7 @@
 #include "../../../registers.h"
 #include "../../../memory_controller.h"
 #include "vm_asm_mw.h"
+#include "vm/vm_base.h"
 
 namespace rv5s{
     
@@ -34,6 +35,8 @@ public:
 	std::queue<std::string> input_queue_;
 
     uint64_t program_size_ = 0;
+
+    VmBase::Stats core_stats_;
 
     SingleCycleCore();
 

@@ -8,6 +8,8 @@ void PipelinedStages::WriteBack(PipelinedCore& vm_core){
 	if(wb_instruction.nopped)
 		return;
 
+	vm_core.core_stats_.instrs_retired++;
+
 	if (wb_instruction.opcode==0b1110011) { // CSR opcode
 		WriteBackCsr(vm_core);
 		return;

@@ -4,6 +4,8 @@
 namespace rv5s{
 
 void SingleCycleStages::WriteBack(SingleCycleCore& vm_core){
+	vm_core.core_stats_.instrs_retired++;
+	
 	if (vm_core.instr.opcode==0b1110011) { // CSR opcode
 		WriteBackCsr(vm_core);
 		return;

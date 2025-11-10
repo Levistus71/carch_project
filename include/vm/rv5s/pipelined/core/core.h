@@ -8,6 +8,7 @@
 #include "../../../registers.h"
 #include "../../../memory_controller.h"
 #include "vm_asm_mw.h"
+#include "vm/vm_base.h"
 
 namespace rv5s{
     
@@ -47,6 +48,8 @@ public:
 
     uint64_t program_size_ = 0;
 
+    VmBase::Stats core_stats_;
+
     PipelinedCore();
 
     uint64_t GetProgramCounter() const;
@@ -65,6 +68,8 @@ public:
 
     void Load(AssembledProgram& program);
     void Load();
+
+    VmBase::Stats& GetStats();
 };
 
 } // namespace rv5s

@@ -35,6 +35,8 @@ public:
     bool ForwardingEnabled();
     bool HazardEnabled();
 
+    VmBase::Stats& GetStats() override;
+
     AssembledProgram program_;
 
 private:

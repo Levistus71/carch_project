@@ -7,6 +7,8 @@ void DualIssueStages::WriteBack(DualIssueInstrContext& wb_instruction, DualIssue
 	if(wb_instruction.illegal)
 		return;
 
+	vm_core.core_stats_.instrs_retired++;
+	
 	if (wb_instruction.opcode==0b1110011) { // CSR opcode
 		WriteBackCsr(wb_instruction, vm_core);
 		return;

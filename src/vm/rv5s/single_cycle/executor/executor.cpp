@@ -93,6 +93,7 @@ void SingleCycleExecutor::StepSingleCycle(SingleCycleCore& vm_core, bool dump){
         // DumpState(globals::vm_state_dump_file_path);
     }  
 
+    vm_core.core_stats_.cycles++;
 }
 
 

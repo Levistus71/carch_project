@@ -39,6 +39,7 @@ void PipelinedVM::Step(){
     vm_core_.is_stop_requested_ = false;
 
     PipelinedExecutor::StepPipelined(vm_core_);
+    vm_core_.core_stats_.cycles++;
 }
 
 void PipelinedVM::Undo(){
@@ -83,6 +84,10 @@ bool PipelinedVM::ForwardingEnabled(){
 
 bool PipelinedVM::HazardEnabled(){
     return vm_core_.hazard_detection_enabled_;
+}
+
+VmBase::Stats& PipelinedVM::GetStats(){
+    return vm_core_.GetStats();
 }
 
 } // namespace rv5s

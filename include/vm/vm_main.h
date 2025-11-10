@@ -43,6 +43,8 @@ public:
 
     AssembledProgram program_;
 
+    VmBase::Stats& GetStats();
+
 private:
     std::unique_ptr<VmBase> vm_;
     Which type_;

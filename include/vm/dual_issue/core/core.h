@@ -6,6 +6,7 @@
 #include "vm/registers.h"
 #include "vm/memory_controller.h"
 #include "vm_asm_mw.h"
+#include "vm/vm_base.h"
 
 
 namespace dual_issue{
@@ -66,6 +67,7 @@ public:
 
     uint64_t program_size_ = 0;
 
+    VmBase::Stats core_stats_;
 
     uint64_t GetProgramCounter() const;
     void AddToProgramCounter(int64_t value);

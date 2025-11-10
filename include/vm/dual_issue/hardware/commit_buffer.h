@@ -20,11 +20,11 @@ public:
     bool HeadReady();
 
     std::pair<size_t, size_t> Reserve();
-    void Push(DualIssueInstrContext instr);
+    bool Push(DualIssueInstrContext instr);
     DualIssueInstrContext Top();
     void Pop();
 
-    std::pair<bool, uint64_t> QueryVal(uint64_t rob_idx);
+    std::tuple<bool, uint64_t, uint64_t> QueryVal(uint64_t rob_idx);
 
     void Reset();
 
@@ -43,8 +43,6 @@ private:
 
     std::vector<ROBBufferEntry> buffer;
 
-    bool InLimits(size_t idx);
-
     size_t epoch_counter = 0;
 
 };
@@ -60,7 +58,7 @@ public:
 
     std::pair<size_t, size_t> Reserve();
 
-    std::pair<bool, uint64_t> QueryVal(uint64_t rob_idx);
+    std::tuple<bool, uint64_t, uint64_t> QueryVal(uint64_t rob_idx);
 
     void Reset();
 
@@ -73,7 +71,7 @@ public:
 private:
     ROBBuffer buffer;
 
-    void BroadCastMsgs(DualIssueInstrContext& instr, CommonDataBus& data_bus);
+    void BroadCastMsgs(DualIssueInstrContext& instr, CommonDataBus& data_bus, bool clear_dependency);
 };
 
 } // namespace dual_issue

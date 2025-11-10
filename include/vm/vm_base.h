@@ -38,6 +38,13 @@ public:
         std::pair<size_t, size_t> rob_head_tail;
     };
 
+    struct Stats{
+        size_t cycles;
+        size_t instrs_retired;
+        size_t branch_instrs;
+        size_t branch_mispredicts;
+    };
+
 
     VmBase() = default;
     virtual ~VmBase() = default;
@@ -59,4 +66,6 @@ public:
 
     virtual std::vector<uint64_t> GetInstructionPCs() = 0;
     virtual InstrView GetInstructions() = 0;
+
+    virtual Stats& GetStats() = 0;
 };

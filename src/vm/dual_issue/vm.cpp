@@ -77,5 +77,10 @@ VmBase::InstrView DualIssueVM::GetInstructions(){
     
     return ret;
 }
+
+
+VmBase::Stats& DualIssueVM::GetStats(){
+    return vm_core_.core_stats_;
+}
     
 } // namespace dual_issue

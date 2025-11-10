@@ -112,3 +112,7 @@ bool VM::HazardEnabled(){
 VM::Which VM::GetType(){
     return type_;
 }
+
+VmBase::Stats& VM::GetStats(){
+    return vm_->GetStats();
+}

@@ -32,6 +32,8 @@ public:
     std::vector<uint64_t> GetInstructionPCs() override;
     InstrView GetInstructions() override;
 
+    VmBase::Stats& GetStats() override;
+
     AssembledProgram program_;
 
 private:

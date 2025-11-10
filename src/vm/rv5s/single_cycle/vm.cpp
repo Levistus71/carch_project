@@ -72,4 +72,8 @@ VmBase::InstrView SingleCycleVM::GetInstructions(){
     return ret;
 }
 
+VmBase::Stats& SingleCycleVM::GetStats(){
+    return vm_core_.core_stats_;
+}
+
 } // namespace rv5s

@@ -9,6 +9,7 @@
 
 #include "../../include/gui/gui_main.h"
 #include "../../include/gui/gui_set_processor_type.h"
+#include "gui/gui_stats.h"
 
 
 static void glfw_error_callback(int error, const char* description)
@@ -289,10 +290,10 @@ int gui_main()
                 ImVec2 STATS_WINDOW_SIZE{CENTER_SIZE.x - PROCESSOR_SHEATH_SIZE.x, CENTER_SIZE.y - REGISTER_WINDOW_SIZE.y};
                 ImGui::SetNextWindowPos(STATS_WINDOW_POS);
                 ImGui::SetNextWindowSize(STATS_WINDOW_SIZE);
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.00f));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(60.0f/255.0f, 60.0f/255.0f, 60.0f/255.0f, 1.00f));
                 ImGui::Begin("Stats Sheath Window", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
                 {
-                    
+                    stats_main();
                 }
                 ImGui::PopStyleColor();
                 ImGui::End();

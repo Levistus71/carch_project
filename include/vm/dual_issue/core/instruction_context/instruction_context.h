@@ -12,21 +12,24 @@ struct DualIssueInstrContext : InstrContext {
     bool branch_predicted_taken = false; // job of the 'FETCH' stage to update this. (For branch prediction)
 
     uint64_t rs1_tag;
+    uint64_t rs1_epoch;
     uint64_t rs2_tag;
+    uint64_t rs2_epoch;
     uint64_t rs3_tag;
+    uint64_t rs3_epoch;
     size_t rob_idx;
-    bool wait_for_rs1;
-    bool wait_for_rs2;
-    bool wait_for_rs3;
+    bool wait_for_rs1 = true;
+    bool wait_for_rs2 = true;
+    bool wait_for_rs3 = true;
 
     // is illegal instruction (pc was greater than program_size_)
     bool illegal = false;
     size_t epoch;
 
     // forwarding vars
-    bool uses_rs1;
-    bool uses_rs2;
-    bool uses_rs3;
+    bool uses_rs1 = false;
+    bool uses_rs2 = false;
+    bool uses_rs3 = false;
 
     // bools for status
     bool ready_to_exec = false;

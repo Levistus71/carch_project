@@ -154,6 +154,16 @@ void PipelinedCore::Load(){
 	std::vector<bool> t = vm_config::config.getBranchPredictionStatus();
 	this->branch_prediction_enabled_ = t[0];
 	this->branch_prediction_static_ = t[1];
+
+	core_stats_.branch_instrs = 0;
+	core_stats_.branch_mispredicts = 0;
+	core_stats_.cycles = 0;
+	core_stats_.instrs_retired = 0;
+}
+
+
+VmBase::Stats& PipelinedCore::GetStats(){
+	return core_stats_;
 }
 
 } // namespace rv5s

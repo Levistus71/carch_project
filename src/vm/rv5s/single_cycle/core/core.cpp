@@ -30,6 +30,11 @@ void SingleCycleCore::Reset(){
 	// assert(instruction_deque_.size()==5);
 
     this->instr.reset_id_vars();
+
+	core_stats_.cycles= 0;
+	core_stats_.instrs_retired = 0;
+	core_stats_.branch_mispredicts = 0;
+	core_stats_.branch_instrs= 0;
 }
 
 void SingleCycleCore::Load(AssembledProgram& program){
