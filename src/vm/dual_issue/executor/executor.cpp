@@ -14,8 +14,8 @@ void DualIssueExecutor::DebugRunDualIssue(DualIssueCore& vm_core){
 void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
 
     // Writeback
-    vm_core.commit_buffer_.Pull(vm_core);
     vm_core.commit_buffer_.Commit(vm_core);
+    vm_core.commit_buffer_.Pull(vm_core);
 
     vm_core.alu_que_.ListenToBroadCast(vm_core.broadcast_bus_);
     vm_core.lsu_que_.ListenToBroadCast(vm_core.broadcast_bus_);

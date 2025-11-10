@@ -1036,6 +1036,13 @@ struct DualIssueWindowVars{
     Rectangle fu_commit_pipeline;
 
     Rectangle reorder_buffer;
+
+    ImVec4 illegal_col = {200.0f/255.0f, 40.0f/255.0f, 25.0f/255.0f, 1.0f};
+    ImVec4 waiting_col = {201.0f/255.0f, 115.0f/255.0f, 25.0f/255.0f, 1.0f};
+    ImVec4 ready_col = {30.0f/255.0f, 200.0f/255.0f, 30.0f/255.0f, 1.0f};
+    ImVec4 default_col = {255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f};
+    ImVec4 new_col = {30.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f};
+    ImU32 heading_col = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 33.0f/255.0f, 1.0f});
 };
 
 void dual_init_vars(DualIssueWindowVars& window_config){
@@ -1083,7 +1090,7 @@ void dual_draw_heading(DualIssueWindowVars& window_config, Rectangle& rect, cons
     float text_top_left_y = rect.top_left.y - ImGui::GetFontSize() - 5.0f;
     float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, heading, nullptr, nullptr).x;
     float text_top_left_x = (rect.bottom_right.x + rect.top_left.x)/2.0f - text_size/2.0f;
-    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, heading, NULL);
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.heading_col, heading, NULL);
 }
 
 
@@ -1120,7 +1127,7 @@ void dual_draw_headings(DualIssueWindowVars& window_config){
 }
 
 
-void dual_draw_in_pipeline(DualIssueWindowVars& window_config, const InstrContext& instr1__, const InstrContext& instr2__, Rectangle& pipeline){
+void dual_draw_in_pipeline(DualIssueWindowVars& window_config, const InstrContext& instr1__, const InstrContext& instr2__, Rectangle& pipeline, ImVec4& default_col){
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
     const dual_issue::DualIssueInstrContext* instr1_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr1__);
@@ -1133,27 +1140,33 @@ void dual_draw_in_pipeline(DualIssueWindowVars& window_config, const InstrContex
     std::string instr1;
     if(vm.program_.intermediate_code.size()>instr1_->pc/4 && !instr1_->illegal){
         instr1 = vm.program_.intermediate_code[instr1_->pc/4].first.to_string();
+        window_config.col = ImGui::ColorConvertFloat4ToU32(default_col);
     }
     else{
-        instr1 = "Illegal Instr";
-    }
-
-    std::string instr2;
-    if(vm.program_.intermediate_code.size()>instr2_->pc/4 && !instr2_->illegal){
-        instr2 = vm.program_.intermediate_code[instr2_->pc/4].first.to_string();
-    }
-    else{
-        instr2 = "Illegal Instr";
+        instr1 = "Bubble";
+        window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.illegal_col);
     }
 
     float text_top_left_y = pipeline.top_left.y + 6.0f;
     float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr1.c_str(), nullptr, nullptr).x;
     float text_top_left_x = (pipeline.bottom_right.x + 2.0f*pipeline.top_left.x)/3.0f - text_size/2.0f;
     drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr1.c_str(), NULL);
+    
+    std::string instr2;
+    if(vm.program_.intermediate_code.size()>instr2_->pc/4 && !instr2_->illegal){
+        instr2 = vm.program_.intermediate_code[instr2_->pc/4].first.to_string();
+        window_config.col = ImGui::ColorConvertFloat4ToU32(default_col);
+    }
+    else{
+        instr2 = "Bubble";
+        window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.illegal_col);
+    }
 
     text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr2.c_str(), nullptr, nullptr).x;
     text_top_left_x = (2.0f*pipeline.bottom_right.x + pipeline.top_left.x)/3.0f - text_size/2.0f;
     drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr2.c_str(), NULL);
+
+    window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.default_col);
 }
 
 
@@ -1172,11 +1185,25 @@ void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::
                 }
 
                 std::string dissassembled_instr;
+                int pop_count = 0;
                 if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
                     dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.default_col);
+                    pop_count++;
                 }
                 else{
-                    dissassembled_instr = "Illegal Instr";
+                    dissassembled_instr = "Bubble";
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.illegal_col);
+                    pop_count++;
+                }
+
+                if(!instr->illegal && instr->ready_to_exec){
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.ready_col);
+                    pop_count++;
+                }
+                else if (!instr->illegal && !instr->ready_to_exec){
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.waiting_col);
+                    pop_count++;
                 }
 
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.rsrvstn_size.y/que.size());
@@ -1188,6 +1215,8 @@ void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
                 ImGui::Text("%s", dissassembled_instr.c_str());
+
+                ImGui::PopStyleColor(pop_count);
             }
     
             ImGui::EndTable();
@@ -1197,7 +1226,7 @@ void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::
 }
 
 
-void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob){
+void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob, std::vector<bool>& buffer_status){
     ImGui::SetNextWindowPos(rob.top_left);
     ImGui::BeginChild("Reorder buffer window", window_config.reorder_buffer_size);
     {
@@ -1211,11 +1240,21 @@ void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<st
                 }
 
                 std::string dissassembled_instr;
+                int pop_count = 0;
                 if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
                     dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.default_col);
+                    pop_count++;
                 }
                 else{
-                    dissassembled_instr = "Illegal Instr";
+                    dissassembled_instr = "Bubble";
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.illegal_col);
+                    pop_count++;
+                }
+                
+                if(!instr->illegal && buffer_status[i]){
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.ready_col);
+                    pop_count++;
                 }
 
 
@@ -1228,6 +1267,8 @@ void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<st
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
                 ImGui::Text("%s", dissassembled_instr.c_str());
+
+                ImGui::PopStyleColor(pop_count);
             }
     
             ImGui::EndTable();
@@ -1239,16 +1280,16 @@ void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<st
 
 void dual_draw_instrs(DualIssueWindowVars& window_config, VmBase::InstrView& instrs){
     // if id pipeline
-    dual_draw_in_pipeline(window_config, *instrs.pipeline[0], *instrs.pipeline[1], window_config.if_id_pipeline);
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[0], *instrs.pipeline[1], window_config.if_id_pipeline, window_config.new_col);
 
     // id issue pipeline
-    dual_draw_in_pipeline(window_config, *instrs.pipeline[2], *instrs.pipeline[3], window_config.id_issue_pipeline);
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[2], *instrs.pipeline[3], window_config.id_issue_pipeline, window_config.new_col);
 
     // issue fu pipeline
-    dual_draw_in_pipeline(window_config, *instrs.pipeline[4], *instrs.pipeline[5], window_config.issue_fu_pipeline);
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[4], *instrs.pipeline[5], window_config.issue_fu_pipeline, window_config.ready_col);
 
     // fu commit pipeline
-    dual_draw_in_pipeline(window_config, *instrs.pipeline[6], *instrs.pipeline[7], window_config.fu_commit_pipeline);
+    dual_draw_in_pipeline(window_config, *instrs.pipeline[6], *instrs.pipeline[7], window_config.fu_commit_pipeline, window_config.ready_col);
 
     // alu_que_
     dual_draw_rsrvstn_que(window_config, instrs.reservation_station_alu, window_config.rsrvstn_alu);
@@ -1257,7 +1298,7 @@ void dual_draw_instrs(DualIssueWindowVars& window_config, VmBase::InstrView& ins
     dual_draw_rsrvstn_que(window_config, instrs.reservation_station_lsu, window_config.rsrvstn_lsu);
 
     // reorder buffer
-    dual_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer);
+    dual_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer, instrs.rob_status);
 }
 
 
@@ -1272,7 +1313,9 @@ void dual_issue_main(){
 
         dual_init_vars(window_config);
 
+        ImGui::PushFont(STANDARD_BOLD_MEDIUM_FONT);
         dual_draw_headings(window_config);
+        ImGui::PopFont();
         
         VmBase::InstrView instrs = vm.GetInstructions();
         dual_draw_instrs(window_config, instrs);
