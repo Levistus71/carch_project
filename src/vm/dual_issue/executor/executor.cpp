@@ -17,10 +17,7 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
     vm_core.commit_buffer_.Commit(vm_core);
     vm_core.commit_buffer_.Pull(vm_core);
 
-    vm_core.alu_que_.ListenToBroadCast(vm_core.broadcast_bus_);
-    vm_core.lsu_que_.ListenToBroadCast(vm_core.broadcast_bus_);
-    vm_core.broadcast_bus_.Reset();
-    
+    // Exec
     DualIssueStages::Execute(vm_core);
     DualIssueStages::MemoryAccess(vm_core);
 
@@ -29,6 +26,10 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
     
     vm_core.pipeline_reg_instrs_.rsrvstn_alu = vm_core.alu_que_.GetReadyInstr();
     vm_core.pipeline_reg_instrs_.rsrvstn_lsu = vm_core.lsu_que_.GetReadyInstr();
+
+    vm_core.alu_que_.ListenToBroadCast(vm_core.broadcast_bus_);
+    vm_core.lsu_que_.ListenToBroadCast(vm_core.broadcast_bus_);
+    vm_core.broadcast_bus_.Reset();
 
     // Issue
     int num_issued = DualIssueStages::Issue(vm_core);
@@ -54,7 +55,7 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
     
     // Fetch
     DualIssueStages::Fetch(vm_core, num_issued);
-
+    num_issued = num_issued;
 
     vm_core.core_stats_.cycles++;
 }

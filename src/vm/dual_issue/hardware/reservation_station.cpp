@@ -166,13 +166,25 @@ DualIssueInstrContext ReservationStation::GetReadyInstr(){
         return t;
     }
 
-    if(que_.front().ready_to_exec && !que_.front().illegal){
-        DualIssueInstrContext instr = que_.front();
-        que_.pop_front();
-        DualIssueInstrContext t;
-        t.illegal = true;
-        que_.push_back(t);
-        return instr;
+    for(int i=0;i<static_cast<int>(que_.size());i++){
+        if(que_[i].ready_to_exec && !que_[i].illegal){
+            DualIssueInstrContext instr = que_[i];
+
+            std::deque<DualIssueInstrContext> new_que_;
+            for(int j=0;j<static_cast<int>(que_.size());j++){
+                if(j==i)
+                    continue;
+                new_que_.push_back(que_[j]);
+            }
+
+            DualIssueInstrContext t;
+            t.illegal = true;
+            t.ready_to_exec = false;
+            new_que_.push_back(t);
+
+            que_ = new_que_;
+            return instr;
+        }
     }
 
     DualIssueInstrContext t;
