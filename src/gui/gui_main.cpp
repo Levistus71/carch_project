@@ -114,105 +114,141 @@ int gui_main()
 
         // Left Panel (Window selector)
         {
-            ImVec2 left_size = ImVec2(left_panel_width, main_viewport_size.y - top_panel_height);
-            ImVec2 left_pos = ImVec2(main_viewport_pos.x, main_viewport_pos.y + top_panel_height);
-            ImGui::SetNextWindowPos(left_pos);
-            ImGui::SetNextWindowSize(left_size);
-            ImGui::Begin("Left Panel", nullptr, 
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
+            const ImVec2 left_panel_size = ImVec2(left_panel_width, main_viewport_size.y - top_panel_height);
+            const ImVec2 left_panel_pos  = ImVec2(main_viewport_pos.x, main_viewport_pos.y + top_panel_height);
+
+            ImGui::SetNextWindowPos(left_panel_pos, ImGuiCond_Always);
+            ImGui::SetNextWindowSize(left_panel_size, ImGuiCond_Always);
+
+            ImGui::Begin("Left Panel", nullptr,
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoScrollWithMouse |
+                ImGuiWindowFlags_NoBackground
             );
-            {
-                if(ImGui::Button("Editor", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
-                    in_editor = true;
-                    in_processor = false;
-                    in_execute = false;
-                    in_memory = false;
-                }
-                if(ImGui::Button("Processor", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
-                    in_editor = false;
-                    in_processor = true;
-                    in_execute = false;
-                    in_memory = false;
-                }
-                if(ImGui::Button("Execute", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
-                    in_editor = false;
-                    in_processor = false;
-                    in_execute = true;
-                    in_memory = false;
-                }
-                if(ImGui::Button("Memory", {left_panel_width * 0.9f, left_panel_width * 0.9f})){
-                    in_editor = false;
-                    in_processor = false;
-                    in_execute = false;
-                    in_memory = true;
-                }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 8.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0.16f, 0.19f, 0.23f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(0.22f, 0.26f, 0.32f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4(0.28f, 0.33f, 0.40f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(0.88f, 0.91f, 0.95f, 1.0f));
+
+            const float icon_button_size = left_panel_width * 0.88f;
+            const float vertical_spacing = 16.0f;
+
+            if(ImGui::Button("Editor",ImVec2(icon_button_size, icon_button_size))){
+                in_editor = true;
+                in_processor = in_execute = in_memory = false;
             }
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()+vertical_spacing);
+
+            if(ImGui::Button("Processor",ImVec2(icon_button_size,icon_button_size))){
+                in_processor = true;
+                in_editor = in_execute = in_memory = false;
+            }
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()+vertical_spacing);
+
+            if(ImGui::Button("Execute",ImVec2(icon_button_size,icon_button_size))){
+                in_execute = true;
+                in_editor = in_processor = in_memory = false;
+            }
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()+vertical_spacing);
+
+            if(ImGui::Button("Memory",ImVec2(icon_button_size,icon_button_size))){
+                in_memory = true;
+                in_editor = in_processor = in_execute = false;
+            }
+
+            ImGui::PopStyleColor(4);
+            ImGui::PopStyleVar(2);
             ImGui::End();
         }
 
         static bool SHOW_CONSOLE_IN_PROCESSOR = true;
-        // Top panel
         {
-            ImVec2 top_size = ImVec2(main_viewport_size.x, top_panel_height);
-            ImVec2 top_pos = ImVec2(main_viewport_pos.x, main_viewport_pos.y);
-            ImGui::SetNextWindowPos(top_pos);
-            ImGui::SetNextWindowSize(top_size);
-            ImGui::Begin("Top Panel", nullptr, 
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
-            );
-            {
-                float offset = 0;
-                if(ImGui::Button("Assemble", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    text_editor.SaveFile();
-                    try{
-                        vm.LoadVM(assemble(text_editor.FilePath()));
-                        globals::vm_cout_file << "Assembly successful!" << std::endl << std::endl;
-                        in_editor = false;
-                        in_execute = true;
-                        in_processor = false;
-                        in_memory = false;
-                    }
-                    catch(const std::runtime_error& e){
-                        globals::vm_cout_file << "Assembly failed :(" << std::endl;
-                        std::cerr << e.what() << std::endl;
-                    }
-                }
-                offset+=left_panel_width;
-                ImGui::SameLine(offset, 1.0f);
-                if(ImGui::Button("Undo", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    vm.Undo();
-                }
-                offset+=left_panel_width;
-                ImGui::SameLine(offset, 1.0f);
-                if(ImGui::Button("Step Forward", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    vm.Step();
-                }
-                offset+=left_panel_width;
-                ImGui::SameLine(offset, 1.0f);
-                if(ImGui::Button("Run (debug)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    vm.DebugRun();
-                }
-                offset+=left_panel_width;
-                ImGui::SameLine(offset, 1.0f);
-                if(ImGui::Button("Run (no interaction)", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    vm.Run();
-                }
-                if(in_processor){
-                    offset+=left_panel_width;
-                    ImGui::SameLine(offset, 1.0f);
-                    if(ImGui::Button("Toggle Console", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                        SHOW_CONSOLE_IN_PROCESSOR = !SHOW_CONSOLE_IN_PROCESSOR;
-                    }
-                }
+            const ImVec2 top_panel_size   = ImVec2(main_viewport_size.x, top_panel_height);
+            const ImVec2 top_panel_origin = ImVec2(main_viewport_pos.x, main_viewport_pos.y);
 
-                offset+=5*left_panel_width;
-                ImGui::SameLine(offset, 1.0f);
-                if(ImGui::Button("Processor", {left_panel_width * 0.8f, top_panel_height * 0.9f})){
-                    ImGui::OpenPopup("Processor Selection Modal");
+            ImGui::SetNextWindowPos(top_panel_origin, ImGuiCond_Always);
+            ImGui::SetNextWindowSize(top_panel_size, ImGuiCond_Always);
+
+            ImGui::Begin("Top Panel", nullptr,
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoScrollWithMouse |
+                ImGuiWindowFlags_NoBackground
+            );
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 8.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.22f, 0.28f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.30f, 0.38f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.32f, 0.38f, 0.48f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.92f, 0.94f, 0.97f, 1.0f));
+
+
+            const float button_width  = left_panel_width * 0.82f;
+            const float button_height = top_panel_height * 0.86f;
+            const float spacing       = 12.0f;
+
+            if(ImGui::Button("Assemble",ImVec2(button_width,button_height))){
+                text_editor.SaveFile();
+                try{
+                    vm.LoadVM(assemble(text_editor.FilePath()));
+                    globals::vm_cout_file << "Assembly successful!" << std::endl << std::endl;
+                    in_editor = false; in_execute = true; in_processor = false; in_memory = false;
+                } catch(const std::runtime_error& e){
+                    globals::vm_cout_file << "Assembly failed." << std::endl;
+                    std::cerr << "Error: " << e.what() << std::endl;
+                }
+            }
+            ImGui::SameLine(0.0f, spacing);
+
+            if(ImGui::Button("Undo", ImVec2(button_width,button_height))){
+                vm.Undo();
+            }
+            ImGui::SameLine(0.0f, spacing);
+
+            if(ImGui::Button("Step", ImVec2(button_width, button_height))){
+                vm.Step();
+            }
+            ImGui::SameLine(0.0f, spacing);
+
+            if(ImGui::Button("Run", ImVec2(button_width,button_height))) {
+                vm.DebugRun();
+            }
+            ImGui::SameLine(0.0f, spacing);
+
+            if(ImGui::Button("Run FF", ImVec2(button_width,button_height))) {
+                vm.Run();
+            }
+
+            if(in_processor){
+                ImGui::SameLine(0.0f, spacing);
+                if(ImGui::Button("Console", ImVec2(button_width, button_height))){
+                    SHOW_CONSOLE_IN_PROCESSOR = !SHOW_CONSOLE_IN_PROCESSOR;
                 }
             }
 
+            ImGui::SameLine(0.0f, spacing);
+            if(ImGui::Button("Processor", ImVec2(button_width, button_height))){
+                ImGui::OpenPopup("Processor Selection Modal");
+            }
+
+            ImGui::PopStyleColor(4);
+            ImGui::PopStyleVar(2);
+
             // Processor selection modal
+            // The Processor Selection Salon – a modal of refined architectural discernment
             {
                 ImGui::SetNextWindowSize(ImVec2(500.0f, 300.0f), ImGuiCond_Appearing);
     
@@ -228,8 +264,9 @@ int gui_main()
     
                     ImGui::EndPopup();
                 }
-                ImGui::End();
             }
+            
+            ImGui::End();
         }
 
         // Central panel
