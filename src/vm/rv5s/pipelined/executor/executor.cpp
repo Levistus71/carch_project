@@ -12,7 +12,7 @@ void InsertIfInstruction(rv5s::PipelinedCore& vm_core){
     if(vm_core.program_counter_ < vm_core.program_size_)
         vm_core.instruction_deque_.push_front(rv5s::PipelinedInstrContext{vm_core.program_counter_});
     else{
-        vm_core.AddToProgramCounter(-4);   // so that the nop we insert now doesn't cause any probs in fetch
+        vm_core.AddToProgramCounter(4);   // so that the nop we insert now doesn't cause any probs in fetch
         rv5s::PipelinedInstrContext nop;
         nop.nopify();
         nop.bubbled = true;
@@ -62,6 +62,13 @@ void DrivePipeline(rv5s::PipelinedCore& vm_core){
  */
 void StepPipelinedNoHazard(rv5s::PipelinedCore& vm_core){
     // FIXME: stop when the program is over
+    if(vm_core.program_counter_ >= vm_core.program_size_){
+        if(vm_core.GetIdInstruction().nopped && vm_core.GetExInstruction().nopped && vm_core.GetMemInstruction().nopped && vm_core.GetWbInstruction().nopped){
+            globals::vm_cout_file << "Cannot step further." << std::endl;
+            return;
+        }
+    }
+
     InsertIfInstruction(vm_core);
 
     PopWbInstruction(vm_core);
@@ -102,6 +109,14 @@ void RunPipelinedNoHazard(rv5s::PipelinedCore& vm_core){
  * Pipelined With hazard detection
  */
 void StepPipelinedWithHazard(rv5s::PipelinedCore& vm_core){
+    // FIXME: do this properly
+    if(vm_core.program_counter_ >= vm_core.program_size_){
+        if(vm_core.GetIdInstruction().nopped && vm_core.GetExInstruction().nopped && vm_core.GetMemInstruction().nopped && vm_core.GetWbInstruction().nopped){
+            globals::vm_cout_file << "Cannot step further." << std::endl;
+            return;
+        }
+    }
+
     static bool data_hazard_detected = false;
     if(data_hazard_detected){
         vm_core.hazard_detector_.HandleDataHazard(vm_core);
