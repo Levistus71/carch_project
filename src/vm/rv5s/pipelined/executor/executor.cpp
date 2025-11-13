@@ -127,12 +127,6 @@ void StepPipelinedWithHazard(rv5s::PipelinedCore& vm_core){
     }
 
     DrivePipeline(vm_core);
-
-    // FIXME:
-    if(vm_core.program_counter_ >= vm_core.program_size_){
-        if(vm_core.GetIdInstruction().nopped && vm_core.GetExInstruction().nopped && vm_core.GetMemInstruction().nopped && vm_core.GetWbInstruction().nopped)
-            return;
-    }
     
     if(vm_core.hazard_detector_.DetectControlHazard(vm_core)){
         vm_core.hazard_detector_.HandleControlHazard(vm_core);

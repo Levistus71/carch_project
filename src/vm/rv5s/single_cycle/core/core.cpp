@@ -29,6 +29,8 @@ void SingleCycleCore::Reset(){
 	this->memory_controller_.Reset();
 	// assert(instruction_deque_.size()==5);
 
+	undo_instruction_stack_.clear();
+	
     this->instr.reset_id_vars();
 
 	core_stats_.cycles= 0;

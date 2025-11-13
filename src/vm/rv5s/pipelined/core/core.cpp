@@ -50,6 +50,8 @@ void PipelinedCore::Reset(){
 
 	branch_predictor_.reset();
 
+	undo_instruction_stack_.clear();
+
     for(int i=0;i<5;i++){
         // instruction_deque_.pop_back();
         
