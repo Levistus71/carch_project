@@ -32,6 +32,7 @@ public:
     struct InstrView{
         std::vector<std::unique_ptr<const InstrContext>> pipeline;
         std::vector<std::unique_ptr<const InstrContext>> reservation_station_alu;
+        std::vector<std::unique_ptr<const InstrContext>> reservation_station_falu;
         std::vector<std::unique_ptr<const InstrContext>> reservation_station_lsu;
         std::vector<std::unique_ptr<const InstrContext>> reorder_buffer;
         std::vector<bool> rob_status;

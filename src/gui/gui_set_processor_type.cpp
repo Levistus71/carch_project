@@ -2,7 +2,7 @@
 
 void set_processor_type(){
 
-    static const char* PROCESSOR_TYPES[] = {"Single Cycle", "Pipelined W/O Hazard", "Pipelined With Hazard W/O Forwarding", "Pipelined With Hazard With Forwarding", "Dual issue (6 stage)"};
+    static const char* PROCESSOR_TYPES[] = {"Single Cycle", "Pipelined W/O Hazard", "Pipelined With Hazard W/O Forwarding", "Pipelined With Hazard With Forwarding", "Dual issue (6 stage)", "Triple Issue (6 stage)"};
     static int PROCESSOR_IDX = 0;
     static bool PROCESSOR_CHANGE = false;
 
@@ -28,7 +28,7 @@ void set_processor_type(){
     static const char* BRANCH_TYPES[] = {"No Prediction", "Static Prediction", "Dynamic Prediction (1-bit)"};
     static int BRANCH_IDX = 0;
 
-    if(PROCESSOR_IDX != 0 && PROCESSOR_IDX!=4){
+    if(PROCESSOR_IDX != 0){
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(100.0f/255.0f, 100.0f/255.0f, 100.0f/255.0f, 1.0f)); // Lighter background
         if(ImGui::BeginCombo("Branch Display Type", BRANCH_TYPES[BRANCH_IDX]))
         {
@@ -52,6 +52,7 @@ void set_processor_type(){
     if(PROCESSOR_CHANGE){
         PROCESSOR_CHANGE = false;
         vm_config::config.dual_issue = false;
+        vm_config::config.triple_issue = false;
         vm_config::config.branch_prediction_enabled = false;
         vm_config::config.branch_prediction_static = false;
         vm_config::config.data_forwarding_enabled = false;
@@ -79,6 +80,9 @@ void set_processor_type(){
             }
             case 4 : {
                 vm_config::config.dual_issue = true;
+            }
+            case 5 : {
+                vm_config::config.triple_issue = true;
             }
         }
 

@@ -1,6 +1,7 @@
 #include "vm/vm_main.h"
 #include "vm/rv5s/pipelined/vm.h"
 #include "vm/rv5s/single_cycle/vm.h"
+#include "vm/triple_issue/vm.h"
 #include "vm/dual_issue/vm.h"
 #include "vm_asm_mw.h"
 #include "sim_state.h"
@@ -25,6 +26,10 @@ void VM::LoadVM(){
     if(vm_config::config.getDualIssueStatus()){
         type_ = VM::Which::DualIssue;
         vm_ = std::make_unique<dual_issue::DualIssueVM>();
+    }
+    else if(vm_config::config.getTripleIssueStatus()){
+        type_ = VM::Which::TripleIssue;
+        vm_ = std::make_unique<triple_issue::TripleIssueVM>();
     }
     else{
         if(vm_config::config.pipelining_enabled){

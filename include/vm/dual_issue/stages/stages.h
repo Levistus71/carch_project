@@ -51,7 +51,7 @@ private:
     // FIXME: this doesn't belong here
     static void HandleSyscall(DualIssueCore& vm_core);
 
-    static void ResolveBranch(DualIssueCore& vm_core);
+    static void ResolveBranch(DualIssueInstrContext& instr, DualIssueCore& vm_core);
     static void ExecuteBasic(DualIssueCore& vm_core);
     static void ExecuteFloat(DualIssueCore& vm_core);
     static void ExecuteDouble(DualIssueCore& vm_core);

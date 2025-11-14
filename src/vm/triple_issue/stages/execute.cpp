@@ -1,59 +1,49 @@
-#include "vm/dual_issue/stages/stages.h"
-#include "common/instructions.h"
+#include "vm/triple_issue/stages/stages.h"
 
-
-namespace dual_issue
+namespace triple_issue
 {
 
-
-void DualIssueStages::Execute(DualIssueCore& vm_core){
-    DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_alu;
+void TripleIssueStages::ExecuteAlu(TripleIssueCore& vm_core){
+    dual_issue::DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_alu;
     if(ex_instruction.illegal){
         return;
     }
-    
-	if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
-		ExecuteFloat(vm_core);
-		return;
-	}
-	else if (instruction_set::isDInstruction(ex_instruction.instruction)) {
-		ExecuteDouble(vm_core);
-		return;
-	}
-	else {
-		ExecuteBasic(vm_core);
-	}
-
-	// we don't update the pc here. we do that in the writeback stage
-	// "what an earlier branch to this was stalled and this executed earlier?"
+    ExecuteBasic(vm_core, ex_instruction);
 }
 
-
-
-void DualIssueStages::ExecuteBasic(DualIssueCore& vm_core){
-    DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_alu;
+void TripleIssueStages::ExecuteBasic(TripleIssueCore& vm_core, dual_issue::DualIssueInstrContext& instr){
 	// register values might change (if imm_to_alu is true etc), so not by reference
-	uint64_t reg1_value = ex_instruction.rs1_value;
-	uint64_t reg2_value = ex_instruction.rs2_value;
+	uint64_t reg1_value = instr.rs1_value;
+	uint64_t reg2_value = instr.rs2_value;
 	
-	if (ex_instruction.imm_to_alu) {
-		int32_t imm = ex_instruction.immediate;
+	if (instr.imm_to_alu) {
+		int32_t imm = instr.immediate;
     	reg2_value = static_cast<uint64_t>(static_cast<int64_t>(imm));
   	}
 
-	if(ex_instruction.auipc){
-		reg1_value = ex_instruction.pc;
+	if(instr.auipc){
+		reg1_value = instr.pc;
 	}
 
-  	// std::tie(ex_instruction.alu_out, ex_instruction.alu_overflow) = alu_.execute(ex_instruction.alu_op, reg1_value, reg2_value);
-	auto [alu_out_temp, alu_overflow_temp] = vm_core.alu_.execute(ex_instruction.alu_op, reg1_value, reg2_value);
-	ex_instruction.alu_out = alu_out_temp;
-	ex_instruction.alu_overflow = alu_overflow_temp;
+	auto [alu_out_temp, alu_overflow_temp] = vm_core.alu_.execute(instr.alu_op, reg1_value, reg2_value);
+	instr.alu_out = alu_out_temp;
+	instr.alu_overflow = alu_overflow_temp;
 }
 
 
-void DualIssueStages::ExecuteFloat(DualIssueCore& vm_core){
-    DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_alu;
+void TripleIssueStages::ExecuteFalu(TripleIssueCore& vm_core){
+    dual_issue::DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_falu;
+    if (instruction_set::isFInstruction(ex_instruction.instruction)) { // RV64 F
+		ExecuteFloat(vm_core, ex_instruction);
+		return;
+	}
+	else if (instruction_set::isDInstruction(ex_instruction.instruction)) {
+		ExecuteDouble(vm_core, ex_instruction);
+		return;
+	}
+}
+
+void TripleIssueStages::ExecuteFloat(TripleIssueCore& vm_core, dual_issue::DualIssueInstrContext& ex_instruction){
 	uint8_t& funct3 = ex_instruction.funct3;
 	uint8_t rm = funct3;
 
@@ -85,8 +75,8 @@ void DualIssueStages::ExecuteFloat(DualIssueCore& vm_core){
 }
 
 
-void DualIssueStages::ExecuteDouble(DualIssueCore& vm_core){
-    DualIssueInstrContext& ex_instruction = vm_core.pipeline_reg_instrs_.rsrvstn_alu;
+
+void TripleIssueStages::ExecuteDouble(TripleIssueCore& vm_core, dual_issue::DualIssueInstrContext& ex_instruction){
 	uint8_t& opcode = ex_instruction.opcode;
 	uint8_t& funct3 = ex_instruction.funct3;
 	uint8_t& funct7 = ex_instruction.funct7;
@@ -120,5 +110,5 @@ void DualIssueStages::ExecuteDouble(DualIssueCore& vm_core){
 	ex_instruction.fcsr_status = fcsr_status;
 }
 
-    
-} // namespace dual_issue
+
+} // namespace triple_issue

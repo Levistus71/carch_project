@@ -15,6 +15,7 @@ public:
     };
 
     ROBBuffer();
+    ROBBuffer(size_t slots);
 
     size_t EmptySlots();
     bool HeadReady();
@@ -32,11 +33,12 @@ public:
     std::vector<bool> GetStatus();
     std::pair<size_t, size_t> GetHeadTail();
 
-    void ResetTailTillIdx(size_t new_head);
+    void ResetTailTillIdx(size_t new_head, DualIssueCore& vm_core);
 
 private:
-    // most optimal is 16 (4 + 4 from reservation stations, 8 in 4 pipeline registers (each register has 2))
-    static constexpr size_t max_size = 16;
+    // most optimal is 16 (4 + 4 from reservation stations, 8 in 4 pipeline registers (each register has 2)) for dual issue
+    // optimal is 24 for triple, we go with 32 instead
+    size_t max_size;
 
     size_t head = 0;
     size_t tail = 0;
@@ -51,6 +53,9 @@ private:
 
 class ReorderBuffer{
 public:
+    ReorderBuffer(){}
+    ReorderBuffer(size_t slots) : buffer(slots) {}
+
     size_t EmptySlots();
 
     void Pull(DualIssueCore& vm_core);
@@ -68,7 +73,7 @@ public:
     std::vector<bool> GetStatus();
     std::pair<size_t, size_t> GetHeadTail();
 
-    void ResetTailTillIdx(size_t new_head);
+    void ResetTailTillIdx(size_t new_head, DualIssueCore& vm_core);
     
 private:
     ROBBuffer buffer;

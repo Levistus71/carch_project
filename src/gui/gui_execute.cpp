@@ -22,7 +22,7 @@ void editor_execute(){
 
         text_editor.SetDebugMode(true);
 
-        if(vm.GetType() != VM::Which::DualIssue){
+        if(vm.GetType() != VM::Which::DualIssue && vm.GetType() != VM::Which::TripleIssue){
             if(!vm.PipeliningEnabled()){
                 text_editor.SetDebugModeTypeSingleCycle(true);
                 size_t text_line_number = vm.program_.instruction_number_line_number_mapping[vm.GetInstructionPCs()[0] / 4];
@@ -106,7 +106,7 @@ void assembled_editor_main(){
 
 
         assembled_editor.SetDebugMode(true);
-        if(vm.GetType() != VM::Which::DualIssue){
+        if(vm.GetType() != VM::Which::DualIssue && vm.GetType() != VM::Which::TripleIssue){
             if(!vm.PipeliningEnabled()){
                 assembled_editor.SetDebugModeTypeSingleCycle(true);
                 size_t text_line_number = vm.program_.instruction_number_disassembly_mapping[vm.GetInstructionPCs()[0] / 4];

@@ -7,7 +7,8 @@ public:
     enum class Which{
         SingleCycle,
         Pipelined,
-        DualIssue
+        DualIssue,
+        TripleIssue
     };
 
 

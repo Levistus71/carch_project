@@ -30,6 +30,8 @@ public:
         void Reset();
     };
 
+    virtual ~DualIssueCore() = default;
+
     void FlushPreIssueRegs();
 
     PipelineRegInstrs pipeline_reg_instrs_;

@@ -1,5 +1,6 @@
 #include "vm/dual_issue/hardware/reservation_station.h"
 #include "vm/dual_issue/core/core.h"
+#include "vm/triple_issue/core/core.h"
 
 namespace dual_issue
 {
@@ -65,6 +66,8 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
     instr.wait_for_rs2 = true;
     instr.wait_for_rs3 = true;
 
+    auto* upcasted_triple = dynamic_cast<triple_issue::TripleIssueCore*>(&vm_core);
+
     if(instr.uses_rs1){
         auto [dependency, dependent_idx] = vm_core.reg_status_file_.QueryTableRobIdx(instr.rs1, !instr.rs1_from_fprf);
 
@@ -72,7 +75,7 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
             instr.wait_for_rs1 = false;
         }
         else{
-            auto [value_ready, value, epoch] = vm_core.commit_buffer_.QueryVal(dependent_idx);
+            auto [value_ready, value, epoch] = (upcasted_triple) ? upcasted_triple->commit_buffer_.QueryVal(dependent_idx) : vm_core.commit_buffer_.QueryVal(dependent_idx);
 
             if(value_ready){
                 instr.wait_for_rs1 = false;
@@ -99,7 +102,7 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
             instr.wait_for_rs2 = false;
         }
         else{
-            auto [value_ready, value, epoch] = vm_core.commit_buffer_.QueryVal(dependent_idx);
+            auto [value_ready, value, epoch] = (upcasted_triple) ? upcasted_triple->commit_buffer_.QueryVal(dependent_idx) : vm_core.commit_buffer_.QueryVal(dependent_idx);
 
             if(value_ready){
                 instr.wait_for_rs2 = false;
@@ -126,7 +129,7 @@ void ReservationStation::Push(DualIssueInstrContext instr, DualIssueCore& vm_cor
             instr.wait_for_rs3 = false;
         }
         else{
-            auto [value_ready, val, epoch] = vm_core.commit_buffer_.QueryVal(dependent_idx);
+            auto [value_ready, val, epoch] = (upcasted_triple) ? upcasted_triple->commit_buffer_.QueryVal(dependent_idx) : vm_core.commit_buffer_.QueryVal(dependent_idx);
 
             if(value_ready){
                 instr.wait_for_rs3 = false;

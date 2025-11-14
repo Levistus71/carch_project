@@ -1,5 +1,6 @@
 #include "vm/dual_issue/stages/stages.h"
 #include "common/instructions.h"
+#include "vm/triple_issue/core/core.h"
 
 namespace dual_issue{
 
@@ -22,6 +23,9 @@ void DualIssueStages::WriteBack(DualIssueInstrContext& wb_instruction, DualIssue
 		vm_core.register_file_.WriteCsr(0x003, wb_instruction.fcsr_status);
 	}
 
+	if(wb_instruction.branch)
+		ResolveBranch(wb_instruction, vm_core);
+
 	if(!wb_instruction.reg_write) return;
 
 	uint64_t& write_data = wb_instruction.mem_to_reg ?
@@ -39,6 +43,115 @@ void DualIssueStages::WriteBack(DualIssueInstrContext& wb_instruction, DualIssue
 			wb_instruction.reg_overwritten = vm_core.register_file_.ReadGpr(wb_instruction.rd);
 		}
 		vm_core.register_file_.WriteGpr(wb_instruction.rd, write_data);
+	}
+}
+
+void DualIssueStages::ResolveBranch(DualIssueInstrContext& instr, DualIssueCore& vm_core){
+	vm_core.core_stats_.branch_instrs++;
+
+    using instruction_set::Instruction;
+    using instruction_set::get_instr_encoding;
+
+	uint8_t& opcode = instr.opcode;
+	uint8_t& funct3 = instr.funct3;
+
+	triple_issue::TripleIssueCore* upcasted_triple = dynamic_cast<triple_issue::TripleIssueCore*>(&vm_core);
+
+	if (opcode==get_instr_encoding(Instruction::kjalr).opcode || 
+			opcode==get_instr_encoding(Instruction::kjal).opcode) {
+		
+		// if branch was already taken, we skip updating the pc
+		if(instr.branch_predicted_taken)
+			return;
+		
+		vm_core.core_stats_.branch_mispredicts++;
+		
+		if(upcasted_triple)
+			upcasted_triple->commit_buffer_.ResetTailTillIdx(instr.rob_idx, *upcasted_triple);
+		else
+        	vm_core.commit_buffer_.ResetTailTillIdx(instr.rob_idx, vm_core);
+	
+		vm_core.FlushPreIssueRegs();
+		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
+			vm_core.SetProgramCounter(instr.alu_out);
+		}
+		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
+			vm_core.SetProgramCounter(instr.pc + instr.immediate);
+		}
+
+		// storing the current value of pc for returning (storing it in rd)
+		instr.alu_out = instr.pc + 4;
+
+		return;
+	}
+	else if (opcode==get_instr_encoding(Instruction::kbeq).opcode ||
+				opcode==get_instr_encoding(Instruction::kbne).opcode ||
+				opcode==get_instr_encoding(Instruction::kblt).opcode ||
+				opcode==get_instr_encoding(Instruction::kbge).opcode ||
+				opcode==get_instr_encoding(Instruction::kbltu).opcode ||
+				opcode==get_instr_encoding(Instruction::kbgeu).opcode) {
+		
+		bool branch_flag = false;
+		switch (funct3) {
+			case 0b000: {// BEQ
+				branch_flag = (instr.alu_out==0);
+				break;
+			}
+			case 0b001: {// BNE
+				branch_flag = (instr.alu_out!=0);
+				break;
+			}
+			case 0b100: {// BLT
+				branch_flag = (instr.alu_out==1);
+				break;
+			}
+			case 0b101: {// BGE
+				branch_flag = (instr.alu_out==0);
+				break;
+			}
+			case 0b110: {// BLTU
+				branch_flag = (instr.alu_out==1);
+				break;
+			}
+			case 0b111: {// BGEU
+				branch_flag = (instr.alu_out==0);
+				break;
+			}
+		}
+
+		if (branch_flag) {
+
+			// if branch was predicted taken, we skip updating pc
+			if(instr.branch_predicted_taken)
+				return;
+
+			vm_core.core_stats_.branch_mispredicts++;
+
+			// // Subtracting 4 from pc (updated in Fetch())
+			// vm_core.AddToProgramCounter(-4);
+			// vm_core.AddToProgramCounter(instr.immediate);
+			if(upcasted_triple)
+				upcasted_triple->commit_buffer_.ResetTailTillIdx(instr.rob_idx, *upcasted_triple);
+			else
+            	vm_core.commit_buffer_.ResetTailTillIdx(instr.rob_idx, vm_core);
+			
+			vm_core.FlushPreIssueRegs();
+			vm_core.SetProgramCounter(instr.pc + instr.immediate);
+		}
+		else{
+			// branch was incorrectly predicted, need to set the pc to pc+4
+			if(instr.branch_predicted_taken){
+				vm_core.core_stats_.branch_mispredicts++;
+				
+				if(upcasted_triple)
+					upcasted_triple->commit_buffer_.ResetTailTillIdx(instr.rob_idx, *upcasted_triple);
+				else
+                	vm_core.commit_buffer_.ResetTailTillIdx(instr.rob_idx, vm_core);
+					
+				vm_core.FlushPreIssueRegs();
+				vm_core.SetProgramCounter(instr.pc + 4);
+			}
+		}
 	}
 }
 

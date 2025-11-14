@@ -5,7 +5,11 @@
 
 namespace dual_issue{
 
-ROBBuffer::ROBBuffer() : buffer(max_size){
+ROBBuffer::ROBBuffer() : max_size{16}, buffer(max_size){
+    Reset();
+}
+
+ROBBuffer::ROBBuffer(size_t slots) : max_size{slots}, buffer(slots){
     Reset();
 }
 
@@ -106,15 +110,17 @@ std::pair<size_t, size_t> ROBBuffer::GetHeadTail(){
 }
 
 
-void ROBBuffer::ResetTailTillIdx(size_t till_head){
+void ROBBuffer::ResetTailTillIdx(size_t till_head, DualIssueCore& vm_core){
     if(tail<till_head){
         for(int i = static_cast<int>(tail);i>=0;i--){
+            vm_core.reg_status_file_.EndDependency(buffer[i].instr.rd, buffer[i].instr.rob_idx, !buffer[i].instr.reg_write_to_fpr);
             buffer[i].ready_to_commit = false;
             buffer[i].instr.illegal = true;
         }
         tail = max_size-1;
     }
     for(;tail>till_head;tail--){
+        vm_core.reg_status_file_.EndDependency(buffer[tail].instr.rd, buffer[tail].instr.rob_idx, !buffer[tail].instr.reg_write_to_fpr);
         buffer[tail].ready_to_commit = false;
         buffer[tail].instr.illegal = true;
     }
@@ -150,6 +156,7 @@ void ReorderBuffer::Push(DualIssueInstrContext& instr, DualIssueCore& vm_core){
     }
     else{
         BroadCastMsgs(instr, vm_core.broadcast_bus_, true);
+        vm_core.reg_status_file_.EndDependency(instr.rd, instr.rob_idx, !instr.reg_write_to_fpr);
     }
 }
 
@@ -203,8 +210,8 @@ std::pair<size_t, size_t> ReorderBuffer::GetHeadTail(){
 }
 
 
-void ReorderBuffer::ResetTailTillIdx(size_t till_head){
-    buffer.ResetTailTillIdx(till_head);
+void ReorderBuffer::ResetTailTillIdx(size_t till_head, DualIssueCore& vm_core){
+    buffer.ResetTailTillIdx(till_head, vm_core);
 }
 
 } // namespace dual_issue

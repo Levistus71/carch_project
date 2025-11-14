@@ -1085,7 +1085,7 @@ void dual_init_vars(DualIssueWindowVars& window_config){
 }
 
 
-void dual_draw_heading(DualIssueWindowVars& window_config, Rectangle& rect, const char* heading){
+void draw_heading(DualIssueWindowVars& window_config, Rectangle& rect, const char* heading){
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
     float text_top_left_y = rect.top_left.y - ImGui::GetFontSize() - 5.0f;
     float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, heading, nullptr, nullptr).x;
@@ -1094,36 +1094,36 @@ void dual_draw_heading(DualIssueWindowVars& window_config, Rectangle& rect, cons
 }
 
 
-void dual_draw_headings(DualIssueWindowVars& window_config){
+void draw_headings(DualIssueWindowVars& window_config){
 
     // if id pipeline heading
     static const char* if_id_pipeline_heading = "IF-ID Pipeline Register";
-    dual_draw_heading(window_config, window_config.if_id_pipeline, if_id_pipeline_heading);
+    draw_heading(window_config, window_config.if_id_pipeline, if_id_pipeline_heading);
     
     // id issue pipeline heading
     static const char* id_issue_pipeline_heading = "ID-ISSUE Pipeline Register";
-    dual_draw_heading(window_config, window_config.id_issue_pipeline, id_issue_pipeline_heading);
+    draw_heading(window_config, window_config.id_issue_pipeline, id_issue_pipeline_heading);
 
     // alu_que_ heading
     static const char* alu_que_heading = "Execution Queue";
-    dual_draw_heading(window_config, window_config.rsrvstn_alu, alu_que_heading);
+    draw_heading(window_config, window_config.rsrvstn_alu, alu_que_heading);
 
     // lsu_que_ heading
     static const char* lsu_que_heading = "LSU Queue";
-    dual_draw_heading(window_config, window_config.rsrvstn_lsu, lsu_que_heading);
+    draw_heading(window_config, window_config.rsrvstn_lsu, lsu_que_heading);
 
 
     // issue fu pipline heading
     static const char* issue_fu_pipeline_heading = "Issue Functional-Unit Pipeline";
-    dual_draw_heading(window_config, window_config.issue_fu_pipeline, issue_fu_pipeline_heading);
+    draw_heading(window_config, window_config.issue_fu_pipeline, issue_fu_pipeline_heading);
 
     // fu commit pipline heading
     static const char* fu_commit_pipeline_heading = "Functional-Unit Commit Pipeline";
-    dual_draw_heading(window_config, window_config.fu_commit_pipeline, fu_commit_pipeline_heading);
+    draw_heading(window_config, window_config.fu_commit_pipeline, fu_commit_pipeline_heading);
 
     // reorder buffer heading
     static const char* rob_heading = "Reorder Buffer (Commit Buffer)";
-    dual_draw_heading(window_config, window_config.reorder_buffer, rob_heading);
+    draw_heading(window_config, window_config.reorder_buffer, rob_heading);
 }
 
 
@@ -1314,7 +1314,7 @@ void dual_issue_main(){
         dual_init_vars(window_config);
 
         ImGui::PushFont(STANDARD_BOLD_MEDIUM_FONT);
-        dual_draw_headings(window_config);
+        draw_headings(window_config);
         ImGui::PopFont();
         
         VmBase::InstrView instrs = vm.GetInstructions();
@@ -1324,9 +1324,283 @@ void dual_issue_main(){
 }
 
 
+struct TripleIssueWindowVars : public DualIssueWindowVars{
+    ImVec2 pipeline_size = ImVec2(WINDOW_SIZE.x * 0.75f, 30.0f);
+
+    Rectangle rsrvstn_falu;
+
+    Rectangle reorder_buffer_left;
+    Rectangle reorder_buffer_right;
+};
+
+
+void triple_init_vars(TripleIssueWindowVars& window_config){
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+
+    ImVec2 if_id_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.WINDOW_POS.y + 2*window_config.stage_buffer);
+    ImVec2 if_id_pipeline_bottom_right = ImVec2(if_id_pipeline_top_left.x + window_config.pipeline_size.x, if_id_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.if_id_pipeline = Rectangle(if_id_pipeline_top_left, if_id_pipeline_bottom_right);
+    drawlist->AddRect(if_id_pipeline_top_left, if_id_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 id_issue_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.if_id_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 id_issue_pipeline_bottom_right = ImVec2(id_issue_pipeline_top_left.x + window_config.pipeline_size.x, id_issue_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.id_issue_pipeline = Rectangle(id_issue_pipeline_top_left, id_issue_pipeline_bottom_right);
+    drawlist->AddRect(id_issue_pipeline_top_left, id_issue_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+    
+    ImVec2 rsrv_alu_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.rsrvstn_size.x - window_config.rsrvstn_size.x * 0.5f - window_config.gap_btwn_stations, window_config.id_issue_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_alu_bottom_right = ImVec2(rsrv_alu_top_left.x + window_config.rsrvstn_size.x, rsrv_alu_top_left.y + window_config.rsrvstn_size.y);
+    window_config.rsrvstn_alu = Rectangle(rsrv_alu_top_left, rsrv_alu_bottom_right);
+    drawlist->AddRect(rsrv_alu_top_left, rsrv_alu_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 rsrv_falu_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.rsrvstn_size.x * 0.5f, window_config.id_issue_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_falu_bottom_right = ImVec2(rsrv_falu_top_left.x + window_config.rsrvstn_size.x, rsrv_falu_top_left.y + window_config.rsrvstn_size.y);
+    window_config.rsrvstn_falu = Rectangle(rsrv_falu_top_left, rsrv_falu_bottom_right);
+    drawlist->AddRect(rsrv_falu_top_left, rsrv_falu_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 rsrv_lsu_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f + window_config.gap_btwn_stations + window_config.rsrvstn_size.x * 0.5f, window_config.id_issue_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_lsu_bottom_right = ImVec2(rsrv_lsu_top_left.x + window_config.rsrvstn_size.x, rsrv_lsu_top_left.y + window_config.rsrvstn_size.y);
+    window_config.rsrvstn_lsu = Rectangle(rsrv_lsu_top_left, rsrv_lsu_bottom_right);
+    drawlist->AddRect(rsrv_lsu_top_left, rsrv_lsu_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 rsrv_fu_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.rsrvstn_alu.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 rsrv_fu_pipeline_bottom_right = ImVec2(rsrv_fu_pipeline_top_left.x + window_config.pipeline_size.x, rsrv_fu_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.issue_fu_pipeline = Rectangle(rsrv_fu_pipeline_top_left, rsrv_fu_pipeline_bottom_right);
+    drawlist->AddRect(rsrv_fu_pipeline_top_left, rsrv_fu_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 fu_commit_pipeline_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.pipeline_size.x*0.5f, window_config.issue_fu_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 fu_commit_pipeline_bottom_right = ImVec2(fu_commit_pipeline_top_left.x + window_config.pipeline_size.x, fu_commit_pipeline_top_left.y + window_config.pipeline_size.y);
+    window_config.fu_commit_pipeline = Rectangle(fu_commit_pipeline_top_left, fu_commit_pipeline_bottom_right);
+    drawlist->AddRect(fu_commit_pipeline_top_left, fu_commit_pipeline_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 reorder_buffer_1_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f - window_config.reorder_buffer_size.x - window_config.gap_btwn_stations, window_config.fu_commit_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 reorder_buffer_1_bottom_right = ImVec2(reorder_buffer_1_top_left.x + window_config.reorder_buffer_size.x, reorder_buffer_1_top_left.y + window_config.reorder_buffer_size.y);
+    window_config.reorder_buffer_left = Rectangle(reorder_buffer_1_top_left, reorder_buffer_1_bottom_right);
+    drawlist->AddRect(reorder_buffer_1_top_left, reorder_buffer_1_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+
+    ImVec2 reorder_buffer_2_top_left = ImVec2(window_config.WINDOW_POS.x + window_config.WINDOW_SIZE.x * 0.5f + window_config.gap_btwn_stations, window_config.fu_commit_pipeline.bottom_right.y + 2*window_config.stage_buffer);
+    ImVec2 reorder_buffer_2_bottom_right = ImVec2(reorder_buffer_2_top_left.x + window_config.reorder_buffer_size.x, reorder_buffer_1_top_left.y + window_config.reorder_buffer_size.y);
+    window_config.reorder_buffer_right = Rectangle(reorder_buffer_2_top_left, reorder_buffer_2_bottom_right);
+    drawlist->AddRect(reorder_buffer_2_top_left, reorder_buffer_2_bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+}
+
+
+
+void triple_draw_headings(TripleIssueWindowVars& window_config){
+    // if id pipeline heading
+    static const char* if_id_pipeline_heading = "IF-ID Pipeline Register";
+    draw_heading(window_config, window_config.if_id_pipeline, if_id_pipeline_heading);
+    
+    // id issue pipeline heading
+    static const char* id_issue_pipeline_heading = "ID-ISSUE Pipeline Register";
+    draw_heading(window_config, window_config.id_issue_pipeline, id_issue_pipeline_heading);
+
+    // alu_que_ heading
+    static const char* alu_que_heading = "Alu Queue";
+    draw_heading(window_config, window_config.rsrvstn_alu, alu_que_heading);
+
+    // falu_que_ heading
+    static const char* falu_que_heading = "F.P. Alu Queue";
+    draw_heading(window_config, window_config.rsrvstn_falu, falu_que_heading);
+
+    // lsu_que_ heading
+    static const char* lsu_que_heading = "LSU Queue";
+    draw_heading(window_config, window_config.rsrvstn_lsu, lsu_que_heading);
+
+
+    // issue fu pipline heading
+    static const char* issue_fu_pipeline_heading = "Issue Functional-Unit Pipeline";
+    draw_heading(window_config, window_config.issue_fu_pipeline, issue_fu_pipeline_heading);
+
+    // fu commit pipline heading
+    static const char* fu_commit_pipeline_heading = "Functional-Unit Commit Pipeline";
+    draw_heading(window_config, window_config.fu_commit_pipeline, fu_commit_pipeline_heading);
+
+    // reorder buffer heading
+    static const char* rob_heading = "Reorder Buffer (Commit Buffer)";
+    draw_heading(window_config, window_config.reorder_buffer_right, rob_heading);
+    draw_heading(window_config, window_config.reorder_buffer_left, rob_heading);
+}
+
+
+void triple_draw_in_pipeline(DualIssueWindowVars& window_config, const InstrContext& instr1__, const InstrContext& instr2__, const InstrContext& instr3__, Rectangle& pipeline, ImVec4& default_col){
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+
+    const dual_issue::DualIssueInstrContext* instr1_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr1__);
+    const dual_issue::DualIssueInstrContext* instr2_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr2__);
+    const dual_issue::DualIssueInstrContext* instr3_ = dynamic_cast<const dual_issue::DualIssueInstrContext*>(&instr3__);
+    if(!instr1_ || !instr2_ || !instr3_){
+        std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
+        return;
+    }
+
+    std::string instr1;
+    if(vm.program_.intermediate_code.size()>instr1_->pc/4 && !instr1_->illegal){
+        instr1 = vm.program_.intermediate_code[instr1_->pc/4].first.to_string();
+        window_config.col = ImGui::ColorConvertFloat4ToU32(default_col);
+    }
+    else{
+        instr1 = "Bubble";
+        window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.illegal_col);
+    }
+
+    float text_top_left_y = pipeline.top_left.y + 6.0f;
+    float text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr1.c_str(), nullptr, nullptr).x;
+    float text_mid_x = pipeline.top_left.x + (pipeline.bottom_right.x - pipeline.top_left.x)/6;
+    float text_top_left_x = text_mid_x - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr1.c_str(), NULL);
+    
+    std::string instr2;
+    if(vm.program_.intermediate_code.size()>instr2_->pc/4 && !instr2_->illegal){
+        instr2 = vm.program_.intermediate_code[instr2_->pc/4].first.to_string();
+        window_config.col = ImGui::ColorConvertFloat4ToU32(default_col);
+    }
+    else{
+        instr2 = "Bubble";
+        window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.illegal_col);
+    }
+
+    text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr2.c_str(), nullptr, nullptr).x;
+    text_mid_x = pipeline.top_left.x + (pipeline.bottom_right.x - pipeline.top_left.x)/2;
+    text_top_left_x = text_mid_x - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr2.c_str(), NULL);
+
+
+    std::string instr3;
+    if(vm.program_.intermediate_code.size()>instr3_->pc/4 && !instr3_->illegal){
+        instr3 = vm.program_.intermediate_code[instr3_->pc/4].first.to_string();
+        window_config.col = ImGui::ColorConvertFloat4ToU32(default_col);
+    }
+    else{
+        instr3 = "Bubble";
+        window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.illegal_col);
+    }
+
+    text_size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, instr3.c_str(), nullptr, nullptr).x;
+    text_mid_x = pipeline.top_left.x + 5.0f * (pipeline.bottom_right.x - pipeline.top_left.x)/6;
+    text_top_left_x = text_mid_x - text_size/2.0f;
+    drawlist->AddText({text_top_left_x, text_top_left_y}, window_config.col, instr3.c_str(), NULL);
+
+    window_config.col = ImGui::ColorConvertFloat4ToU32(window_config.default_col);
+}
+
+
+
+void triple_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob, std::vector<bool>& buffer_status, bool left){
+    ImGui::SetNextWindowPos(rob.top_left);
+    ImGui::BeginChild(("Reorder buffer window" + std::to_string(rob.top_left.x)).c_str(), window_config.reorder_buffer_size);
+    {
+        if(ImGui::BeginTable("Queue", 1, ImGuiTableFlags_Borders)){
+            
+            int start = 0;
+            int end = buffer.size()/2;
+
+            if(!left){
+                start = buffer.size()/2;
+                end = buffer.size();
+            }
+
+            for(int i=start;i<end;i++){
+                const dual_issue::DualIssueInstrContext* instr = dynamic_cast<const dual_issue::DualIssueInstrContext*>(buffer[i].get());
+                if(!instr){
+                    std::cerr << "Tried downcasting InstrContext into DualIssueInstrContext" << std::endl;
+                    return;
+                }
+
+                std::string dissassembled_instr;
+                int pop_count = 0;
+                if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
+                    dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.default_col);
+                    pop_count++;
+                }
+                else{
+                    dissassembled_instr = "Bubble";
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.illegal_col);
+                    pop_count++;
+                }
+                
+                if(!instr->illegal && buffer_status[i]){
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.ready_col);
+                    pop_count++;
+                }
+
+
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.reorder_buffer_size.y/buffer.size() * 0.5f);
+                ImGui::TableNextColumn();
+
+                float text_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, dissassembled_instr.c_str(), nullptr, nullptr).x;
+                float column_width = ImGui::GetColumnWidth();
+                float offset = (column_width - text_width) * 0.5f;
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+                ImGui::Text("%s", dissassembled_instr.c_str());
+
+                ImGui::PopStyleColor(pop_count);
+            }
+    
+            ImGui::EndTable();
+        }
+    }
+    ImGui::EndChild();
+}
+
+
+
+void triple_draw_instrs(TripleIssueWindowVars& window_config, VmBase::InstrView& instrs){
+    // if id pipeline
+    triple_draw_in_pipeline(window_config, *instrs.pipeline[0], *instrs.pipeline[1], *instrs.pipeline[2], window_config.if_id_pipeline, window_config.new_col);
+
+    // id issue pipeline
+    triple_draw_in_pipeline(window_config, *instrs.pipeline[3], *instrs.pipeline[4], *instrs.pipeline[5], window_config.id_issue_pipeline, window_config.new_col);
+
+    // issue fu pipeline
+    triple_draw_in_pipeline(window_config, *instrs.pipeline[6], *instrs.pipeline[7], *instrs.pipeline[8], window_config.issue_fu_pipeline, window_config.ready_col);
+
+    // fu commit pipeline
+    triple_draw_in_pipeline(window_config, *instrs.pipeline[9], *instrs.pipeline[10], *instrs.pipeline[11], window_config.fu_commit_pipeline, window_config.ready_col);
+
+    // alu_que_
+    dual_draw_rsrvstn_que(window_config, instrs.reservation_station_alu, window_config.rsrvstn_alu);
+
+    // falu_que_
+    dual_draw_rsrvstn_que(window_config, instrs.reservation_station_falu, window_config.rsrvstn_falu);
+
+    // lsu_que_
+    dual_draw_rsrvstn_que(window_config, instrs.reservation_station_lsu, window_config.rsrvstn_lsu);
+
+    // reorder buffer
+    triple_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer_left, instrs.rob_status, true);
+    triple_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer_right, instrs.rob_status, false);
+}
+
+
+void triple_issue_main(){
+    static float PROCESSOR_HEIGHT = 1000.0f;
+    ImVec2 PROCESSOR_SIZE{1000.0f, PROCESSOR_HEIGHT};
+    
+    ImGui::BeginChild("Processor window", PROCESSOR_SIZE, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_HorizontalScrollbar);
+    {
+        TripleIssueWindowVars window_config;
+
+        triple_init_vars(window_config);
+
+        ImGui::PushFont(STANDARD_BOLD_MEDIUM_FONT);
+        triple_draw_headings(window_config);
+        ImGui::PopFont();
+        
+        VmBase::InstrView instrs = vm.GetInstructions();
+        triple_draw_instrs(window_config, instrs);
+    }
+    ImGui::EndChild();
+}
+
+
 void processor_main(){
     if(vm.GetType() == VM::Which::DualIssue){
         dual_issue_main();
+    }
+    else if(vm.GetType() == VM::Which::TripleIssue){
+        triple_issue_main();
     }
     else{
         pipelined_single_cycle_main();
