@@ -676,6 +676,8 @@ bool isValidFDSTypeInstruction(const std::string &instruction);
 bool isFInstruction(const uint32_t &instruction);
 bool isDInstruction(const uint32_t &instruction);
 
+bool uses_falu(const uint32_t& instruction);
+
 std::string getExpectedSyntaxes(const std::string &opcode);
 
 } // namespace instruction_set

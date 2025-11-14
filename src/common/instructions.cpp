@@ -965,6 +965,42 @@ bool isDInstruction(const uint32_t &instruction) {
   return false;
 }
 
+bool uses_falu(const uint32_t &instruction){
+  uint8_t opcode = instruction & 0b1111111;
+  uint8_t funct2 = (instruction >> 25) & 0b11;
+  uint8_t funct3 = (instruction >> 12) & 0b111;
+  uint8_t funct5 = (instruction >> 20) & 0b11111;
+  uint8_t funct7 = (instruction >> 25) & 0b1111111;
+
+  for(auto& v : F_D_R_type_instruction_encoding_map){
+    if(opcode == v.second.opcode.to_ulong() && funct3 == v.second.funct3.to_ulong() && funct7 == v.second.funct7.to_ulong())
+      return true;
+  }
+
+  for(auto& v : F_D_R1_type_instruction_encoding_map){
+    if(opcode == v.second.opcode.to_ulong() && funct7 == v.second.funct7.to_ulong())
+      return true;
+  }
+
+  for(auto& v : F_D_R2_type_instruction_encoding_map){
+    if(opcode == v.second.opcode.to_ulong() && funct5 == v.second.funct5.to_ulong() && funct7 == v.second.funct7.to_ulong())
+      return true;
+  }
+
+
+  for(auto& v : F_D_R3_type_instruction_encoding_map){
+    if(opcode == v.second.opcode.to_ulong() && funct3 == v.second.funct3.to_ulong() && funct7 == v.second.funct7.to_ulong())
+      return true;
+  }
+
+  for(auto& v : F_D_R4_type_instruction_encoding_map){
+    if(opcode == v.second.opcode.to_ulong() && funct2 == v.second.funct2.to_ulong())
+      return true;
+  }
+
+  return false;
+}
+
 std::string getExpectedSyntaxes(const std::string &opcode) {
   static const std::unordered_map<std::string, std::string> opcodeSyntaxMap = {
       {"nop", "nop"},

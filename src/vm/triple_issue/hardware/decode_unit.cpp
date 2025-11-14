@@ -19,7 +19,7 @@ void TripleIssueDecodeUnit::SetAluQue(TripleIssueInstrContext& instr_context){
         return;
     }
 
-    if (instr_context.opcode == instruction_set::isFInstruction(instr_context.instruction)) {
+    if (instruction_set::uses_falu(instr_context.instruction)) {
         instr_context.into_falu = true;
     }
     else{
