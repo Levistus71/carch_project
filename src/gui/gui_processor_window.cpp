@@ -954,8 +954,8 @@ std::vector<std::pair<std::string, std::string>> decode_stage_instr_fields(const
     cont.push_back({"##line##", "##line##"});
     cont.push_back({"RS1 value (GPR)", std::to_string(instr->rs1_value)});
     cont.push_back({"RS2 value (GPR)", std::to_string(instr->rs2_value)});
-    cont.push_back({"RS1 value (FPR)", std::to_string(instr->rs1_value)});
-    cont.push_back({"RS2 value (FPR)", std::to_string(instr->rs2_value)});
+    cont.push_back({"RS1 value (FPR)", std::to_string(instr->frs1_value)});
+    cont.push_back({"RS2 value (FPR)", std::to_string(instr->frs2_value)});
     cont.push_back({"RS3 value (FPR)", std::to_string(instr->frs3_value)});
     cont.push_back({"##separate##", "##separate##"});
 
