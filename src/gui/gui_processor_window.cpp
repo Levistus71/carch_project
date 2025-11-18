@@ -112,6 +112,19 @@ void draw_alu(ImDrawList* draw_list, AluStruct& alu, ImU32 color, float thicknes
         draw_list->AddLine(points[i],points[i+1],color,thickness);
     }
     draw_list->AddLine(points[6],points[0],color,thickness);
+
+    float min_x = top_left_coords.x;
+    float max_x = top_left_coords.x + width;
+    float min_y = top_left_coords.y;
+    float max_y = top_left_coords.y + 2 * left_height + 2 * indent;
+
+    ImVec2 text_center = ImVec2(min_x + (max_x - min_x) * 0.60f, min_y + (max_y - min_y) * 0.5f);
+
+    ImVec2 text_size = ImGui::CalcTextSize("ALU");
+
+    ImVec2 text_pos = ImVec2(text_center.x - text_size.x * 0.5f, text_center.y - text_size.y * 0.5f);
+
+    draw_list->AddText(text_pos, color, "ALU");
 }
 
 
@@ -205,6 +218,10 @@ void draw_if_stage(WindowConfig& window_config){
         ImVec2 bottom_right_pc = {top_left_pc.x+pc_width, top_left_pc.y+pc_height};
         window_config.pc = Rectangle{top_left_pc, bottom_right_pc};
         draw_list->AddRect(top_left_pc, bottom_right_pc, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 center_pc = ImVec2(top_left_pc.x + pc_width * 0.5f, top_left_pc.y + pc_height * 0.5f);
+        ImVec2 text_size_pc = ImGui::CalcTextSize("PC");
+        ImVec2 text_pos_pc = ImVec2(center_pc.x - text_size_pc.x * 0.5f,center_pc.y - text_size_pc.y * 0.5f);
+        draw_list->AddText(text_pos_pc, window_config.col, "PC");
 
         // instruction memory
         ImVec2 top_left_insmem = {top_left_window.x + stage_width*0.45f, top_left_window.y + window_config.stage_height*0.4f};
@@ -213,6 +230,10 @@ void draw_if_stage(WindowConfig& window_config){
         ImVec2 bottom_right_insmem = {top_left_insmem.x + insmem_width, top_left_insmem.y + insmem_height};
         window_config.instruction_mem = Rectangle(top_left_insmem, bottom_right_insmem);
         draw_list->AddRect(top_left_insmem, bottom_right_insmem, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 center_instr = ImVec2(top_left_insmem.x + insmem_width * 0.5f, top_left_insmem.y + insmem_height * 0.5f);
+        ImVec2 text_size_instr = ImGui::CalcTextSize("Instr Mem");
+        ImVec2 text_pos_instr = ImVec2(center_instr.x - text_size_instr.x * 0.5f,center_instr.y - text_size_instr.y * 0.5f);
+        draw_list->AddText(text_pos_instr, window_config.col, "Instr Mem");
 
         // mux for pc updating
         ImVec2 top_left_mux = {top_left_window.x + stage_width*0.10f, top_left_window.y + window_config.stage_height*0.40f};
@@ -221,6 +242,10 @@ void draw_if_stage(WindowConfig& window_config){
         ImVec2 bottom_right_mux = {top_left_mux.x + mux_width, top_left_mux.y + mux_height};
         window_config.pc_adder_mux = Rectangle(top_left_mux, bottom_right_mux);
         draw_list->AddRect(top_left_mux, bottom_right_mux, window_config.col, mux_width/2, 0, window_config.thickness);
+        ImVec2 center_mux = ImVec2(top_left_mux.x + mux_width * 0.5f, top_left_mux.y + mux_height * 0.5f);
+        ImVec2 text_size_mux = ImGui::CalcTextSize("MX");
+        ImVec2 text_pos_mux = ImVec2(center_mux.x - text_size_mux.x * 0.5f,center_mux.y - text_size_mux.y * 0.5f);
+        draw_list->AddText(text_pos_mux, window_config.col, "MX");
     }
     ImGui::EndChild();
 }
@@ -241,6 +266,10 @@ void draw_id_stage(WindowConfig& window_config){
         ImVec2 bottom_right_decoder = {top_left_decoder.x + decoder_width, top_left_decoder.y + decoder_height};
         window_config.decoder = Rectangle{top_left_decoder, bottom_right_decoder};
         draw_list->AddRect(top_left_decoder, bottom_right_decoder, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 center_decoder = ImVec2(top_left_decoder.x + decoder_width * 0.5f, top_left_decoder.y + decoder_height * 0.5f);
+        ImVec2 text_size_decoder = ImGui::CalcTextSize("Decoder");
+        ImVec2 text_pos_decoder = ImVec2(center_decoder.x - text_size_decoder.x * 0.5f,center_decoder.y - text_size_decoder.y * 0.5f);
+        draw_list->AddText(text_pos_decoder, window_config.col, "Decoder");
 
         // Register file
         ImVec2 top_left_register_file = {top_left_window.x + stage_width*0.4f, top_left_window.y + window_config.stage_height*0.3f};
@@ -249,6 +278,10 @@ void draw_id_stage(WindowConfig& window_config){
         ImVec2 bottom_right_register_file = {top_left_register_file.x+register_file_width,top_left_register_file.y+register_file_height};
         window_config.register_file = Rectangle{top_left_register_file, bottom_right_register_file};
         draw_list->AddRect(top_left_register_file, bottom_right_register_file, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 center_reg_file = ImVec2(top_left_register_file.x + register_file_width* 0.5f, top_left_register_file.y + register_file_height * 0.5f);
+        ImVec2 text_size_rf = ImGui::CalcTextSize("Register File");
+        ImVec2 text_pos_rf = ImVec2(center_reg_file.x - text_size_rf.x * 0.5f,center_reg_file.y - text_size_rf.y * 0.5f);
+        draw_list->AddText(text_pos_rf, window_config.col, "Register File");
 
         // Immediate Generator
         window_config.immediate_gen_center = {top_left_window.x + stage_width*0.65f, top_left_window.y + window_config.stage_height*0.85f};
@@ -256,6 +289,10 @@ void draw_id_stage(WindowConfig& window_config){
         ImVec2 mux_radius = {imm_gen_height/4, imm_gen_height/2};
         window_config.immediate_gen_hradius = imm_gen_height/4;
         draw_list->AddEllipse(window_config.immediate_gen_center, mux_radius, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 imm_gen_text_size = ImGui::CalcTextSize("Imm\nGen");
+        ImVec2 imm_gen_pos = ImVec2(window_config.immediate_gen_center.x - imm_gen_text_size.x * 0.5f, window_config.immediate_gen_center.y - imm_gen_text_size.y * 0.5f);
+        draw_list->AddText(imm_gen_pos, window_config.col, "Imm\nGen");
+
     }
     ImGui::EndChild();
 }
@@ -289,6 +326,10 @@ void draw_ex_stage(WindowConfig& window_config){
         ImVec2 mux_bottom_right{mux_top_left.x + mux_width, mux_top_left.y + mux_height};
         window_config.alu_mux = Rectangle{mux_top_left, mux_bottom_right};
         draw_list->AddRect(mux_top_left, mux_bottom_right, window_config.col, mux_width/2, 0, window_config.thickness);
+        ImVec2 center_mux = ImVec2(mux_top_left.x + mux_width * 0.5f, mux_top_left.y + mux_height * 0.5f);
+        ImVec2 text_size_mux = ImGui::CalcTextSize("MX");
+        ImVec2 text_pos_mux = ImVec2(center_mux.x - text_size_mux.x * 0.5f,center_mux.y - text_size_mux.y * 0.5f);
+        draw_list->AddText(text_pos_mux, window_config.col, "MX");
 
         // Alu mux if data forwarding is enabled
         if(vm.ForwardingEnabled()){
@@ -296,6 +337,10 @@ void draw_ex_stage(WindowConfig& window_config){
             mux_bottom_right.y = mux_top_left.y + mux_height;
             window_config.alu_mux_forward = Rectangle{mux_top_left, mux_bottom_right};
             draw_list->AddRect(mux_top_left, mux_bottom_right, window_config.col, mux_width/2, 0, window_config.thickness);
+            center_mux = ImVec2(mux_top_left.x + mux_width * 0.5f, mux_top_left.y + mux_height * 0.5f);
+            text_size_mux = ImGui::CalcTextSize("MX");
+            text_pos_mux = ImVec2(center_mux.x - text_size_mux.x * 0.5f,center_mux.y - text_size_mux.y * 0.5f);
+            draw_list->AddText(text_pos_mux, window_config.col, "MX");
         }
 
         // Shift left 1 for branch target
@@ -325,6 +370,10 @@ void draw_mem_stage(WindowConfig& window_config){
         ImVec2 bottom_right_memory = {top_left_memory.x+memory_width,top_left_memory.y+memory_height};
         window_config.main_mem = Rectangle{top_left_memory, bottom_right_memory};
         draw_list->AddRect(top_left_memory, bottom_right_memory, window_config.col, 0.0f, 0, window_config.thickness);
+        ImVec2 mem_center = ImVec2(top_left_memory.x + memory_width * 0.5f, top_left_memory.y + memory_height * 0.5f);
+        ImVec2 size_mem_text = ImGui::CalcTextSize("Main Memory");
+        ImVec2 text_pos_mem = ImVec2(mem_center.x - size_mem_text.x * 0.5f,mem_center.y - size_mem_text.y * 0.5f);
+        draw_list->AddText(text_pos_mem, window_config.col, "Main Memory");
     }
 
     ImGui::EndChild();
@@ -345,6 +394,10 @@ void draw_wb_stage(WindowConfig& window_config){
     ImVec2 mux_bottom_right = {mux_top_left.x + mux_width, mux_top_left.y + mux_height};
     window_config.wb_mux = Rectangle(mux_top_left, mux_bottom_right);
     draw_list->AddRect(mux_top_left, mux_bottom_right, window_config.col, mux_width/2.0f, 0, window_config.thickness);
+    ImVec2 center_mux = ImVec2(mux_top_left.x + mux_width * 0.5f, mux_top_left.y + mux_height * 0.5f);
+    ImVec2 text_size_mux = ImGui::CalcTextSize("MUX");
+    ImVec2 text_pos_mux = ImVec2(center_mux.x - text_size_mux.x * 0.5f,center_mux.y - text_size_mux.y * 0.5f);
+    draw_list->AddText(text_pos_mux, window_config.col, "MUX");
 
     ImGui::EndChild();
 }
@@ -635,7 +688,13 @@ void draw_data_forwarding_unit(WindowConfig& window_config){
 
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
+    float width = bottom_right.x - top_left.x;
+    float height = bottom_right.y - top_left.y;
     drawlist->AddRect(top_left, bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+    ImVec2 df_unit_center = ImVec2(top_left.x + width * 0.5f, top_left.y + height * 0.5f);
+    ImVec2 text_size_df = ImGui::CalcTextSize("FWD");
+    ImVec2 text_pos_df = ImVec2(df_unit_center.x - text_size_df.x * 0.5f,df_unit_center.y - text_size_df.y * 0.5f);
+    drawlist->AddText(text_pos_df, window_config.col, "FWD");
 
     // buses
     {
@@ -764,7 +823,13 @@ void draw_hazard_detector(WindowConfig& window_config){
 
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
+    float width = bottom_right.x - top_left.x;
+    float height = bottom_right.y - top_left.y;
     drawlist->AddRect(top_left, bottom_right, window_config.col, 0.0f, 0, window_config.thickness);
+    ImVec2 hz_unit_center = ImVec2(top_left.x + width * 0.5f, top_left.y + height * 0.5f);
+    ImVec2 text_size_hz = ImGui::CalcTextSize("HZ");
+    ImVec2 text_pos_hz = ImVec2(hz_unit_center.x - text_size_hz.x * 0.5f,hz_unit_center.y - text_size_hz.y * 0.5f);
+    drawlist->AddText(text_pos_hz, window_config.col, "HZ");
 
     static int frame_count = 0;
 
@@ -846,6 +911,119 @@ void draw_hazard_detector(WindowConfig& window_config){
 }
 
 
+std::vector<std::pair<std::string, std::string>> decode_stage_instr_fields(const rv5s::PipelinedInstrContext* instr){
+    std::vector<std::pair<std::string, std::string>> cont;
+
+    cont.push_back({"PC", std::to_string(instr->pc)});
+    cont.push_back({"##separate##", "##separate##"});
+
+    cont.push_back({"Instruction", std::to_string(instr->instruction)});
+    cont.push_back({"   Opcode", std::to_string(instr->opcode)});
+    cont.push_back({"   Funct2", std::to_string(instr->funct2)});
+    cont.push_back({"   Funct3", std::to_string(instr->funct3)});
+    cont.push_back({"   Funct5", std::to_string(instr->funct5)});
+    cont.push_back({"   Funct7", std::to_string(instr->funct7)});
+    cont.push_back({"##separate##", "##separate##"});
+
+    cont.push_back({"Writeback", std::to_string(instr->reg_write)});
+    if(instr->reg_write){
+        cont.push_back({"   Writeback To GPR", std::to_string(!instr->reg_write_to_fpr)});
+        cont.push_back({"   Writeback To FPR", std::to_string(instr->reg_write_to_fpr)});
+        cont.push_back({"   Writeback From Alu", std::to_string(!instr->mem_to_reg)});
+        cont.push_back({"   Writeback From Memory", std::to_string(instr->mem_to_reg)});
+    }
+    cont.push_back({"##separate##", "##separate##"});
+
+    cont.push_back({"Branch type", std::to_string(instr->branch)});
+    if(instr->branch){
+        cont.push_back({"   Branch Was Predicted Taken", std::to_string(instr->branch_predicted_taken)});
+    }
+    cont.push_back({"##separate##", "##separate##"});
+
+    cont.push_back({"RS1", std::to_string(instr->rs1)});
+    cont.push_back({"RS2", std::to_string(instr->rs2)});
+    cont.push_back({"(F)RS3", std::to_string(instr->frs3)});
+    cont.push_back({"RD", std::to_string(instr->rd)});
+    cont.push_back({"##line##", "##line##"});
+    cont.push_back({"Uses RS1", std::to_string(instr->uses_rs1)});
+    cont.push_back({"Uses RS2", std::to_string(instr->uses_rs2)});
+    cont.push_back({"Uses RS3", std::to_string(instr->uses_rs3)});
+    cont.push_back({"##line##", "##line##"});
+    cont.push_back({"RS1 from GPR", std::to_string(!instr->rs1_from_fprf)});
+    cont.push_back({"RS2 from GPR", std::to_string(!instr->rs2_from_fprf)});
+    cont.push_back({"##line##", "##line##"});
+    cont.push_back({"RS1 value (GPR)", std::to_string(instr->rs1_value)});
+    cont.push_back({"RS2 value (GPR)", std::to_string(instr->rs2_value)});
+    cont.push_back({"RS1 value (FPR)", std::to_string(instr->rs1_value)});
+    cont.push_back({"RS2 value (FPR)", std::to_string(instr->rs2_value)});
+    cont.push_back({"RS3 value (FPR)", std::to_string(instr->frs3_value)});
+    cont.push_back({"##separate##", "##separate##"});
+
+    cont.push_back({"Uses Immediate", std::to_string(instr->imm_to_alu)});
+    if(instr->imm_to_alu)
+        cont.push_back({"   Immediate", std::to_string(instr->immediate)});
+    cont.push_back({"##separate##", "##separate##"});
+    
+    
+    cont.push_back({"Nopped", std::to_string(instr->nopped)});
+    cont.push_back({"Bubbled", std::to_string(instr->bubbled)});
+    cont.push_back({"##separate##", "##separate##"});
+    
+    cont.push_back({"Memory Access", std::to_string(instr->mem_read || instr->mem_write)});
+    if(instr->mem_read || instr->mem_write){
+        cont.push_back({"   Memory Access Bytes", std::to_string(instr->mem_access_bytes)});
+        cont.push_back({"   Sign Extend", std::to_string(instr->sign_extend)});
+        cont.push_back({"   Memory Read", std::to_string(instr->mem_read)});
+        cont.push_back({"   Memory Write", std::to_string(instr->mem_write)});
+        if(instr->mem_write){
+            cont.push_back({"       Memory Write Data", std::to_string(instr->rs2_value)});
+            cont.push_back({"       Memory Write Data From GPR", std::to_string(instr->mem_write_data_from_gpr)});
+        }
+    }
+
+    return cont;
+}
+
+
+std::vector<std::pair<std::string, std::string>> get_instr_context(const rv5s::PipelinedInstrContext* instr, int stage){
+    std::vector<std::pair<std::string, std::string>> cont;
+
+    switch(stage){
+        case 0 : {
+            cont.push_back({"PC", std::to_string(instr->pc)});
+            cont.push_back({"Instruction", std::to_string(instr->instruction)});
+            break;
+        }
+        case 1 : {
+            cont = decode_stage_instr_fields(instr);
+            break;
+        }
+        case 2 : {
+            cont = decode_stage_instr_fields(instr);
+            cont.push_back({"##separate##", "##separate##"});
+            cont.push_back({"ALU output", std::to_string(instr->alu_out)});
+            break;
+        }
+        case 3 : {
+            cont = decode_stage_instr_fields(instr);
+            cont.push_back({"##separate##", "##separate##"});
+            cont.push_back({"ALU output", std::to_string(instr->alu_out)});
+            cont.push_back({"Memory output", std::to_string(instr->mem_out)});
+            break;
+        }
+        case 4 : {
+            cont = decode_stage_instr_fields(instr);
+            cont.push_back({"##separate##", "##separate##"});
+            cont.push_back({"ALU output", std::to_string(instr->alu_out)});
+            cont.push_back({"Memory output", std::to_string(instr->mem_out)});
+            break;
+        }
+    }
+
+    return cont;
+}
+
+
 void draw_instructions(WindowConfig& window_config){
     std::vector<std::unique_ptr<const InstrContext>> instructions = vm.GetInstructions().pipeline;
     
@@ -894,6 +1072,65 @@ void draw_instructions(WindowConfig& window_config){
 
             if(instruction->nopped || instruction->bubbled){
                 window_config.col = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            }
+
+            ImVec2 tooltip_size{text_size, font_size};
+            ImVec2 text_start_relative{text_start.x - ImGui::GetWindowPos().x, text_start.y - ImGui::GetWindowPos().y};
+            ImGui::SetCursorPos(text_start_relative);
+            ImGui::InvisibleButton(("instr_tooltip" + std::to_string(i)).c_str(), tooltip_size);
+            static int tooltip_survive_counter = 0;
+            static size_t stage = -1;
+            if((ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal) || tooltip_survive_counter>0) && (stage==static_cast<size_t>(-1) || i==stage)){
+                if(ImGui::IsItemHovered()){
+                    tooltip_survive_counter = 60;
+                    stage = i;
+                }
+                else{
+                    tooltip_survive_counter--;
+                    if(tooltip_survive_counter==0)
+                        stage = -1;
+                }
+
+                std::vector<std::pair<std::string, std::string>> context = get_instr_context(instruction, i);
+
+                ImGui::SetNextWindowPos({text_start.x + 16, text_start.y + 16}, ImGuiCond_Always);
+                    
+                ImGui::Begin(("instr_context_window" + std::to_string(i)).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
+                {
+                    ImGui::SetWindowFocus(("instr_context_window" + std::to_string(i)).c_str());
+                    if(ImGui::IsWindowHovered()){
+                        tooltip_survive_counter = 60;
+                        stage = i;
+                    }
+
+                    ImGui::BeginChild(("scroll_area" + std::to_string(i)).c_str(), ImVec2(300, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    {
+                        if(ImGui::IsWindowHovered())
+                        {
+                            tooltip_survive_counter = 60;
+                            stage = i;
+                        }
+                        
+                        ImGui::Text("*****INSTRUCTION CONTEXT*****");
+                        ImGui::Separator();
+                        ImGui::Separator();
+                        for(auto& v : context){
+                            if(v.first=="##separate##"){
+                                ImGui::Text("");
+                                ImGui::Separator();
+                                ImGui::Text("");
+                                continue;
+                            }
+                            else if(v.first=="##line##"){
+                                ImGui::Text("");
+                                continue;
+                            }
+                            ImGui::Text("%s : %s", v.first.c_str(), v.second.c_str());
+                        }
+                    }
+                    ImGui::EndChild();
+                }
+                ImGui::End();
             }
         }
     }
@@ -959,6 +1196,7 @@ void pipelined_single_cycle_main() {
         }
 
         // stages
+        ImGui::PushFont(STANDARD_EXTRA_SMALL_FONT);
         draw_if_stage(window_config);
         ImGui::SameLine();
         draw_id_stage(window_config);
@@ -968,6 +1206,7 @@ void pipelined_single_cycle_main() {
         draw_mem_stage(window_config);
         ImGui::SameLine();
         draw_wb_stage(window_config);
+        ImGui::PopFont();
 
 
         // change color to yellow for 60 frames

@@ -51,7 +51,7 @@ struct InstrContext{
     uint64_t rs1_value = 0;
     uint64_t rs2_value = 0;
     // fpr register val = 0ues:
-    uint64_t frs1_value;
+    uint64_t frs1_value = 0;
     uint64_t frs2_value = 0;
     uint64_t frs3_value = 0;
     

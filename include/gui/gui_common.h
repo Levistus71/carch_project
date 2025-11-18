@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "vm/vm_main.h"
 
+extern ImFont* STANDARD_EXTRA_SMALL_FONT;
 extern ImFont* STANDARD_SMALL_FONT;
 extern ImFont* STANDARD_BOLD_SMALL_FONT;
 extern ImFont* STANDARD_MEDIUM_FONT;

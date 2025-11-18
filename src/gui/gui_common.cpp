@@ -1,5 +1,6 @@
 #include "../include/gui/gui_common.h"
 
+ImFont* STANDARD_EXTRA_SMALL_FONT;
 ImFont* STANDARD_SMALL_FONT;
 ImFont* STANDARD_BOLD_SMALL_FONT;
 ImFont* STANDARD_MEDIUM_FONT;
@@ -19,6 +20,7 @@ bool show_fpr = false;
 VM vm;
 
 void LoadFonts(ImGuiIO& io){
+    STANDARD_EXTRA_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 12.0f);
     STANDARD_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 15.0f);
     STANDARD_MEDIUM_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/Roboto-Medium.ttf", 17.0f);
     STANDARD_BOLD_SMALL_FONT = io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/open-sans/OpenSans-Bold.ttf", 15.0f);
