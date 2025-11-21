@@ -1281,7 +1281,7 @@ struct DualIssueWindowVars{
     ImVec4 ready_col = {30.0f/255.0f, 200.0f/255.0f, 30.0f/255.0f, 1.0f};
     ImVec4 default_col = {255.0f/255.0f, 255.0f/255.0f, 255.0f/255.0f, 1.0f};
     ImVec4 new_col = {30.0f/255.0f, 200.0f/255.0f, 200.0f/255.0f, 1.0f};
-    ImU32 heading_col = ImGui::ColorConvertFloat4ToU32({200.0f/255.0f, 200.0f/255.0f, 33.0f/255.0f, 1.0f});
+    ImU32 heading_col = ImGui::ColorConvertFloat4ToU32({188.0f/255.0f, 182.0f/255.0f, 239.0f/255.0f, 1.0f});
 };
 
 void dual_init_vars(DualIssueWindowVars& window_config){
@@ -1465,7 +1465,7 @@ void dual_draw_rsrvstn_que(DualIssueWindowVars& window_config, std::vector<std::
 }
 
 
-void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob, std::vector<bool>& buffer_status){
+void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<std::unique_ptr<const InstrContext>>& buffer, Rectangle& rob, std::vector<bool>& buffer_status, std::pair<size_t, size_t> head_tail){
     ImGui::SetNextWindowPos(rob.top_left);
     ImGui::BeginChild("Reorder buffer window", window_config.reorder_buffer_size);
     {
@@ -1483,6 +1483,12 @@ void dual_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<st
                 if(vm.program_.intermediate_code.size()>instr->pc/4 && !instr->illegal){
                     dissassembled_instr = vm.program_.intermediate_code[instr->pc/4].first.to_string();
                     ImGui::PushStyleColor(ImGuiCol_Text, window_config.default_col);
+                    pop_count++;
+                }
+                else if((head_tail.first<head_tail.second && i>=head_tail.first && i<head_tail.second) || 
+                (head_tail.first>head_tail.second && (i>=head_tail.first || i<head_tail.second))){
+                    dissassembled_instr = "Waiting";
+                    ImGui::PushStyleColor(ImGuiCol_Text, window_config.waiting_col);
                     pop_count++;
                 }
                 else{
@@ -1537,7 +1543,7 @@ void dual_draw_instrs(DualIssueWindowVars& window_config, VmBase::InstrView& ins
     dual_draw_rsrvstn_que(window_config, instrs.reservation_station_lsu, window_config.rsrvstn_lsu);
 
     // reorder buffer
-    dual_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer, instrs.rob_status);
+    dual_draw_reorder_buffer(window_config, instrs.reorder_buffer, window_config.reorder_buffer, instrs.rob_status, instrs.rob_head_tail);
 }
 
 

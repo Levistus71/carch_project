@@ -244,6 +244,49 @@ int gui_main()
                 ImGui::OpenPopup("Processor Selection Modal");
             }
 
+            // Step N cycles
+            ImGui::SameLine(0.0f, spacing);
+            {
+                static int STEP_N = 0;
+                static bool EXEC = false;
+
+                ImGui::BeginGroup();
+                {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.20f, 0.22f, 0.27f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.27f, 0.32f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,  ImVec4(0.30f, 0.32f, 0.37f, 1.0f));
+
+                    ImGui::PushStyleColor(ImGuiCol_SliderGrab,       ImVec4(0.55f, 0.55f, 0.60f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.75f, 0.75f, 0.80f, 1.0f));
+
+                    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 10.0f);
+                    ImGui::DragInt("##StepCount", &STEP_N, 0.5f, 1, 120, "%d");
+                    
+                    ImGui::PopStyleColor(5);
+                    
+                    std::string button_label = "Step " + std::to_string(STEP_N);
+                    
+                    ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+                    if(ImGui::Button(button_label.c_str(), ImVec2(button_width, button_height))){
+                        if(STEP_N > 0){
+                            EXEC = true;
+                        }
+                    }
+                }
+                ImGui::EndGroup();
+                
+                if(EXEC){
+                    if(STEP_N > 0){
+                        STEP_N--;
+                        vm.Step();
+                    } else {
+                        EXEC = false;
+                    }
+                }
+
+                ImGui::SameLine(0.0f, spacing);
+            }
+
             ImGui::PopStyleColor(4);
             ImGui::PopStyleVar(2);
 
