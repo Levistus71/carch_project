@@ -2,7 +2,7 @@
 
 void set_processor_type(){
 
-    static const char* PROCESSOR_TYPES[] = {"Single Cycle", "Pipelined W/O Hazard", "Pipelined With Hazard W/O Forwarding", "Pipelined With Hazard With Forwarding", "Dual issue (6 stage)", "Triple Issue (6 stage)"};
+    static const char* PROCESSOR_TYPES[] = {"Single Cycle", "Pipelined W/O Hazard", "Pipelined With Hazard W/O Forwarding", "Pipelined With Hazard With Forwarding", "Dual issue (5 stage)", "Triple Issue (5 stage)"};
     static int PROCESSOR_IDX = 0;
     static bool PROCESSOR_CHANGE = false;
 

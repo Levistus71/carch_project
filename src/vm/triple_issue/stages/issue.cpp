@@ -56,6 +56,16 @@ bool issue_single(TripleIssueCore& vm_core, TripleIssueInstrContext& instr){
     return false;
 }
 
+
+bool check_dependency(TripleIssueInstrContext& first_instr, TripleIssueInstrContext& second_instr){
+        bool se_rs1__fi_rd_clash = (second_instr.uses_rs1) && (second_instr.rs1 == first_instr.rd) && (second_instr.rs1_from_fprf == first_instr.reg_write_to_fpr) && (second_instr.rs1 != 0 && !second_instr.rs1_from_fprf);
+        bool se_rs2__fi_rd_clash = (second_instr.uses_rs2) && (second_instr.rs2 == first_instr.rd) && (second_instr.rs2_from_fprf == first_instr.reg_write_to_fpr) && (second_instr.rs2 != 0 && !second_instr.rs2_from_fprf);
+        bool se_rs3__fi_rd_clash = (second_instr.uses_rs3) && (second_instr.frs3 == first_instr.rd) && (first_instr.reg_write_to_fpr);
+        bool clash = se_rs1__fi_rd_clash || se_rs2__fi_rd_clash || se_rs3__fi_rd_clash;
+
+        return clash;
+}
+
     
 int TripleIssueStages::Issue(TripleIssueCore& vm_core){
     TripleIssueInstrContext instr1 = vm_core.pipeline_reg_instrs_.id_issue_1;
@@ -63,9 +73,41 @@ int TripleIssueStages::Issue(TripleIssueCore& vm_core){
     TripleIssueInstrContext instr3 = vm_core.pipeline_reg_instrs_.id_issue_3;
 
     // std::cout << "alu slots before pushing : " << vm_core.alu_que_.EmptySlots() << std::endl;
-    bool issued_1 = issue_single(vm_core, instr1);
-    bool issued_2 = issue_single(vm_core, instr2);
-    bool issued_3 = issue_single(vm_core, instr3);
+    bool issued_1 = issue_single(vm_core, instr1);    
+    bool issued_2 = false;
+    bool issued_3 = false;
+
+    if(issued_1){
+        issued_2 = issue_single(vm_core, instr2);
+    }
+    else{
+        if(!check_dependency(instr1, instr2)){
+            issued_2 = issue_single(vm_core, instr2);
+        }
+    }
+
+    if(issued_1){
+        if(issued_2){
+            issued_3 = issue_single(vm_core, instr3);
+        }
+        else{
+            if(!check_dependency(instr2, instr3)){
+                issued_3 = issue_single(vm_core, instr3);
+            }
+        }
+    }
+    else{
+        if(!check_dependency(instr1, instr3)){
+            if(issued_2){
+                issued_3 = issue_single(vm_core, instr3);
+            }
+            else{
+                if(!check_dependency(instr2, instr3)){
+                    issued_3 = issue_single(vm_core, instr3);
+                }
+            }
+        }
+    }
     
     int num_issued = issued_1 + issued_2 + issued_3;
     // std::cout << "pushed : " << num_issued << "instrs" << std::endl;

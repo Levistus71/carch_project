@@ -73,9 +73,11 @@ void DualIssueStages::ResolveBranch(DualIssueInstrContext& instr, DualIssueCore&
 	
 		vm_core.FlushPreIssueRegs();
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
+			vm_core.branch_predictor_.update_btb(instr.pc, true, instr.alu_out);
 			vm_core.SetProgramCounter(instr.alu_out);
 		}
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {
+			vm_core.branch_predictor_.update_btb(instr.pc, true, instr.pc + instr.immediate);
 			vm_core.SetProgramCounter(instr.pc + instr.immediate);
 		}
 
@@ -134,6 +136,8 @@ void DualIssueStages::ResolveBranch(DualIssueInstrContext& instr, DualIssueCore&
 				upcasted_triple->commit_buffer_.ResetTailTillIdx(instr.rob_idx, *upcasted_triple);
 			else
             	vm_core.commit_buffer_.ResetTailTillIdx(instr.rob_idx, vm_core);
+
+			vm_core.branch_predictor_.update_btb(instr.pc, true, instr.pc + instr.immediate);
 			
 			vm_core.FlushPreIssueRegs();
 			vm_core.SetProgramCounter(instr.pc + instr.immediate);
@@ -147,6 +151,8 @@ void DualIssueStages::ResolveBranch(DualIssueInstrContext& instr, DualIssueCore&
 					upcasted_triple->commit_buffer_.ResetTailTillIdx(instr.rob_idx, *upcasted_triple);
 				else
                 	vm_core.commit_buffer_.ResetTailTillIdx(instr.rob_idx, vm_core);
+
+				vm_core.branch_predictor_.update_btb(instr.pc, false, instr.pc + instr.immediate);
 					
 				vm_core.FlushPreIssueRegs();
 				vm_core.SetProgramCounter(instr.pc + 4);

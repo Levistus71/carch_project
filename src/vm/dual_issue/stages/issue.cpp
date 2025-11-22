@@ -102,6 +102,15 @@ void reserve_push(DualIssueInstrContext& instr, DualIssueCore& vm_core){
     }
 }
 
+bool check_dependency(DualIssueInstrContext& first_instr, DualIssueInstrContext& second_instr){
+        bool se_rs1__fi_rd_clash = (second_instr.uses_rs1) && (second_instr.rs1 == first_instr.rd) && (second_instr.rs1_from_fprf == first_instr.reg_write_to_fpr) && (second_instr.rs1 != 0 && !second_instr.rs1_from_fprf);
+        bool se_rs2__fi_rd_clash = (second_instr.uses_rs2) && (second_instr.rs2 == first_instr.rd) && (second_instr.rs2_from_fprf == first_instr.reg_write_to_fpr) && (second_instr.rs2 != 0 && !second_instr.rs2_from_fprf);
+        bool se_rs3__fi_rd_clash = (second_instr.uses_rs3) && (second_instr.frs3 == first_instr.rd) && (first_instr.reg_write_to_fpr);
+        bool clash = se_rs1__fi_rd_clash || se_rs2__fi_rd_clash || se_rs3__fi_rd_clash;
+
+        return clash;
+}
+
 int DualIssueStages::Issue(DualIssueCore& vm_core){
     DualIssueInstrContext instr1 = vm_core.pipeline_reg_instrs_.id_issue_1;
     DualIssueInstrContext instr2 = vm_core.pipeline_reg_instrs_.id_issue_2;
@@ -129,8 +138,11 @@ int DualIssueStages::Issue(DualIssueCore& vm_core){
         return 1;
     }
     else{
-        if(!instr2.illegal){
+        if(!instr2.illegal && !check_dependency(instr1, instr2)){
             reserve_push(instr2, vm_core);
+        }
+        else if(check_dependency(instr1, instr2)){
+            return 0;
         }
         return 1;
     }

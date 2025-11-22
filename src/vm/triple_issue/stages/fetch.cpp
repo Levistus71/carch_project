@@ -79,6 +79,12 @@ void fetch3(TripleIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_1 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr2;
+            vm_core.pipeline_reg_instrs_.if_id_3 = instr3;
+            return;
         }
         else{
             // instr1 is a branch prediction
@@ -127,6 +133,12 @@ void fetch3(TripleIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_1 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr2;
+            vm_core.pipeline_reg_instrs_.if_id_3 = instr3;
+            return;
         }
     }
     else{
@@ -186,6 +198,11 @@ void fetch2(TripleIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_3 = instr2;
+            return;
         }
         else{
             // instr1 is a branch instruction
@@ -212,6 +229,11 @@ void fetch2(TripleIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_3 = instr2;
+            return;
         }
     }
     else{

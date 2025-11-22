@@ -49,6 +49,11 @@ void fetch2(DualIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_1 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr2;
+            return;
         }
         else{
             // instr1 is a branch instruction
@@ -75,6 +80,11 @@ void fetch2(DualIssueCore& vm_core){
                     return;
                 }
             }
+
+            // nothing is a branch
+            vm_core.pipeline_reg_instrs_.if_id_1 = instr1;
+            vm_core.pipeline_reg_instrs_.if_id_2 = instr2;
+            return;
         }
     }
     else{

@@ -1770,7 +1770,7 @@ void triple_draw_reorder_buffer(DualIssueWindowVars& window_config, std::vector<
                 }
 
 
-                ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.reorder_buffer_size.y/buffer.size() * 0.5f);
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, window_config.reorder_buffer_size.y/(buffer.size() * 0.5f));
                 ImGui::TableNextColumn();
 
                 float text_width = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, dissassembled_instr.c_str(), nullptr, nullptr).x;

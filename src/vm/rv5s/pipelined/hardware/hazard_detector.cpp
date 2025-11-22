@@ -60,8 +60,8 @@ bool HazardDetector::DetectDataHazardWithoutForwarding(PipelinedCore& vm_core){
     
     // if(ex_instruction.nopped) then ex_instruction.reg_write is false, idk why we check the nopped variable but ok
     if(!ex_instruction.nopped && ex_instruction.reg_write){   // checking if the ex instruction changes the register file
-        bool id_rs1__ex_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == ex_instruction.rd) && (id_instruction.rs1_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0);
-        bool id_rs2__ex_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == ex_instruction.rd) && (id_instruction.rs2_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0);
+        bool id_rs1__ex_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == ex_instruction.rd) && (id_instruction.rs1_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0 && !id_instruction.rs1_from_fprf);
+        bool id_rs2__ex_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == ex_instruction.rd) && (id_instruction.rs2_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0 && !id_instruction.rs2_from_fprf);
         bool id_rs3__ex_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == ex_instruction.rd) && (ex_instruction.reg_write_to_fpr);
 
         if(id_rs1__ex_rd_clash || id_rs2__ex_rd_clash || id_rs3__ex_rd_clash){
@@ -72,8 +72,8 @@ bool HazardDetector::DetectDataHazardWithoutForwarding(PipelinedCore& vm_core){
     }
 
     if(!mem_instruction.nopped && mem_instruction.reg_write){  // checking if the mem instruction changes the register file
-        bool id_rs1__mem_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == mem_instruction.rd) && (id_instruction.rs1_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0);
-        bool id_rs2__mem_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == mem_instruction.rd) && (id_instruction.rs2_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0);
+        bool id_rs1__mem_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == mem_instruction.rd) && (id_instruction.rs1_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0 && !id_instruction.rs1_from_fprf);
+        bool id_rs2__mem_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == mem_instruction.rd) && (id_instruction.rs2_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0 && !id_instruction.rs2_from_fprf);
         bool id_rs3__mem_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == mem_instruction.rd) && (mem_instruction.reg_write_to_fpr);
 
         if(id_rs1__mem_rd_clash || id_rs2__mem_rd_clash || id_rs3__mem_rd_clash){
@@ -106,8 +106,8 @@ bool HazardDetector::DetectDataHazardWithForwarding(PipelinedCore& vm_core){
     bool rs3_updated = false;
     
     if(!ex_instruction.nopped && ex_instruction.reg_write){   // checking if the ex instruction changes the register file
-        bool id_rs1__ex_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == ex_instruction.rd) && (id_instruction.rs1_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0);
-        bool id_rs2__ex_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == ex_instruction.rd) && (id_instruction.rs2_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0);
+        bool id_rs1__ex_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == ex_instruction.rd) && (id_instruction.rs1_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0 && !id_instruction.rs1_from_fprf);
+        bool id_rs2__ex_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == ex_instruction.rd) && (id_instruction.rs2_from_fprf == ex_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0 && !id_instruction.rs2_from_fprf);
         bool id_rs3__ex_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == ex_instruction.rd) && (ex_instruction.reg_write_to_fpr);
         bool clash = id_rs1__ex_rd_clash || id_rs2__ex_rd_clash || id_rs3__ex_rd_clash;
 
@@ -147,8 +147,8 @@ bool HazardDetector::DetectDataHazardWithForwarding(PipelinedCore& vm_core){
     }
 
     if(!mem_instruction.nopped && mem_instruction.reg_write){  // checking if the mem instruction changes the register file
-        bool id_rs1__mem_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == mem_instruction.rd) && (id_instruction.rs1_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0);
-        bool id_rs2__mem_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == mem_instruction.rd) && (id_instruction.rs2_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0);
+        bool id_rs1__mem_rd_clash = (id_instruction.uses_rs1) && (id_instruction.rs1 == mem_instruction.rd) && (id_instruction.rs1_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs1 != 0 && !id_instruction.rs1_from_fprf);
+        bool id_rs2__mem_rd_clash = (id_instruction.uses_rs2) && (id_instruction.rs2 == mem_instruction.rd) && (id_instruction.rs2_from_fprf == mem_instruction.reg_write_to_fpr) && (id_instruction.rs2 != 0 && !id_instruction.rs2_from_fprf);
         bool id_rs3__mem_rd_clash = (id_instruction.uses_rs3) && (id_instruction.frs3 == mem_instruction.rd) && (mem_instruction.reg_write_to_fpr);
 
         if(id_rs1__mem_rd_clash && !rs1_updated){
@@ -187,7 +187,7 @@ bool HazardDetector::DetectDataHazardWithForwarding(PipelinedCore& vm_core){
 
 
 void HazardDetector::HandleDataHazard(PipelinedCore& vm_core){
-    vm_core.AddToProgramCounter(-4);
+    vm_core.SetProgramCounter(vm_core.GetIfInstruction().pc);
 
     std::deque<PipelinedInstrContext> new_instruction_deque;
     new_instruction_deque.push_back(vm_core.GetIfInstruction());
