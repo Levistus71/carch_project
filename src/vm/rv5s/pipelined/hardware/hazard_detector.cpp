@@ -226,7 +226,7 @@ bool HazardDetector::DetectControlHazard(PipelinedCore& vm_core){
 void HazardDetector::HandleControlHazard(PipelinedCore& vm_core){
     PipelinedInstrContext& ex_instruction = vm_core.GetExInstruction();
 
-    if(vm_core.branch_prediction_enabled_){
+    if(vm_core.branch_prediction_enabled_ && !ex_instruction.branch_jalr){
         vm_core.branch_predictor_.update_btb(ex_instruction.pc, ex_instruction.branch_taken, vm_core.program_counter_);
     }
     

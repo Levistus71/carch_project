@@ -195,6 +195,30 @@ DualIssueInstrContext ReservationStation::GetReadyInstr(){
     return t;
 }
 
+DualIssueInstrContext ReservationStation::GetInorderInstr(){
+    if(que_.empty()){
+        DualIssueInstrContext t;
+        t.illegal = true;
+        return t;
+    }
+
+    if(que_[0].ready_to_exec && !que_[0].illegal){
+        DualIssueInstrContext instr = que_[0];
+        que_.pop_front();
+
+        DualIssueInstrContext t;
+        t.illegal = true;
+        t.ready_to_exec = false;
+        que_.push_back(t);
+
+        return instr;
+    }
+
+    DualIssueInstrContext t;
+    t.illegal = true;
+    return t;
+}
+
 
 void ReservationStation::Reset(){
     for(auto& p : que_){

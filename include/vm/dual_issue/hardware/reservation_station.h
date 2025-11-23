@@ -17,6 +17,7 @@ public:
     void Push(DualIssueInstrContext instr, DualIssueCore& vm_core);
 
     DualIssueInstrContext GetReadyInstr();
+    DualIssueInstrContext GetInorderInstr();
 
     void Reset();
 

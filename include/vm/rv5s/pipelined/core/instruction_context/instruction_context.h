@@ -13,6 +13,7 @@ struct PipelinedInstrContext : InstrContext{
     // branch signals:
     bool branch_predicted_taken = false; // job of the 'FETCH' stage to update this. (For branch prediction)
     bool branch_taken = false; // job of the 'EXEC' stage to update this. (For branch prediction), checked by the DetectControlHazard() in hazard_detector_
+    bool branch_jalr = false; // jalr branch should not update btb / be used for prediction
 
     bool uses_rs1 = false;
     bool uses_rs2 = false;

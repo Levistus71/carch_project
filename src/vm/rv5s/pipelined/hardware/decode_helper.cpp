@@ -307,6 +307,7 @@ void SetContextValues(PipelinedInstrContext& instr_context){
         instr_context.reg_write = true;
         instr_context.branch = true;
         instr_context.uses_rs1 = true;
+        instr_context.branch_jalr = true;
 
         instr_context.alu_op = alu::AluOp::kAdd;
         return;

@@ -73,7 +73,7 @@ void DualIssueStages::ResolveBranch(DualIssueInstrContext& instr, DualIssueCore&
 	
 		vm_core.FlushPreIssueRegs();
 		if (opcode==get_instr_encoding(Instruction::kjalr).opcode) { 
-			vm_core.branch_predictor_.update_btb(instr.pc, true, instr.alu_out);
+			// vm_core.branch_predictor_.update_btb(instr.pc, true, instr.alu_out); // don't update jalr branches
 			vm_core.SetProgramCounter(instr.alu_out);
 		}
 		else if (opcode==get_instr_encoding(Instruction::kjal).opcode) {

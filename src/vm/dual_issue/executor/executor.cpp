@@ -19,7 +19,7 @@ void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
 
     // Driving the pipeline part 1
     DualIssueInstrContext ready_alu_fu_instr = vm_core.alu_que_.GetReadyInstr();
-    DualIssueInstrContext ready_lsu_fu_instr = vm_core.lsu_que_.GetReadyInstr();
+    DualIssueInstrContext ready_lsu_fu_instr = vm_core.lsu_que_.GetInorderInstr();
 
     // Issue
     int num_issued = DualIssueStages::Issue(vm_core);

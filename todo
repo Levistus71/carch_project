@@ -1,0 +1,9 @@
+1. store buffer (made lsu queue inorder)
+    points to remember:
+        load instructions can query any number of bytes. you might have the address (stitch)
+        load instructions may look independent, but may be dependent on the store
+            store reg_b,0(reg_a)
+            ld rd,0(reg_c)
+                reg_a and reg_c might be the same address
+
+2. jalr prediction (made jalr not update btb (always misses))
