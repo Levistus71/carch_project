@@ -7,3 +7,5 @@
                 reg_a and reg_c might be the same address
 
 2. jalr prediction (made jalr not update btb (always misses))
+
+3. Add a graph which shows the number of instructions retired at the end.
