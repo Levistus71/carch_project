@@ -13,16 +13,16 @@ void DualIssueExecutor::DebugRunDualIssue(DualIssueCore& vm_core){
 
 void DualIssueExecutor::StepDualIssue(DualIssueCore& vm_core){
 
-    // Writeback
-    vm_core.commit_buffer_.Commit(vm_core);
-    vm_core.commit_buffer_.Pull(vm_core);
-
     // Driving the pipeline part 1
     DualIssueInstrContext ready_alu_fu_instr = vm_core.alu_que_.GetReadyInstr();
     DualIssueInstrContext ready_lsu_fu_instr = vm_core.lsu_que_.GetInorderInstr();
 
     // Issue
     int num_issued = DualIssueStages::Issue(vm_core);
+
+    // Writeback
+    vm_core.commit_buffer_.Commit(vm_core);
+    vm_core.commit_buffer_.Pull(vm_core);
 
     // Decode
     DualIssueStages::Decode(vm_core);

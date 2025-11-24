@@ -89,6 +89,15 @@ void reserve_push(DualIssueInstrContext& instr, DualIssueCore& vm_core){
     if(instr.illegal){
         return;
     }
+
+    // FIXME: Register values should be read in the decode stage
+    /**
+     * I don't know how to avoid this. (without making extra "physical" registers)
+     * When an instruction is stalled in the id-issue pipeline when a dependent instruction is commited,
+     * the instruction contains the stale register value. As the dependent instruction is popped from the ROB,
+     * this instruction doesn't see the dependency and is statisfied with the stale value (incorrect).
+     */
+    vm_core.decode_unit_.SetRegImmValues(instr, vm_core.register_file_);
     
     auto [rob_idx, epoch] = vm_core.commit_buffer_.Reserve();
     instr.rob_idx = rob_idx;

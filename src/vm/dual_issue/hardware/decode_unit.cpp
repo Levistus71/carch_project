@@ -13,9 +13,8 @@ using instruction_set::Instruction;
 using instruction_set::get_instr_encoding;
 using register_file::RegisterFile;
 
-void DualIssueDecodeUnit::DecodeInstruction(DualIssueInstrContext& instr_context, RegisterFile& rf){
+void DualIssueDecodeUnit::DecodeInstruction(DualIssueInstrContext& instr_context){
     DecodeInstrFields(instr_context);
-    SetRegImmValues(instr_context, rf);
     SetContextValues(instr_context);
     // this function should be called after SetContextValues(DualIssueInstrContext);
     SetMemValues(instr_context);

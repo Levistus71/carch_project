@@ -1,5 +1,6 @@
 #include "vm/triple_issue/stages/stages.h"
 #include "vm/triple_issue/hardware/commit_buffer.h"
+#include "vm/triple_issue/hardware/commit_buffer.h"
 
 
 namespace triple_issue
@@ -21,6 +22,9 @@ bool issue_single(TripleIssueCore& vm_core, TripleIssueInstrContext& instr){
             instr.rob_idx = idx;
             instr.epoch = epoch;
 
+            // FIXME: Same issue as discussed in the dual issue.
+            vm_core.decode_unit_.SetRegImmValues(instr, vm_core.register_file_);
+
             vm_core.lsu_que_.Push(instr, vm_core);
 
             return true;
@@ -34,6 +38,9 @@ bool issue_single(TripleIssueCore& vm_core, TripleIssueInstrContext& instr){
                 instr.rob_idx = idx;
                 instr.epoch = epoch;
 
+                // FIXME: Same issue as discussed in the dual issue.
+                vm_core.decode_unit_.SetRegImmValues(instr, vm_core.register_file_);
+
                 vm_core.alu_que_.Push(instr, vm_core);
 
                 return true;
@@ -45,6 +52,9 @@ bool issue_single(TripleIssueCore& vm_core, TripleIssueInstrContext& instr){
                 auto[idx, epoch] = vm_core.commit_buffer_.Reserve();
                 instr.rob_idx = idx;
                 instr.epoch = epoch;
+
+                // FIXME: Same issue as discussed in the dual issue.
+                vm_core.decode_unit_.SetRegImmValues(instr, vm_core.register_file_);
 
                 vm_core.falu_que_.Push(instr, vm_core);
 

@@ -6,11 +6,16 @@
 namespace triple_issue
 {
     
-void TripleIssueDecodeUnit::DecodeInstruction(TripleIssueInstrContext& instr_context, register_file::RegisterFile& rf){
+void TripleIssueDecodeUnit::DecodeInstruction(TripleIssueInstrContext& instr_context){
     dual_issue::DualIssueInstrContext& base_part = static_cast<dual_issue::DualIssueInstrContext&>(instr_context);
-    dual_issue::DualIssueDecodeUnit::DecodeInstruction(base_part, rf);
+    dual_issue::DualIssueDecodeUnit::DecodeInstruction(base_part);
 
     SetAluQue(instr_context);
+}
+
+
+void TripleIssueDecodeUnit::SetRegImmValues(TripleIssueInstrContext& instr_context, register_file::RegisterFile& rf){
+    dual_issue::DualIssueDecodeUnit::SetRegImmValues(instr_context, rf);
 }
 
 

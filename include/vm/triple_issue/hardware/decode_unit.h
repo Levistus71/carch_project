@@ -21,7 +21,12 @@ public:
     /**
      * @brief 
      */
-    void DecodeInstruction(TripleIssueInstrContext& instr_context, register_file::RegisterFile& rf);
+    void DecodeInstruction(TripleIssueInstrContext& instr_context);
+
+    /**
+     * 
+     */
+    void SetRegImmValues(TripleIssueInstrContext& instr_context, register_file::RegisterFile& rf);
     
 private:    
 

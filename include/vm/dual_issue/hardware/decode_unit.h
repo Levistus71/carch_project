@@ -21,7 +21,15 @@ public:
     /**
      * @brief 
      */
-    void DecodeInstruction(DualIssueInstrContext& instr_context, register_file::RegisterFile& rf);
+    void DecodeInstruction(DualIssueInstrContext& instr_context);
+
+    
+    /**
+     * @brief SetRegImmValues sets the register values and generates the immediate. Simulates fetching from the register file
+     * @param instr_context The instruction being decoded.
+     * @param rf The register file of the vm
+     */
+    void SetRegImmValues(DualIssueInstrContext& instr_context, register_file::RegisterFile& rf);
     
 private:
     /**
@@ -30,12 +38,6 @@ private:
      */
     void DecodeInstrFields(DualIssueInstrContext& instr_context);
 
-    /**
-     * @brief SetRegImmValues sets the register values and generates the immediate. Simulates fetching from the register file
-     * @param instr_context The instruction being decoded.
-     * @param rf The register file of the vm
-     */
-    void SetRegImmValues(DualIssueInstrContext& instr_context, register_file::RegisterFile& rf);
 
     /**
      * @brief SetControlSignals sets the alu flags, mux select line flags.

@@ -14,10 +14,6 @@ void TripleIssueExecutor::DebugRunTripleIssue(TripleIssueCore& vm_core){
 
 void TripleIssueExecutor::StepTripleIssue(TripleIssueCore& vm_core){
 
-    // Writeback
-    vm_core.commit_buffer_.Commit(vm_core);
-    vm_core.commit_buffer_.Pull(vm_core);
-
     // Driving the pipeline part 1
     dual_issue::DualIssueInstrContext ready_alu_fu_instr = vm_core.alu_que_.GetReadyInstr();
     dual_issue::DualIssueInstrContext ready_falu_fu_instr = vm_core.falu_que_.GetReadyInstr();
@@ -25,6 +21,10 @@ void TripleIssueExecutor::StepTripleIssue(TripleIssueCore& vm_core){
 
     // Issue
     int num_issued = TripleIssueStages::Issue(vm_core);
+
+    // Writeback
+    vm_core.commit_buffer_.Commit(vm_core);
+    vm_core.commit_buffer_.Pull(vm_core);
 
     // Decode
     TripleIssueStages::Decode(vm_core);
