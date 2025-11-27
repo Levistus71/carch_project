@@ -14,11 +14,11 @@ ROBBuffer::ROBBuffer(size_t slots) : max_size{slots}, buffer(slots){
 }
 
 size_t ROBBuffer::EmptySlots(){
-    if(tail > head){
-        return max_size - (tail-head);
+    if(tail >= head){
+        return max_size - (tail-head)-1;
     }
     else{
-        return max_size - head + tail;
+        return head-tail-1;
     }
 }
 
