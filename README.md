@@ -21,11 +21,12 @@ The simulator uses CMake for its build system.
 
 | Step | Command | Description |
 | :--- | :--- | :--- |
-| 1 | `git clone https://github.com/Levistus71/carch_project` | Fetch the source code. |
-| 2 | `cd carch_project` | Navigate to the project directory. |
-| 3 | `cmake -S . -B build` | Configure the build. |
-| 4 | `cd build` | Navigate to the build directory. |
-| 5 | `cmake --build .` | Compile the project binaries. |
-| 6 | `./vm` | Run the simulator. |
+| 1 | `brew install glfw` | Install glfw. |
+| 2 | `git clone https://github.com/Levistus71/carch_project` | Fetch the source code. |
+| 3 | `cd carch_project` | Navigate to the project directory. |
+| 4 | `cmake -S . -B build` | Configure the build. |
+| 5 | `cd build` | Navigate to the build directory. |
+| 6 | `cmake --build .` | Compile the project binaries. |
+| 7 | `./vm` | Run the simulator. |
 
 > **Note on Compatibility:** The simulator was developed and thoroughly tested on **macOS Tahoe**. While it uses the cross-platform ImGui library, full compatibility on other operating systems cannot be guaranteed.
