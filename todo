@@ -9,3 +9,5 @@
 2. jalr prediction (made jalr not update btb (always misses))
 
 3. Add a graph which shows the number of instructions retired at the end.
+
+BUG IN COMMIT BUFFER's CIRCULAR BUFFER (number of empty slots)
