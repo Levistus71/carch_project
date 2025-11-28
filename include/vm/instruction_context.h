@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vm/alu.h"
+#include <vector>
 
 struct InstrContext{
 

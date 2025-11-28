@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <bitset>
+#include <cstdint>
 
 namespace rv5s {
 

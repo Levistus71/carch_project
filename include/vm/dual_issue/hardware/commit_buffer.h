@@ -1,6 +1,7 @@
 #pragma once
 #include "./data_bus.h"
 #include <set>
+#include <memory>
 
 namespace dual_issue{
 

@@ -9,6 +9,7 @@
 // #include "./vm/vm_base.h"
 
 #include <vector>
+#include <string>
 
 namespace command_handler {
 enum class CommandType {
