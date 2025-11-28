@@ -1,4 +1,4 @@
-# RISC-V Pipelined Simulator (carch_project)
+# RISC-V Simulator
 
 ## Overview
 
@@ -13,7 +13,7 @@ A custom **Graphical User Interface (GUI)** visualizes the instruction flow, pip
     * Dynamic **Dual Issue** (1 ALU + 1 LSU).
     * Dynamic **Triple Issue** (1 ALU + 1 FPU + 1 LSU).
 * **Branch Prediction:** Configurable static and 1-bit dynamic prediction.
-* **GUI Frontend:** Developed with ImGui, providing real-time pipeline visualization, a code editor, and a stats window.
+* **GUI Frontend:** Developed with ImGui, providing real-time pipeline visualization.
 
 ## Compilation and Execution
 
@@ -29,4 +29,18 @@ The simulator uses CMake for its build system.
 | 6 | `cmake --build .` | Compile the project binaries. |
 | 7 | `./vm` | Run the simulator. |
 
-> **Note on Compatibility:** The simulator was developed and thoroughly tested on **macOS Tahoe**. While it uses the cross-platform ImGui library, full compatibility on other operating systems cannot be guaranteed.
+> **Note on Compatibility:** The simulator was developed and tested on **macOS Tahoe**. While it uses the cross-platform ImGui library, full compatibility on other operating systems cannot be guaranteed.
+
+## Third Party Software And Acknowledgements
+* The project was an extension to the previous in-house simulator and therefore uses code from it. 
+    * License at third_party_licenses/INEXTENDED_SIM_LICENSE. 
+    * Original Code : https://github.com/VishankSingh/riscv-simulator-2
+* The frontend editor uses code from BalazsJako's ImGuiColorTextEdit with minor modifications.
+    * License at third_party_licenses/EDITOR_LICENSE. 
+    * Original Code : https://github.com/BalazsJako/ImGuiColorTextEdit/.
+* ImGUI Library was used for the frontend. 
+    * License at imgui/LICENSE. 
+    * Original Code : https://github.com/ocornut/imgui
+
+Huge thanks to BalazsJako for creating and open-sourcing the ImGuiColorTextEdit editor and to Omar Cornut and others of Dear ImGui for their invaluable contribution to the developer community.
+Thanks also the contributors of RIPES and RARS for inspiration.
