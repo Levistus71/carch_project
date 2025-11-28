@@ -21,7 +21,7 @@ The simulator uses CMake for its build system.
 
 | Step | Command | Description |
 | :--- | :--- | :--- |
-| 1 | `brew install glfw` | Install glfw. |
+| 1 | `brew install glfw (macos) / sudo apt install libglfw3-dev libglew-dev libgl1-mesa-dev (linux)` | Install glfw. |
 | 2 | `git clone https://github.com/Levistus71/carch_project` | Fetch the source code. |
 | 3 | `cd carch_project` | Navigate to the project directory. |
 | 4 | `cmake -S . -B build` | Configure the build. |
