@@ -31,6 +31,14 @@ The simulator uses CMake for its build system.
 
 > **Note on Compatibility:** The simulator was developed and tested on **macOS Tahoe**. While it uses the cross-platform ImGui library, full compatibility on other operating systems cannot be guaranteed.
 
+
+## Academic Context
+This project was developed as a course project for the **Computer Architecture** course (CS2323) taught at **IIT Hyderabad**.
+
+* **Institution:** Indian Institute of Technology Hyderabad (IIT-H)
+* **Course:** Computer Architecture (CS2323)`
+* **Instructor:** Professor Rajesh Kedia (https://people.iith.ac.in/rkedia/)
+
 ## Third Party Software And Acknowledgements
 * The project was an extension to the previous in-house simulator and therefore uses code from it. 
     * License at third_party_licenses/INEXTENDED_SIM_LICENSE. 
