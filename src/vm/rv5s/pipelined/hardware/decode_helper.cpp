@@ -287,15 +287,19 @@ void SetContextValues(PipelinedInstrContext& instr_context){
         switch(funct3){
             case 0b000 : {  // SB
                 instr_context.mem_access_bytes = 1;
+                break;
             }
             case 0b001 : { // SH
                 instr_context.mem_access_bytes = 2;
+                break;
             }
             case 0b010 : {  // SW
                 instr_context.mem_access_bytes = 4;
+                break;
             }
             case 0b011: {   // SD
                 instr_context.mem_access_bytes = 8;
+                break;
             }
         }
 

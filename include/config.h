@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 /**
  * @namespace vm_config

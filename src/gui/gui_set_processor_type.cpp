@@ -80,9 +80,11 @@ void set_processor_type(){
             }
             case 4 : {
                 vm_config::config.dual_issue = true;
+                break;
             }
             case 5 : {
                 vm_config::config.triple_issue = true;
+                break;
             }
         }
 

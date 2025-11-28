@@ -1,5 +1,6 @@
 #pragma once
 #include "../core/instruction_context/instruction_context.h"
+#include <deque>
 
 namespace dual_issue{
 
