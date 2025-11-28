@@ -51,4 +51,11 @@ This project was developed as a course project for the **Computer Architecture**
     * Original Code : https://github.com/ocornut/imgui
 
 Huge thanks to BalazsJako for creating and open-sourcing the ImGuiColorTextEdit editor and to Omar Cornut and others of Dear ImGui for their invaluable contribution to the developer community.
-Thanks also the contributors of RIPES and RARS for inspiration.
+Thanks also to the contributors of RIPES and RARS for inspiration.
+
+
+## Project Status and Future
+
+This project has been successfully completed as part of its academic mandate and is no longer under active development.
+
+**This repository is now considered unmaintained and archived.**

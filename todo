@@ -9,3 +9,11 @@
 2. jalr prediction (made jalr not update btb (always misses))
 
 3. Add a graph which shows the number of instructions retired at the end.
+
+4. Backend and Frontend on different threads.
+
+5. The issue logic in multi-issue is scuffed but works.
+
+6. Caches
+
+7. Accurate cycles for memory / fp execution
