@@ -8,6 +8,8 @@
         }
     },
 
+    "forwardPorts": [6080],
+
     "updateContentCommand": "sudo apt-get update && sudo apt-get install -y libglfw3-dev libopengl-dev",
 
     "customizations": {
